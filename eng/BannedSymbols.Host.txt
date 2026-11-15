@@ -1,0 +1,6 @@
+N:YGrab.Infrastructure;The host talks to the engine use cases and only registers the infrastructure
+N:CSnakes;Python calls live in YGrab.Infrastructure.Python
+N:Microsoft.Data.Sqlite;SQLite lives in YGrab.Infrastructure
+N:Dapper;SQLite lives in YGrab.Infrastructure
+N:ATL;Tags are written in YGrab.Infrastructure
+T:System.Diagnostics.Process;yt-dlp runs in YGrab.Infrastructure

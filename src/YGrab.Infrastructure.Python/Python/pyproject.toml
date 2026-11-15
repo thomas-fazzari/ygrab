@@ -1,0 +1,33 @@
+[project]
+name = "ygrab-python"
+version = "0.0.0"
+description = "Python modules called through CSnakes"
+requires-python = ">=3.13"
+dependencies = ["requests==2.34.2", "ytmusicapi==1.12.3"]
+
+[tool.uv]
+package = false
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.format]
+docstring-code-format = true
+
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = [
+  # Conflicts with the formatter
+  "COM812",
+  # No docstrings by default
+  "D",
+]
+
+[tool.ruff.lint.flake8-copyright]
+notice-rgx = "SPDX-FileCopyrightText: \\d{4}"
+
+[tool.ty.environment]
+python-version = "3.13"
+
+[tool.ty.rules]
+possibly-unresolved-reference = "error"

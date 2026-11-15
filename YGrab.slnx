@@ -1,0 +1,14 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/YGrab.Cli/YGrab.Cli.csproj" />
+    <Project Path="src/YGrab.Contracts/YGrab.Contracts.csproj" />
+    <Project Path="src/YGrab.Domain/YGrab.Domain.csproj" />
+    <Project Path="src/YGrab.Engine/YGrab.Engine.csproj" />
+    <Project Path="src/YGrab.Host/YGrab.Host.csproj" />
+    <Project Path="src/YGrab.Infrastructure.Python/YGrab.Infrastructure.Python.csproj" />
+    <Project Path="src/YGrab.Infrastructure/YGrab.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/YGrab.Tests/YGrab.Tests.csproj" />
+  </Folder>
+</Solution>

@@ -1,0 +1,8 @@
+is_global = true
+# Overrides Analyzers.globalconfig for test projects
+global_level = 101
+
+# Test names use underscores and test methods do not take the Async suffix
+dotnet_diagnostic.CA1707.severity = none
+dotnet_naming_rule.async_methods_end_with_async.severity = none
+dotnet_diagnostic.CA1861.severity = none

@@ -1,0 +1,7 @@
+N:System.IO;Go through a port that the infrastructure implements
+N:System.Net;Go through a port that the infrastructure implements
+N:System.Data;Go through a port that the infrastructure implements
+T:System.Diagnostics.Process;Go through a port that the infrastructure implements
+N:YGrab.Infrastructure;The engine depends on no other layer
+N:CSnakes;Go through a port that the infrastructure implements
+N:ATL;Go through a port that the infrastructure implements

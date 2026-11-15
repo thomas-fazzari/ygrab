@@ -1,0 +1,30 @@
+{
+  "name": "ygrab-web",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.node.json",
+    "lint:ts": "oxlint --config oxlint.json --deny-warnings --report-unused-disable-directives src vite.config.ts",
+    "lint:css": "stylelint \"src/**/*.css\" --allow-empty-input"
+  },
+  "dependencies": {
+    "@solidjs/web": "2.0.0-rc.21",
+    "solid-js": "2.0.0-rc.21",
+    "ts-pattern": "5.9.2",
+    "valibot": "1.5.0"
+  },
+  "devDependencies": {
+    "@oxlint/plugins": "1.93.0",
+    "@solidjs/vite-plugin": "3.0.0-next.57",
+    "@types/node": "26.6.6",
+    "oxfmt": "0.78.0",
+    "oxlint": "1.93.0",
+    "oxlint-tsgolint": "7.0.2007",
+    "stylelint": "18.0.0",
+    "stylelint-config-standard": "41.0.0",
+    "typescript": "7.0.2",
+    "vite": "8.3.8"
+  }
+}

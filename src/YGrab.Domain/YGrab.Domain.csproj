@@ -1,0 +1,5 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <Description>The job state machine, value objects and the naming and retry policies.</Description>
+  </PropertyGroup>
+</Project>

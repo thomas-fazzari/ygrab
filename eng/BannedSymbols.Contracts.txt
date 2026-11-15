@@ -1,0 +1,4 @@
+N:YGrab.Domain;The contracts depend on no other layer
+N:YGrab.Engine;The contracts depend on no other layer
+N:YGrab.Infrastructure;The contracts depend on no other layer
+N:YGrab.Infrastructure.Python;The contracts depend on no other layer

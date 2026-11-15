@@ -1,0 +1,39 @@
+# Copy this file to ygrab.yaml in the working folder of the host (the host reloads it on change).
+# Each value below is the default, except for Logging, which hides the request logs of ASP.NET Core.
+# Environment variables override this file (e.g. Storage__DataDirectory or Jobs__RetentionDays).
+
+# http://+:5000 listens on every interface, as in a container
+Urls: http://localhost:5000
+
+Logging:
+  LogLevel:
+    Default: Information
+    Microsoft.AspNetCore: Warning
+
+# A change needs a restart
+Storage:
+  # Defaults to ~/.local/share/ygrab on Linux and ~/Library/Application Support/ygrab on macOS
+  # DataDirectory: /data
+
+# A change needs a restart
+Python:
+  # Defaults to the python folder in the default data folder
+  # VirtualEnvironment: /data/python
+
+# A change applies to the next download
+YtDlp:
+  Executable: yt-dlp
+  # A Netscape cookies file, for when YouTube asks to sign in
+  # CookiesFile: /data/cookies.txt
+
+# A change applies at the next sweep
+Jobs:
+  RetentionDays: 7
+  VideoRetentionDays: 2
+
+Auth:
+  # At least 16 characters. Without one, the host generates a token into the data folder and logs
+  # it once. YGRAB_TOKEN overrides it. A new token signs every browser out.
+  # Token:
+  # A change needs a restart
+  Disabled: false

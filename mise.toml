@@ -1,0 +1,95 @@
+min_version = "2026.9.0"
+
+[settings]
+idiomatic_version_file_enable_tools = ["dotnet"]
+
+[tools]
+bun = "1.4.4"
+"dotnet:csharpier" = "1.4.0"
+deno = "2.9.8"
+hk = "2.12.0"
+ruff = "0.17.5"
+rumdl = "0.3.3"
+shellcheck = "0.11.0"
+shfmt = "3.14.1"
+ty = "0.0.104"
+uv = "0.13.8"
+yt-dlp = "2026.10.26"
+
+[tasks.install]
+description = "Restores the .NET dependencies and the Python environment of the editor and the type checker"
+run = [
+  "dotnet restore YGrab.slnx",
+  "uv sync --locked --project src/YGrab.Infrastructure.Python/Python",
+]
+
+[tasks.build]
+description = "Builds the .NET solution with analyzers (CONFIGURATION defaults to Debug)"
+run = 'dotnet build YGrab.slnx --configuration "${CONFIGURATION:-Debug}"'
+
+[tasks.test]
+description = "Runs the .NET tests, with extra arguments passed to dotnet test"
+depends = ["build"]
+run = 'dotnet test --solution YGrab.slnx --configuration "${CONFIGURATION:-Debug}" --no-build --no-restore'
+
+[tasks."publish:cli"]
+description = "Publishes the native ygrab CLI for the current platform into artifacts/cli"
+run = 'dotnet publish src/YGrab.Cli --configuration Release --output artifacts/cli'
+
+[tasks.dev]
+description = "Runs the host and the Vite dev server, with the data in artifacts/dev and the auth off"
+run = [{ tasks = ["dev:host", "web:dev"] }]
+
+[tasks."dev:host"]
+description = "Runs the host with hot reload on http://127.0.0.1:5000"
+run = "dotnet watch --project src/YGrab.Host --non-interactive"
+
+[tasks."web:install"]
+description = "Installs the front-end dependencies from the lock file"
+run = "bun install --frozen-lockfile --cwd web"
+
+[tasks."web:dev"]
+description = "Serves the front end with Vite, which proxies /api to YGRAB_HOST_URL"
+depends = ["web:install"]
+run = "bun run --cwd web dev"
+
+[tasks."web:build"]
+description = "Builds the front end into src/YGrab.Host/wwwroot"
+depends = ["web:install"]
+run = "bun run --cwd web build"
+
+[tasks."web:lint"]
+description = "Lints the front end with oxlint and stylelint"
+depends = ["web:install"]
+run = ["bun run --cwd web lint:ts", "bun run --cwd web lint:css"]
+
+[tasks."web:typecheck"]
+description = "Type-checks the front end"
+depends = ["web:install"]
+run = "bun run --cwd web typecheck"
+
+[tasks."web:check"]
+description = "Lints, type-checks and builds the front end"
+depends = ["web:lint", "web:typecheck", "web:build"]
+
+[tasks.check]
+description = "Runs every formatting, lint, analyzer and test check"
+run = [{ tasks = ["hooks:check", "fmt:check", "web:check"] }, { task = "test" }]
+
+[tasks.fix]
+description = "Formats every file and fixes lint through the steps of hk.pkl"
+depends = ["web:install"]
+run = "hk fix --all"
+
+[tasks."hooks:install"]
+description = "Installs the Git hooks"
+run = "hk install --mise"
+
+[tasks."hooks:check"]
+description = "Validates the Git hook configuration"
+run = "hk validate"
+
+[tasks."fmt:check"]
+description = "Checks the formatting and lint of every file through the steps of hk.pkl"
+depends = ["web:install"]
+run = "hk check --all"

@@ -1,0 +1,4 @@
+T:System.Diagnostics.Process;yt-dlp runs in YGrab.Infrastructure
+N:ATL;Tags are written in YGrab.Infrastructure
+N:Microsoft.Data.Sqlite;SQLite lives in YGrab.Infrastructure
+N:Dapper;SQLite lives in YGrab.Infrastructure

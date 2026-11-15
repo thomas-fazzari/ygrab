@@ -1,0 +1,29 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "semanticCommits": "enabled",
+  "semanticCommitType": "chore",
+  "semanticCommitScope": null,
+  "timezone": "Europe/Paris",
+  "schedule": ["before 6am on monday"],
+  "minimumReleaseAge": "3 days",
+  "lockFileMaintenance": { "enabled": true },
+  "pip_requirements": { "enabled": false },
+  "packageRules": [
+    {
+      "matchUpdateTypes": ["minor", "patch", "pin", "digest"],
+      "groupName": "dependencies"
+    },
+    {
+      "description": "Releases several times a week",
+      "matchPackageNames": ["Meziantou.Analyzer"],
+      "enabled": false
+    },
+    {
+      "description": "The mise manager skips dotnet, so the SDK and its mise.lock entry are updated manually until renovatebot/renovate#44650",
+      "matchManagers": ["nuget"],
+      "matchDepTypes": ["dotnet-sdk"],
+      "enabled": false
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+// SPDX-FileCopyrightText: 2026 Thomas Fazzari
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
+namespace YGrab.Domain;
+
+/// <summary>
+/// Where a <see cref="Job"/> is in its life.
+/// </summary>
+/// <remarks>
+/// Each case holds only the data that exists in that state, so a state cannot lack its file or its
+/// retry time.
+/// </remarks>
+public closed record JobState
+{
+    public sealed record Queued : JobState;
+
+    public sealed record Resolving : JobState;
+
+    public sealed record Downloading : JobState;
+
+    /// <param name="Reason">The failure that the retry follows.</param>
+    public sealed record Waiting(DateTimeOffset RetryAt, string Reason) : JobState;
+
+    public sealed record Packaging : JobState;
+
+    public sealed record Ready(string FileName, DateTimeOffset FinishedAt) : JobState;
+
+    /// <summary>
+    /// The file lacks the tracks that could not be downloaded.
+    /// </summary>
+    public sealed record Incomplete(string FileName, DateTimeOffset FinishedAt) : JobState;
+
+    public sealed record Failed(string Reason, DateTimeOffset FinishedAt) : JobState;
+
+    /// <param name="DuplicateOf">The job that already covers the link.</param>
+    public sealed record Skipped(Guid DuplicateOf, DateTimeOffset FinishedAt) : JobState;
+
+    /// <summary>
+    /// The file is deleted after its retention.
+    /// </summary>
+    public sealed record Expired(DateTimeOffset FinishedAt) : JobState;
+}

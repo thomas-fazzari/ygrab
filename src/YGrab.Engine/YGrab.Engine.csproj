@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <Description>Use cases of the jobs and the ports that the infrastructure implements.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../YGrab.Domain/YGrab.Domain.csproj" />
+  </ItemGroup>
+</Project>

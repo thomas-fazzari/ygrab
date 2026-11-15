@@ -1,0 +1,4 @@
+N:YGrab.Domain;The CLI talks to the host through the contracts only
+N:YGrab.Engine;The CLI talks to the host through the contracts only
+N:YGrab.Infrastructure;The CLI talks to the host through the contracts only
+N:YGrab.Infrastructure.Python;The CLI talks to the host through the contracts only

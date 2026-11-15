@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="../../src/YGrab.Cli/YGrab.Cli.csproj" />
+    <ProjectReference Include="../../src/YGrab.Contracts/YGrab.Contracts.csproj" />
+    <ProjectReference Include="../../src/YGrab.Domain/YGrab.Domain.csproj" />
+    <ProjectReference Include="../../src/YGrab.Engine/YGrab.Engine.csproj" />
+    <ProjectReference Include="../../src/YGrab.Host/YGrab.Host.csproj" />
+    <ProjectReference Include="../../src/YGrab.Infrastructure/YGrab.Infrastructure.csproj" />
+    <ProjectReference Include="../../src/YGrab.Infrastructure.Python/YGrab.Infrastructure.Python.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
+    <PackageReference Include="TngTech.ArchUnitNET.xUnitV3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Fixtures/*" CopyToOutputDirectory="PreserveNewest" />
+    <None
+      Include="../../ygrab.example.yaml"
+      Link="ygrab.example.yaml"
+      CopyToOutputDirectory="PreserveNewest"
+    />
+  </ItemGroup>
+</Project>

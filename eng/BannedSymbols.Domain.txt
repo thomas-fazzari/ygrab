@@ -1,0 +1,12 @@
+N:System.IO;The domain does no I/O
+N:System.Net;The domain does no I/O
+N:System.Data;The domain does no I/O
+N:System.Threading.Tasks;Transitions are synchronous and pure
+N:System.Text.Json;The outer layers map domain types to their own serialized records
+T:System.TimeProvider;The handler passes the time to the transition
+T:System.Random;The handler passes random values in
+M:System.Guid.NewGuid;The handler passes new ids in
+M:System.Guid.CreateVersion7(System.DateTimeOffset);The handler passes new ids in
+T:System.Diagnostics.Process;The domain starts no process
+N:YGrab.Engine;The domain depends on no other layer
+N:YGrab.Infrastructure;The domain depends on no other layer

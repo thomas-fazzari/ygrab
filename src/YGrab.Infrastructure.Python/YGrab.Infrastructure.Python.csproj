@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <Description>The catalog adapter: ytmusicapi through CSnakes.</Description>
+    <PythonRoot>Python</PythonRoot>
+    <EmbedPythonSources>true</EmbedPythonSources>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../YGrab.Engine/YGrab.Engine.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CSnakes.Runtime" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Python/requirements.txt" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

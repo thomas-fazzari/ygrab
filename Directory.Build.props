@@ -1,0 +1,48 @@
+<Project>
+  <PropertyGroup>
+    <Authors>Thomas Fazzari</Authors>
+    <TargetFramework>net11.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AnalysisLevel>latest-all</AnalysisLevel>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <MeziantouAnalysisMode>Default</MeziantouAnalysisMode>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1573;CS1591</NoWarn>
+    <IsPackable>false</IsPackable>
+    <Features>$(Features);runtime-async=on</Features>
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    <ContinuousIntegrationBuild Condition="'$(GITHUB_ACTIONS)' == 'true'"
+      >true</ContinuousIntegrationBuild>
+    <IsTestProject Condition="$(MSBuildProjectName.StartsWith('YGrab.Tests'))">true</IsTestProject>
+    <!-- eng/BannedSymbols.<Layer>.txt holds the layer rules of YGrab.<Layer> -->
+    <LayerBannedSymbols>$(MSBuildThisFileDirectory)eng/BannedSymbols.$(MSBuildProjectName.Replace('YGrab.', '')).txt</LayerBannedSymbols>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <GlobalAnalyzerConfigFiles Include="$(MSBuildThisFileDirectory)eng/Analyzers.globalconfig" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(IsTestProject)' != 'true'">
+    <PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" PrivateAssets="all" />
+    <AdditionalFiles Include="$(MSBuildThisFileDirectory)eng/BannedSymbols.txt" />
+    <AdditionalFiles Include="$(LayerBannedSymbols)" Condition="Exists('$(LayerBannedSymbols)')" />
+  </ItemGroup>
+
+  <PropertyGroup Condition="'$(IsTestProject)' == 'true'">
+    <OutputType>Exe</OutputType>
+    <IsPublishable>false</IsPublishable>
+    <TestingPlatformCommandLineArguments>$(TestingPlatformCommandLineArguments) --hangdump --hangdump-timeout 10m --hangdump-type Mini</TestingPlatformCommandLineArguments>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(IsTestProject)' == 'true'">
+    <GlobalAnalyzerConfigFiles Include="$(MSBuildThisFileDirectory)eng/Tests.globalconfig" />
+    <Using Include="AwesomeAssertions" />
+    <Using Include="Xunit" />
+    <PackageReference Include="AwesomeAssertions" />
+    <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" />
+    <PackageReference Include="Microsoft.Testing.Extensions.HangDump" />
+    <PackageReference Include="xunit.v3.mtp-v2" />
+  </ItemGroup>
+</Project>

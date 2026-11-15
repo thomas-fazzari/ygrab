@@ -1,0 +1,62 @@
+amends "package://github.com/jdx/hk/releases/download/v2.10.0/hk@2.10.0#/Config.pkl"
+import "package://github.com/jdx/hk/releases/download/v2.10.0/hk@2.10.0#/Builtins.pkl"
+
+local dotnet = "**/*.{cs,csx,csproj,props,targets,slnx,slnf,xml,config,resx}"
+local python = "src/YGrab.Infrastructure.Python/Python"
+local oxfmt = "web/node_modules/.bin/oxfmt --config web/.oxfmtrc.json"
+local exportRequirements = "uv export --locked --no-hashes --no-dev --no-emit-project --no-header --project \(python)"
+
+// Steps of `hk check` and `hk fix`. `mise run fix` runs them on every file
+local linters = new Mapping<String, Step> {
+  ["csharpier"] {
+    glob = dotnet
+    check = "csharpier check {{files}}"
+    fix = "csharpier format {{files}}"
+  }
+  ["ruff"] = (Builtins.ruff) {
+    glob = "**/*.py"
+  }
+  ["ruff_format"] = (Builtins.ruff_format) {
+    glob = "**/*.py"
+  }
+  ["ty"] {
+    glob = List("**/*.py", "**/pyproject.toml")
+    check = "ty check --project \(python)"
+  }
+  ["requirements"] {
+    glob = List("\(python)/uv.lock", "\(python)/pyproject.toml", "\(python)/requirements.txt")
+    check = "\(exportRequirements) | diff - \(python)/requirements.txt"
+    fix = "\(exportRequirements) -o \(python)/requirements.txt"
+  }
+  ["oxfmt"] {
+    glob = "web/**/*.{ts,tsx,json,css}"
+    exclude = List("**/node_modules/**", "web/bun.lock")
+    check = "\(oxfmt) --check {{files}}"
+    fix = "\(oxfmt) --write {{files}}"
+  }
+  ["rumdl"] = (Builtins.rumdl) {
+    glob = "**/*.md"
+  }
+  ["shellcheck"] = Builtins.shellcheck
+  ["shfmt"] = Builtins.shfmt
+}
+
+steps = linters
+
+hooks {
+  ["commit-msg"] {
+    steps {
+      ["commit-type"] {
+        check = "eng/tasks/commit-msg.sh {{commit_msg_file}}"
+      }
+    }
+  }
+  ["pre-push"] {
+    steps = (linters) {
+      ["build"] {
+        glob = List(dotnet, "src/**/*.py", "global.json", "**/.editorconfig", "eng/*.globalconfig", "eng/BannedSymbols*.txt", "**/packages.lock.json")
+        check = "mise run build"
+      }
+    }
+  }
+}
