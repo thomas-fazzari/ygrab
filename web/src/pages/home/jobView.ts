@@ -2,10 +2,9 @@ import { match, P } from "ts-pattern";
 
 import type { Job, VideoQuality } from "@/shared/api/schemas.ts";
 import { formatClock, formatRelative } from "@/shared/clock.ts";
+import type { BadgeTone } from "@/shared/ui/Badge.tsx";
 
 type JobState = Job["state"];
-
-export type BadgeTone = "quiet" | "live" | "done" | "error";
 
 export type StateLine =
   | { readonly kind: "none" }

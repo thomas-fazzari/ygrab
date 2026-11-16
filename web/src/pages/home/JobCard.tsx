@@ -3,6 +3,7 @@ import { match, P } from "ts-pattern";
 import ChevronIcon from "~icons/solar/alt-arrow-right-linear";
 
 import type { Job, Track } from "@/shared/api/schemas.ts";
+import { Badge } from "@/shared/ui/Badge.tsx";
 import { JobActions } from "./JobActions.tsx";
 import type { ActionFailure } from "./JobActions.tsx";
 import styles from "./JobCard.module.css";
@@ -44,9 +45,9 @@ export function JobCard(props: JobCardProps) {
     <article class={styles.card} data-state={props.job.state} aria-labelledby={titleId}>
       <Cover url={coverOf(props.job)} />
       <Title id={titleId} job={props.job} />
-      <span class={styles.badge} data-tone={badgeTone(props.job.state)}>
+      <Badge class={styles.badge} tone={badgeTone(props.job.state)}>
         {props.job.state}
-      </span>
+      </Badge>
       <div class={styles.meta}>
         <For each={metaOf(props.job)}>{(part) => <span>{part}</span>}</For>
         <Show when={hasTrackList()}>

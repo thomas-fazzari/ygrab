@@ -50,6 +50,7 @@
     --badge-width: 100px;
     --progress-height: 4px;
     --track-number-width: 24px;
+    --change-type-width: 40px;
     --track-row-height: calc(var(--line-label) + 2 * var(--space-2) + 1px);
     --track-list-height: calc(10.5 * var(--track-row-height));
   }

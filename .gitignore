@@ -16,6 +16,7 @@
 !/mise.toml
 !/mise.lock
 !/hk.pkl
+!/cliff.toml
 !/YGrab.code-workspace
 !/YGrab.slnx
 !/ygrab.example.yaml

@@ -2,14 +2,15 @@ import { createMemo, Loading, Show, useContext } from "solid-js";
 import GitHubIcon from "~icons/simple-icons/github";
 import HomeIcon from "~icons/solar/home-linear";
 import LogoutIcon from "~icons/solar/logout-2-linear";
+import NotesIcon from "~icons/solar/document-text-linear";
 
+import { RELEASE_NOTES_ROUTE } from "@/pages/release-notes/ReleaseNotesPage.tsx";
 import { getSession, logout } from "@/shared/api/client.ts";
+import { REPOSITORY_URL } from "@/shared/repository.ts";
 import { RouterContext } from "@/shared/router.tsx";
 import { HOME_ROUTE, LOGIN_ROUTE } from "@/shared/session.ts";
 import { IconButton, IconLink } from "@/shared/ui/IconControl.tsx";
 import styles from "./Header.module.css";
-
-const REPOSITORY_URL = "https://github.com/thomas-fazzari/ygrab";
 
 async function signOut() {
   const result = await logout();
@@ -49,6 +50,13 @@ export function Header() {
           <HomeIcon />
         </IconLink>
       </nav>
+      <IconLink
+        label="Release notes"
+        href={RELEASE_NOTES_ROUTE}
+        current={router.path() === RELEASE_NOTES_ROUTE}
+      >
+        <NotesIcon />
+      </IconLink>
       <IconLink label="GitHub" href={REPOSITORY_URL} newTab>
         <GitHubIcon />
       </IconLink>

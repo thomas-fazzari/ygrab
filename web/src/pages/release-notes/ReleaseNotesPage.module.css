@@ -1,0 +1,55 @@
+@layer components {
+  .changes {
+    padding: 0;
+    border-block-start: 1px solid var(--color-layer-3);
+    list-style: none;
+  }
+
+  .change {
+    display: grid;
+    grid-template-columns: var(--change-type-width) minmax(0, 1fr) auto;
+    align-items: baseline;
+    gap: var(--space-5);
+    padding-block: var(--space-2);
+    border-block-end: 1px solid var(--color-layer-2);
+    color: var(--color-text-secondary);
+  }
+
+  .type,
+  .meta {
+    color: var(--color-text-helper);
+    font: var(--weight-regular) var(--text-label);
+  }
+
+  /* The text comes from the lowercase commit title */
+  .text::first-letter {
+    text-transform: uppercase;
+  }
+
+  .meta {
+    display: flex;
+    gap: var(--space-4);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .link {
+    text-decoration: none;
+  }
+
+  .link:hover {
+    color: var(--color-text);
+    text-decoration: underline 1px;
+    text-underline-offset: 3px;
+  }
+
+  @media (width <= 760px) {
+    .change {
+      grid-template-columns: var(--change-type-width) minmax(0, 1fr);
+      row-gap: var(--space-1);
+    }
+
+    .meta {
+      grid-column: 2;
+    }
+  }
+}

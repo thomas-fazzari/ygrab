@@ -12,7 +12,9 @@ RUN mise trust && mise install --locked bun
 COPY web/package.json web/bun.lock web/bunfig.toml web/
 RUN mise exec -- bun install --frozen-lockfile --cwd web
 COPY web/ web/
-RUN mise exec -- bun run --cwd web build
+# The release notes mark the release of this version as current
+ARG VERSION=unreleased
+RUN VITE_VERSION="$VERSION" mise exec -- bun run --cwd web build
 
 FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:11.0 AS publish
 WORKDIR /src

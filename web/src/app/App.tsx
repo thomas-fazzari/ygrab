@@ -5,6 +5,7 @@ import type { Component } from "solid-js";
 import { HomePage } from "@/pages/home/HomePage.tsx";
 import { LoginPage } from "@/pages/login/LoginPage.tsx";
 import { NotFoundPage } from "@/pages/not-found/NotFoundPage.tsx";
+import { RELEASE_NOTES_ROUTE, ReleaseNotesPage } from "@/pages/release-notes/ReleaseNotesPage.tsx";
 import { createRouter, RouterContext } from "@/shared/router.tsx";
 import { HOME_ROUTE, LOGIN_ROUTE } from "@/shared/session.ts";
 import { Button } from "@/shared/ui/Button.tsx";
@@ -20,6 +21,7 @@ interface Route {
 const routes = new Map<string, Route>([
   [HOME_ROUTE, { page: HomePage, header: true }],
   [LOGIN_ROUTE, { page: LoginPage, header: false }],
+  [RELEASE_NOTES_ROUTE, { page: ReleaseNotesPage, header: true }],
 ]);
 
 const notFound: Route = { page: NotFoundPage, header: true };

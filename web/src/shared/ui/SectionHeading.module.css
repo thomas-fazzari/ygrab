@@ -11,7 +11,7 @@
     font: var(--weight-bold) var(--text-heading);
   }
 
-  .count {
+  .detail {
     color: var(--color-text-helper);
     font: var(--weight-regular) var(--text-label);
     font-variant-numeric: tabular-nums;

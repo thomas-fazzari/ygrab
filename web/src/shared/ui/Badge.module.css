@@ -1,0 +1,23 @@
+@layer components {
+  .badge {
+    color: var(--color-text-helper);
+    font: var(--weight-regular) var(--text-label);
+    line-height: var(--line-body);
+    white-space: nowrap;
+  }
+
+  .badge:not([data-tone="quiet"]) {
+    padding-inline: var(--space-2);
+    border-radius: var(--radius-small);
+    background: var(--color-layer-2);
+    color: var(--color-text);
+  }
+
+  .badge[data-tone="done"] {
+    background: var(--color-layer-3);
+  }
+
+  .badge[data-tone="error"] {
+    color: var(--color-error);
+  }
+}

@@ -82,7 +82,7 @@ function JobSection(props: JobSectionProps) {
   return (
     <Show when={props.jobs.length > 0 || props.pinned === true}>
       <section>
-        <SectionHeading title={props.title} count={props.count} aside={props.aside} />
+        <SectionHeading title={props.title} detail={props.count} aside={props.aside} />
         <div class={styles.cards}>
           <For each={props.jobs}>{props.card}</For>
         </div>
