@@ -14,8 +14,8 @@ import styles from "./HomePage.module.css";
 import { JobCard } from "./JobCard.tsx";
 import { applyEvent, emptyFeed } from "./jobFeed.ts";
 import type { JobFeed } from "./jobFeed.ts";
-import { activeJobs, isQueued, recentJobs } from "./jobView.ts";
-import type { QueueContext } from "./jobView.ts";
+import { activeJobs, isQueued, originalOf, recentJobs } from "./jobView.ts";
+import type { CardContext } from "./jobView.ts";
 
 const watchFeed = () => scan<ApiEvent, JobFeed>(apiEvents(), emptyFeed, applyEvent);
 
@@ -33,11 +33,12 @@ export function HomePage() {
   const recent = createMemo(() => recentJobs(feed.jobs));
   const existing = createMemo(() => feed.jobs.filter((job) => job.id === existingId()));
 
-  const queueOf = (job: Job): QueueContext => ({
+  const contextOf = (job: Job): CardContext => ({
     ahead: queued().indexOf(job),
     paused: cooldownUntil() !== null,
+    original: originalOf(feed.jobs, job),
   });
-  const card = (job: Job) => <JobCard job={job} queue={queueOf(job)} />;
+  const card = (job: Job) => <JobCard job={job} context={contextOf(job)} />;
 
   return (
     <>

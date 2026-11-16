@@ -20,6 +20,7 @@ export const ENRICHMENT_FAILURES = ["no_match", "unreachable", "provider_error"]
 const IdSchema = v.pipe(v.string(), v.uuid());
 const TimestampSchema = v.pipe(v.string(), v.isoTimestamp());
 const NullableTextSchema = v.nullable(v.string());
+const UrlSchema = v.pipe(v.string(), v.url());
 
 export type JobId = v.InferOutput<typeof IdSchema>;
 
@@ -44,15 +45,18 @@ export type Track = v.InferOutput<typeof TrackSchema>;
 
 export const JobSchema = v.object({
   id: IdSchema,
-  url: v.pipe(v.string(), v.url()),
+  url: UrlSchema,
   mode: JobModeSchema,
   quality: v.nullable(VideoQualitySchema),
   state: JobStateSchema,
   reason: NullableTextSchema,
+  retryAt: v.nullable(TimestampSchema),
+  duplicateOf: v.nullable(IdSchema),
   createdAt: TimestampSchema,
   finishedAt: v.nullable(TimestampSchema),
   title: NullableTextSchema,
   artists: v.array(v.string()),
+  coverUrl: v.nullable(UrlSchema),
   fileName: NullableTextSchema,
   enrichmentFailure: v.nullable(EnrichmentFailureSchema),
   percent: v.pipe(v.number(), v.integer()),

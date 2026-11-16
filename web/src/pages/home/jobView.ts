@@ -1,6 +1,7 @@
 import { match, P } from "ts-pattern";
 
 import type { Job, VideoQuality } from "@/shared/api/schemas.ts";
+import { formatClock } from "@/shared/clock.ts";
 
 type JobState = Job["state"];
 
@@ -12,9 +13,13 @@ export type StateLine =
   | { readonly kind: "error"; readonly text: string }
   | { readonly kind: "progress"; readonly percent: number; readonly label: string };
 
-export interface QueueContext {
+/** What a card needs to know about the other jobs. */
+export interface CardContext {
+  /** The number of queued jobs that run before this one. */
   readonly ahead: number;
   readonly paused: boolean;
+  /** The name of the job that a skipped job duplicates, while the page holds it. */
+  readonly original: string | null;
 }
 
 export const QUALITY_LABELS: Readonly<Record<VideoQuality, string>> = {
@@ -91,6 +96,9 @@ export const siteOf = (job: Job) =>
   new URL(job.url).hostname === YOUTUBE_MUSIC ? "YouTube Music" : "YouTube";
 
 export function coverOf(job: Job) {
+  if (job.coverUrl !== null) {
+    return job.coverUrl;
+  }
   const videoId = videoIdOf(job.url);
   return videoId === null
     ? null
@@ -104,6 +112,12 @@ export function titleOf(job: Job) {
 }
 
 export const nameOf = (job: Job) => titleOf(job) ?? displayLink(job.url);
+
+/** Returns the name of the job that `job` duplicates, or null when `jobs` lacks it. */
+export function originalOf(jobs: readonly Job[], job: Job) {
+  const original = jobs.find((other) => other.id === job.duplicateOf);
+  return original === undefined ? null : nameOf(original);
+}
 
 export const doneTracks = (job: Job) => job.tracks.filter((track) => track.state === "done").length;
 
@@ -169,8 +183,8 @@ function counterOf(job: Job, current: number) {
 
 const positionText = (ahead: number) => (ahead === 0 ? "next" : `after ${plural(ahead, "job")}`);
 
-function queuedLine(job: Job, queue: QueueContext): StateLine {
-  const where = queue.paused ? "paused" : positionText(queue.ahead);
+function queuedLine(job: Job, context: CardContext): StateLine {
+  const where = context.paused ? "paused" : positionText(context.ahead);
   if (job.percent === 0 && doneTracks(job) === 0) {
     return { kind: "text", text: where };
   }
@@ -181,16 +195,22 @@ function queuedLine(job: Job, queue: QueueContext): StateLine {
   };
 }
 
-export const stateLineOf = (job: Job, queue: QueueContext) =>
+const waitingText = (job: Job) =>
+  job.retryAt === null ? "retrying soon" : `retries at ${formatClock(job.retryAt)}`;
+
+const skippedText = (context: CardContext) =>
+  context.original === null ? "already grabbed" : `already in ${context.original}`;
+
+export const stateLineOf = (job: Job, context: CardContext) =>
   match<JobState, StateLine>(job.state)
-    .with("queued", () => queuedLine(job, queue))
+    .with("queued", () => queuedLine(job, context))
     .with("resolving", () => ({ kind: "text", text: new URL(job.url).hostname }))
     .with("downloading", () => ({
       kind: "progress",
       percent: job.percent,
       label: counterOf(job, currentPosition(job)),
     }))
-    .with("waiting", () => ({ kind: "text", text: job.reason ?? "retrying soon" }))
+    .with("waiting", () => ({ kind: "text", text: waitingText(job) }))
     .with("packaging", () => ({ kind: "progress", percent: FULL_PERCENT, label: "packaging" }))
     .with("ready", () => ({ kind: "none" }))
     .with("incomplete", () => ({
@@ -198,6 +218,6 @@ export const stateLineOf = (job: Job, queue: QueueContext) =>
       text: `${plural(failedTracks(job), "track")} missing`,
     }))
     .with("failed", () => ({ kind: "error", text: job.reason ?? "failed" }))
-    .with("skipped", () => ({ kind: "text", text: "already grabbed" }))
+    .with("skipped", () => ({ kind: "text", text: skippedText(context) }))
     .with("expired", () => ({ kind: "text", text: "files deleted" }))
     .exhaustive();

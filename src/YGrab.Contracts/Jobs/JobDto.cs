@@ -11,8 +11,11 @@ namespace YGrab.Contracts.Jobs;
 /// </summary>
 /// <param name="Quality">The resolution cap of a video job, and null for an audio job.</param>
 /// <param name="Reason">Why the job waits, failed or was skipped.</param>
+/// <param name="RetryAt">When a waiting job tries again.</param>
+/// <param name="DuplicateOf">The job that already grabbed the link of a skipped job.</param>
 /// <param name="Title">The album, the track or the video, once the job knows it.</param>
 /// <param name="Artists">The artists of the release, or the channel of a video.</param>
+/// <param name="CoverUrl">The cover of the release, once the job knows it.</param>
 /// <param name="FileName">The name that a download saves, once the job is ready.</param>
 /// <param name="Percent">The progress from 0 to 100.</param>
 /// <param name="CurrentTrack">The number of the track that the job downloads next.</param>
@@ -23,10 +26,13 @@ public sealed record JobDto(
     VideoQualityCode? Quality,
     JobStateCode State,
     string? Reason,
+    DateTimeOffset? RetryAt,
+    Guid? DuplicateOf,
     DateTimeOffset CreatedAt,
     DateTimeOffset? FinishedAt,
     string? Title,
     ImmutableArray<string> Artists,
+    Uri? CoverUrl,
     string? FileName,
     EnrichmentFailureCode? EnrichmentFailure,
     int Percent,

@@ -17,11 +17,11 @@ import {
   stateLineOf,
   titleOf,
 } from "./jobView.ts";
-import type { QueueContext, StateLine } from "./jobView.ts";
+import type { CardContext, StateLine } from "./jobView.ts";
 
 interface JobCardProps {
   readonly job: Job;
-  readonly queue: QueueContext;
+  readonly context: CardContext;
 }
 
 const NO_TRACK_LIST: ReadonlySet<Job["state"]> = new Set(["expired", "skipped"]);
@@ -37,7 +37,7 @@ export function JobCard(props: JobCardProps) {
     const current = failure();
     return current?.state === props.job.state
       ? { kind: "error", text: current.text }
-      : stateLineOf(props.job, props.queue);
+      : stateLineOf(props.job, props.context);
   });
 
   return (
