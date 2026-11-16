@@ -1,7 +1,7 @@
 import { match, P } from "ts-pattern";
 
 import type { Job, VideoQuality } from "@/shared/api/schemas.ts";
-import { formatClock } from "@/shared/clock.ts";
+import { formatClock, formatRelative } from "@/shared/clock.ts";
 
 type JobState = Job["state"];
 
@@ -20,6 +20,8 @@ export interface CardContext {
   readonly paused: boolean;
   /** The name of the job that a skipped job duplicates, while the page holds it. */
   readonly original: string | null;
+  /** The time in milliseconds, for the relative times. */
+  readonly now: number;
 }
 
 export const QUALITY_LABELS: Readonly<Record<VideoQuality, string>> = {
@@ -198,6 +200,19 @@ function queuedLine(job: Job, context: CardContext): StateLine {
 const waitingText = (job: Job) =>
   job.retryAt === null ? "retrying soon" : `retries at ${formatClock(job.retryAt)}`;
 
+const readyLine = (job: Job, context: CardContext): StateLine =>
+  job.expiresAt === null
+    ? { kind: "none" }
+    : { kind: "text", text: `expires ${formatRelative(job.expiresAt, context.now)}` };
+
+// A longer retention set after the sweep moves the expiry past the deletion
+function deletedText(job: Job, context: CardContext) {
+  if (job.expiresAt === null || Date.parse(job.expiresAt) > context.now) {
+    return "files deleted";
+  }
+  return `files deleted ${formatRelative(job.expiresAt, context.now)}`;
+}
+
 const skippedText = (context: CardContext) =>
   context.original === null ? "already grabbed" : `already in ${context.original}`;
 
@@ -212,12 +227,12 @@ export const stateLineOf = (job: Job, context: CardContext) =>
     }))
     .with("waiting", () => ({ kind: "text", text: waitingText(job) }))
     .with("packaging", () => ({ kind: "progress", percent: FULL_PERCENT, label: "packaging" }))
-    .with("ready", () => ({ kind: "none" }))
+    .with("ready", () => readyLine(job, context))
     .with("incomplete", () => ({
       kind: "error",
       text: `${plural(failedTracks(job), "track")} missing`,
     }))
     .with("failed", () => ({ kind: "error", text: job.reason ?? "failed" }))
     .with("skipped", () => ({ kind: "text", text: skippedText(context) }))
-    .with("expired", () => ({ kind: "text", text: "files deleted" }))
+    .with("expired", () => ({ kind: "text", text: deletedText(job, context) }))
     .exhaustive();

@@ -12,7 +12,7 @@ internal static class JobMappings
 {
     extension(Job job)
     {
-        public JobDto ToDto() =>
+        public JobDto ToDto(Retention retention) =>
             new(
                 job.Id,
                 job.Url,
@@ -24,6 +24,7 @@ internal static class JobMappings
                 (job.State as JobState.Skipped)?.DuplicateOf,
                 job.CreatedAt,
                 job.FinishedAt,
+                retention.ExpiresAt(job),
                 job.Release?.Title ?? job.KeptVideo?.Title,
                 ArtistsOf(job),
                 job.Release?.CoverUrl,

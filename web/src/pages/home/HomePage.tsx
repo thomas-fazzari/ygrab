@@ -37,6 +37,7 @@ export function HomePage() {
     ahead: queued().indexOf(job),
     paused: cooldownUntil() !== null,
     original: originalOf(feed.jobs, job),
+    now: now(),
   });
   const card = (job: Job) => <JobCard job={job} context={contextOf(job)} />;
 

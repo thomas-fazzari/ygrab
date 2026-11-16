@@ -126,6 +126,7 @@ internal static class Samples
             DuplicateOf: null,
             DateTimeOffset.UnixEpoch,
             FinishedAt: null,
+            ExpiresAt: null,
             title,
             [],
             CoverUrl: null,

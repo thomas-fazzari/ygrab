@@ -32,6 +32,7 @@ internal static class EventsEndpoints
         ChangeFeed feed,
         IQueryHandler<ListJobs.Query, ListJobs.Outcome> listJobs,
         IQueryHandler<GetCooldown.Query, Cooldown> getCooldown,
+        IRetentionSource retention,
         IHostApplicationLifetime lifetime,
         TimeProvider timeProvider,
         HttpResponse response,
@@ -42,6 +43,7 @@ internal static class EventsEndpoints
                 feed,
                 listJobs,
                 getCooldown,
+                retention,
                 lifetime,
                 timeProvider,
                 response,
@@ -55,6 +57,7 @@ internal static class EventsEndpoints
         ChangeFeed feed,
         IQueryHandler<ListJobs.Query, ListJobs.Outcome> listJobs,
         IQueryHandler<GetCooldown.Query, Cooldown> getCooldown,
+        IRetentionSource retention,
         IHostApplicationLifetime lifetime,
         TimeProvider timeProvider,
         HttpResponse response,
@@ -81,7 +84,7 @@ internal static class EventsEndpoints
         yield return new SseItem<string>(
             JsonSerializer.Serialize(
                 new SnapshotDto(
-                    ImmutableArray.CreateRange(jobs, job => job.ToDto()),
+                    ImmutableArray.CreateRange(jobs, job => job.ToDto(retention.Current)),
                     cooldown.ToDto()
                 ),
                 ApiJsonContext.Default.SnapshotDto
@@ -121,18 +124,21 @@ internal static class EventsEndpoints
             while (subscription.TryRead(out var change))
             {
                 changedSinceTick = true;
-                yield return ToItem(change);
+                yield return ToItem(change, retention.Current);
             }
 
             changes = subscription.WaitToReadAsync(cancellationToken).AsTask();
         }
     }
 
-    private static SseItem<string> ToItem(Change change) =>
+    private static SseItem<string> ToItem(Change change, Retention retention) =>
         change switch
         {
             JobChanged changed => new(
-                JsonSerializer.Serialize(changed.Job.ToDto(), ApiJsonContext.Default.JobDto),
+                JsonSerializer.Serialize(
+                    changed.Job.ToDto(retention),
+                    ApiJsonContext.Default.JobDto
+                ),
                 EventNames.Job
             ),
             JobRemoved removed => new(

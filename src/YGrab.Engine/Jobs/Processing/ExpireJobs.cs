@@ -11,9 +11,6 @@ namespace YGrab.Engine.Jobs;
 /// </summary>
 /// <remarks>
 /// <para>
-/// A video job has its own retention.
-/// </para>
-/// <para>
 /// A ready or incomplete job becomes expired and stays in the history, without its file.
 /// </para>
 /// <para>
@@ -28,9 +25,7 @@ namespace YGrab.Engine.Jobs;
 /// </remarks>
 public static partial class ExpireJobs
 {
-    /// <param name="Retention">How long a finished audio job keeps its folder.</param>
-    /// <param name="VideoRetention">How long a finished video job keeps its folder.</param>
-    public sealed record Command(TimeSpan Retention, TimeSpan VideoRetention);
+    public sealed record Command(Retention Retention);
 
     internal sealed partial class Handler(
         JobRegistry jobs,
@@ -67,13 +62,8 @@ public static partial class ExpireJobs
             return new Done();
         }
 
-        private static bool IsDue(Job job, Command command, DateTimeOffset now)
-        {
-            var retention =
-                job.Request is JobRequest.Video ? command.VideoRetention : command.Retention;
-            return job.State is JobState.Ready or JobState.Incomplete or JobState.Failed
-                && job.FinishedAt < now - retention;
-        }
+        private static bool IsDue(Job job, Command command, DateTimeOffset now) =>
+            job.State is not JobState.Expired && command.Retention.ExpiresAt(job) < now;
 
         // The folder goes first, so a failed delete leaves the job to the next sweep
         private async ValueTask ExpireAsync(

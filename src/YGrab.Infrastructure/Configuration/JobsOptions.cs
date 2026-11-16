@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 using System.ComponentModel.DataAnnotations;
+using YGrab.Domain;
 
 namespace YGrab.Infrastructure.Configuration;
 
@@ -34,9 +35,8 @@ public sealed class JobsOptions
     [Range(1, MaxRetentionDays)]
     public int VideoRetentionDays { get; set; } = 2;
 
-    internal TimeSpan Retention => TimeSpan.FromDays(RetentionDays);
-
-    internal TimeSpan VideoRetention => TimeSpan.FromDays(VideoRetentionDays);
+    internal Retention Retention =>
+        new(TimeSpan.FromDays(RetentionDays), TimeSpan.FromDays(VideoRetentionDays));
 }
 
 [OptionsValidator]

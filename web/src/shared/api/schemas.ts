@@ -54,6 +54,7 @@ export const JobSchema = v.object({
   duplicateOf: v.nullable(IdSchema),
   createdAt: TimestampSchema,
   finishedAt: v.nullable(TimestampSchema),
+  expiresAt: v.nullable(TimestampSchema),
   title: NullableTextSchema,
   artists: v.array(v.string()),
   coverUrl: v.nullable(UrlSchema),

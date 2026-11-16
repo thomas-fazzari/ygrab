@@ -13,6 +13,7 @@ namespace YGrab.Contracts.Jobs;
 /// <param name="Reason">Why the job waits, failed or was skipped.</param>
 /// <param name="RetryAt">When a waiting job tries again.</param>
 /// <param name="DuplicateOf">The job that already grabbed the link of a skipped job.</param>
+/// <param name="ExpiresAt">When the job loses its files under the current retention, and null for a job that keeps none.</param>
 /// <param name="Title">The album, the track or the video, once the job knows it.</param>
 /// <param name="Artists">The artists of the release, or the channel of a video.</param>
 /// <param name="CoverUrl">The cover of the release, once the job knows it.</param>
@@ -30,6 +31,7 @@ public sealed record JobDto(
     Guid? DuplicateOf,
     DateTimeOffset CreatedAt,
     DateTimeOffset? FinishedAt,
+    DateTimeOffset? ExpiresAt,
     string? Title,
     ImmutableArray<string> Artists,
     Uri? CoverUrl,

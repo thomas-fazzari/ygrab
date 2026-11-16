@@ -67,6 +67,7 @@ public static class YGrabInfrastructureServiceCollectionExtensions
                 })
                 .AddStandardResilienceHandler(RetryExceptTooManyRequests);
             services.AddSingleton(typeof(LastValidOptions<>));
+            services.AddSingleton<IRetentionSource, OptionsRetentionSource>();
 
             // Hosts start services in order and stop them in reverse, so the runs stop before the
             // writer that they save through

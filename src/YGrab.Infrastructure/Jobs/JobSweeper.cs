@@ -3,7 +3,6 @@
 
 using YGrab.Engine;
 using YGrab.Engine.Jobs;
-using YGrab.Infrastructure.Configuration;
 
 namespace YGrab.Infrastructure.Jobs;
 
@@ -12,7 +11,7 @@ namespace YGrab.Infrastructure.Jobs;
 /// </summary>
 internal sealed partial class JobSweeper(
     ICommandHandler<ExpireJobs.Command, Done> expireJobs,
-    LastValidOptions<JobsOptions> options,
+    IRetentionSource retention,
     TimeProvider timeProvider,
     ILogger<JobSweeper> logger
 ) : BackgroundLoop
@@ -33,7 +32,7 @@ internal sealed partial class JobSweeper(
         try
         {
             await expireJobs.HandleAsync(
-                new ExpireJobs.Command(options.Current.Retention, options.Current.VideoRetention),
+                new ExpireJobs.Command(retention.Current),
                 cancellationToken
             );
         }
