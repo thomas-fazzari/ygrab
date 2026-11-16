@@ -1,0 +1,30 @@
+@layer components {
+  .column {
+    max-inline-size: calc(var(--column-width) + 2 * var(--space-5));
+    margin-inline: auto;
+    padding-block-end: var(--space-10);
+    padding-inline: var(--space-5);
+  }
+
+  .crash {
+    margin-block-start: var(--space-4);
+    color: var(--color-error);
+    overflow-wrap: anywhere;
+  }
+
+  .retry {
+    margin-block-start: var(--space-5);
+    block-size: var(--control-height);
+    padding-inline: var(--space-4);
+    border: 0;
+    border-radius: var(--radius);
+    background: var(--color-layer-1);
+    color: var(--color-text-secondary);
+    cursor: pointer;
+  }
+
+  .retry:hover {
+    background: var(--color-layer-2);
+    color: var(--color-text);
+  }
+}

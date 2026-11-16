@@ -1,0 +1,6 @@
+@layer components {
+  .title {
+    margin-block-start: var(--space-7);
+    font: var(--weight-bold) var(--text-title);
+  }
+}

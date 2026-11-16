@@ -1,0 +1,49 @@
+@layer base {
+  *,
+  ::before,
+  ::after {
+    box-sizing: border-box;
+    margin: 0;
+  }
+
+  body {
+    background: var(--color-background);
+    color: var(--color-text);
+    font: var(--weight-medium) var(--text-body);
+  }
+
+  button,
+  input,
+  select,
+  code {
+    color: inherit;
+    font: inherit;
+  }
+
+  a {
+    color: inherit;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+  }
+
+  /* unplugin-icons puts this class on every icon */
+  .icon {
+    flex-shrink: 0;
+    inline-size: var(--icon-size);
+    block-size: var(--icon-size);
+  }
+}
+
+@layer utilities {
+  .visually-hidden {
+    position: absolute;
+    overflow: hidden;
+    inline-size: 1px;
+    block-size: 1px;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}

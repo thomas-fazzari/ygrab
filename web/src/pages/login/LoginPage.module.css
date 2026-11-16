@@ -1,0 +1,18 @@
+@layer components {
+  .page {
+    max-inline-size: var(--form-width);
+    margin-inline: auto;
+    padding-block-start: var(--space-10);
+  }
+
+  .failure {
+    margin-block-start: var(--space-3);
+    color: var(--color-error);
+  }
+
+  .help {
+    margin-block-start: var(--space-4);
+    color: var(--color-text-helper);
+    font-weight: var(--weight-regular);
+  }
+}

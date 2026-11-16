@@ -8,11 +8,16 @@ import {
   NoContentSchema,
   parseJsonWith,
   ProblemSchema,
+  SessionSchema,
   StartedJobSchema,
 } from "./schemas.ts";
 import type { JobId, LoginRequest, Problem, StartJobRequest } from "./schemas.ts";
+import { redirectToLogin } from "../session.ts";
 
 export const API_PREFIX = "/api";
+export const HTTP_UNAUTHORIZED = 401;
+
+const LOGIN_PATH = "/login";
 
 export type ApiResult<TValue> =
   | { readonly kind: "ok"; readonly value: TValue }
@@ -57,7 +62,7 @@ function readProblem(text: string): Problem {
  *
  * An error status or an unreachable host is a result. An answer that does not match `schema`
  * is a contract bug and throws a `ValiError`. An answer without a body reads as JSON `null`,
- * which `NoContentSchema` matches.
+ * which `NoContentSchema` matches. A 401 outside the login loads the login page.
  */
 export async function request<TSchema extends v.GenericSchema>(
   method: HttpMethod,
@@ -66,6 +71,9 @@ export async function request<TSchema extends v.GenericSchema>(
   body?: JsonBody,
 ): Promise<ApiResult<v.InferOutput<TSchema>>> {
   const reply = await send(method, path, body);
+  if (reply?.status === HTTP_UNAUTHORIZED && path !== LOGIN_PATH) {
+    redirectToLogin();
+  }
   return match<Reply | undefined, ApiResult<v.InferOutput<TSchema>>>(reply)
     .with(undefined, () => ({ kind: "unreachable" }))
     .with({ ok: false }, ({ status, text }) => ({
@@ -78,8 +86,9 @@ export async function request<TSchema extends v.GenericSchema>(
     .exhaustive();
 }
 
-export const login = (body: LoginRequest) => request("POST", "/login", NoContentSchema, body);
+export const login = (body: LoginRequest) => request("POST", LOGIN_PATH, NoContentSchema, body);
 export const logout = () => request("POST", "/logout", NoContentSchema);
+export const getSession = () => request("GET", "/session", SessionSchema);
 export const startJob = (body: StartJobRequest) => request("POST", "/jobs", StartedJobSchema, body);
 export const listJobs = (limit?: number) =>
   request("GET", limit === undefined ? "/jobs" : `/jobs?limit=${limit}`, JobsSchema);

@@ -85,6 +85,9 @@ export type Snapshot = v.InferOutput<typeof SnapshotSchema>;
 export const LoginRequestSchema = v.object({ token: v.string() });
 export type LoginRequest = v.InferOutput<typeof LoginRequestSchema>;
 
+export const SessionSchema = v.object({ authEnabled: v.boolean() });
+export type Session = v.InferOutput<typeof SessionSchema>;
+
 export const NoContentSchema = v.null();
 
 export const ProblemSchema = v.object({

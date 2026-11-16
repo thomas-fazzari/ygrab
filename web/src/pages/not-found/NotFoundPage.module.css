@@ -1,0 +1,6 @@
+@layer components {
+  .text {
+    margin-block-start: var(--space-4);
+    color: var(--color-text-secondary);
+  }
+}

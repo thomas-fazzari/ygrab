@@ -23,5 +23,6 @@ namespace YGrab.Contracts;
 [JsonSerializable(typeof(SnapshotDto))]
 [JsonSerializable(typeof(JobRemovedDto))]
 [JsonSerializable(typeof(LoginRequest))]
+[JsonSerializable(typeof(SessionDto))]
 [JsonSerializable(typeof(ProblemBody))]
 public sealed partial class ApiJsonContext : JsonSerializerContext;
