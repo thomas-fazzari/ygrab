@@ -25,7 +25,11 @@ public sealed class AuthOptions
     internal const int MinTokenLength = 16;
 
     [MinLength(MinTokenLength)]
-    public string? Token { get; set; }
+    public string? Token
+    {
+        get;
+        set => field = string.IsNullOrWhiteSpace(value) ? null : value;
+    }
 
     public bool Disabled { get; set; }
 }

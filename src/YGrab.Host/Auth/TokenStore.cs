@@ -34,7 +34,7 @@ internal sealed partial class TokenStore(
     /// </summary>
     public void Initialize()
     {
-        if (Configured() is null)
+        if (options.CurrentValue.Token is null)
         {
             Volatile.Write(ref _generated, LoadOrCreate());
         }
@@ -59,10 +59,7 @@ internal sealed partial class TokenStore(
     private static bool Equal(byte[] left, byte[] right) =>
         CryptographicOperations.FixedTimeEquals(left, right);
 
-    private string? Configured() =>
-        options.CurrentValue.Token is { } token && !string.IsNullOrWhiteSpace(token) ? token : null;
-
-    private string? Current() => Configured() ?? Volatile.Read(ref _generated);
+    private string? Current() => options.CurrentValue.Token ?? Volatile.Read(ref _generated);
 
     private string LoadOrCreate()
     {
