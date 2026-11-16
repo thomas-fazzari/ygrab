@@ -15,11 +15,11 @@ internal sealed partial class JobSweeper(
     LastValidOptions<JobsOptions> options,
     TimeProvider timeProvider,
     ILogger<JobSweeper> logger
-) : BackgroundService
+) : BackgroundLoop
 {
     internal static readonly TimeSpan SweepInterval = TimeSpan.FromMinutes(10);
 
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    protected override async Task RunAsync(CancellationToken stoppingToken)
     {
         using var timer = new PeriodicTimer(SweepInterval, timeProvider);
         do

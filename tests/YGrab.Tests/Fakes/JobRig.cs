@@ -32,7 +32,7 @@ internal sealed class JobRig
             Time,
             NullLogger<ExpireJobs.Handler>.Instance
         );
-        Remove = new RemoveJob.Handler(Jobs, activeStep, Store, Output);
+        Remove = new RemoveJob.Handler(Jobs, activeStep, Store, Output, signal);
         Retry = new RetryJob.Handler(Jobs, Audio, Videos, Store, signal);
         Advance = new AdvanceJobs.Handler(
             Jobs,

@@ -17,11 +17,11 @@ internal sealed partial class JobRuns(
     JobSignal signal,
     TimeProvider timeProvider,
     ILogger<JobRuns> logger
-) : BackgroundService
+) : BackgroundLoop
 {
     internal static readonly TimeSpan FailureDelay = TimeSpan.FromMinutes(1);
 
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    protected override async Task RunAsync(CancellationToken stoppingToken)
     {
         while (!stoppingToken.IsCancellationRequested)
         {
@@ -45,18 +45,41 @@ internal sealed partial class JobRuns(
                 await signal.WaitAsync(cancellationToken);
                 break;
             case AdvanceJobs.WaitUntil wait:
-                var delay = wait.At - timeProvider.GetUtcNow();
-                if (delay > TimeSpan.Zero)
-                {
-                    await Task.Delay(delay, timeProvider, cancellationToken);
-                }
-
+                await WaitAsync(wait, cancellationToken);
                 break;
             case AdvanceJobs.Stepped:
                 break;
             default:
                 throw Unreachable.NullUnion();
         }
+    }
+
+    // A ring after the pause ends the wait, in case a client removed the waiting job
+    private async Task WaitAsync(AdvanceJobs.WaitUntil wait, CancellationToken cancellationToken)
+    {
+        await Task.Delay(Remaining(wait.NotBefore), timeProvider, cancellationToken);
+        var rest = Remaining(wait.At);
+        if (rest == TimeSpan.Zero)
+        {
+            return;
+        }
+
+        using var timeout = new CancellationTokenSource(rest, timeProvider);
+        using var linked = CancellationTokenSource.CreateLinkedTokenSource(
+            cancellationToken,
+            timeout.Token
+        );
+        try
+        {
+            await signal.WaitAsync(linked.Token);
+        }
+        catch (OperationCanceledException) when (timeout.IsCancellationRequested) { }
+    }
+
+    private TimeSpan Remaining(DateTimeOffset at)
+    {
+        var remaining = at - timeProvider.GetUtcNow();
+        return remaining > TimeSpan.Zero ? remaining : TimeSpan.Zero;
     }
 
     [LoggerMessage(Level = LogLevel.Error, Message = "Advancing the jobs failed")]

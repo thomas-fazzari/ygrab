@@ -40,7 +40,8 @@ public static partial class AdvanceJobs
 
     public sealed record Idle;
 
-    public sealed record WaitUntil(DateTimeOffset At);
+    /// <param name="NotBefore">The time before which no ring ends the wait.</param>
+    public sealed record WaitUntil(DateTimeOffset At, DateTimeOffset NotBefore);
 
     public sealed record Stepped;
 
@@ -70,7 +71,7 @@ public static partial class AdvanceJobs
             var now = timeProvider.GetUtcNow();
             if (cooldown.Current is { Until: { } until } active && active.IsActiveAt(now))
             {
-                return new WaitUntil(until);
+                return new WaitUntil(until, until);
             }
 
             var job = jobs.Active() ?? jobs.NextQueued();
@@ -81,7 +82,7 @@ public static partial class AdvanceJobs
 
             if (job.State is JobState.Waiting { RetryAt: var retryAt } && retryAt > now)
             {
-                return new WaitUntil(retryAt);
+                return new WaitUntil(retryAt, now);
             }
 
             // The step exists before the job is read again, so a removal either shows in the read
@@ -137,27 +138,25 @@ public static partial class AdvanceJobs
             var current = job.State is JobState.Queued or JobState.Waiting
                 ? await jobs.UpdateAsync(job.Id, next => next.Resume(now), cancellationToken)
                 : job;
-            if (current is null)
-            {
-                return new Stepped();
-            }
-
-            return current.State switch
-            {
-                JobState.Resolving when current.Request is JobRequest.Audio { Link: var link } =>
-                    await ResolveAsync(current, link, cancellationToken),
-                JobState.Downloading when current.PendingVideo is { } video =>
-                    await DownloadVideoAsync(current, video, cancellationToken),
-                JobState.Downloading when current.NextTrack is { } track => await DownloadAsync(
-                    current,
-                    track,
-                    cancellationToken
-                ),
-                JobState.Downloading => await PackageAsync(current, cancellationToken),
-                _ => throw new InvalidOperationException(
-                    $"Job {current.Id} cannot advance in state {current.State.GetType().Name}."
-                ),
-            };
+            return current is null
+                ? new Stepped()
+                : current.State switch
+                {
+                    JobState.Resolving
+                        when current.Request is JobRequest.Audio { Link: var link } =>
+                        await ResolveAsync(current, link, cancellationToken),
+                    JobState.Downloading when current.PendingVideo is { } video =>
+                        await DownloadVideoAsync(current, video, cancellationToken),
+                    JobState.Downloading when current.NextTrack is { } track => await DownloadAsync(
+                        current,
+                        track,
+                        cancellationToken
+                    ),
+                    JobState.Downloading => await PackageAsync(current, cancellationToken),
+                    _ => throw new InvalidOperationException(
+                        $"Job {current.Id} cannot advance in state {current.State.GetType().Name}."
+                    ),
+                };
         }
 
         private async ValueTask<Outcome> ResolveAsync(
@@ -346,20 +345,22 @@ public static partial class AdvanceJobs
             cooldown.Set(hit);
             await store.SaveAsync(hit, CancellationToken.None);
             LogCooldownStarted(hit.Strikes, hit.Until, failure.Reason);
-            return hit.Until is { } until ? new WaitUntil(until) : new Stepped();
+            return hit.Until is { } until ? new WaitUntil(until, until) : new Stepped();
         }
 
         private Job? Duplicate(Job job, Job resolved) =>
             jobs.Find(other => other.Id != job.Id && other.Covers(resolved));
 
         // YT sees a step after a pause, at a different time each step
-        private Outcome Pause(Job? job) =>
-            job?.State is JobState.Waiting { RetryAt: var retryAt }
-                ? new WaitUntil(retryAt)
-                : new WaitUntil(
-                    timeProvider.GetUtcNow()
-                        + TimeSpan.FromSeconds(random.Next(MinPauseSeconds, MaxPauseSeconds + 1))
-                );
+        private Outcome Pause(Job? job)
+        {
+            var pause =
+                timeProvider.GetUtcNow()
+                + TimeSpan.FromSeconds(random.Next(MinPauseSeconds, MaxPauseSeconds + 1));
+            return job?.State is JobState.Waiting { RetryAt: var retryAt }
+                ? new WaitUntil(retryAt, pause)
+                : new WaitUntil(pause, pause);
+        }
 
         [LoggerMessage(
             Level = LogLevel.Warning,

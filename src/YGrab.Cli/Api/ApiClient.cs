@@ -200,8 +200,16 @@ internal sealed class ApiClient(HttpClient http, Uri baseUrl, string token)
         }
     }
 
-    private static string Describe(HttpRequestException exception) =>
-        exception.InnerException is { } inner
-            ? $"{exception.Message} {inner.Message}"
-            : exception.Message;
+    // A socket failure repeats the message of its inner exception in its own
+    private static string Describe(HttpRequestException exception)
+    {
+        if (exception.InnerException is not { } inner)
+        {
+            return exception.Message;
+        }
+
+        return exception.Message.Contains(inner.Message, StringComparison.Ordinal)
+            ? exception.Message
+            : $"{exception.Message} {inner.Message}";
+    }
 }

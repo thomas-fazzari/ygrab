@@ -23,7 +23,7 @@ public sealed class AdvanceJobsTests
         var limited = await rig.AdvanceAsync(steps: 4);
 
         var until = TestTime.Start + Cooldown.Base;
-        limited.Value.Should().BeOfType<AdvanceJobs.WaitUntil>().Which.At.Should().Be(until);
+        limited.Value.Should().Be(new AdvanceJobs.WaitUntil(until, NotBefore: until));
         var job = rig.Jobs.List(1)[0];
         job.State.Should().BeOfType<JobState.Queued>();
         job.Tracks.Select(track => track.State)
@@ -35,13 +35,30 @@ public sealed class AdvanceJobsTests
 
         var held = await rig.AdvanceAsync(steps: 1);
 
-        held.Value.Should().BeOfType<AdvanceJobs.WaitUntil>().Which.At.Should().Be(until);
+        held.Value.Should().Be(new AdvanceJobs.WaitUntil(until, NotBefore: until));
         rig.Audio.Downloads.Should().HaveCount(3);
 
         rig.Time.Advance(Cooldown.Base);
         await rig.AdvanceAsync(steps: 1);
 
         rig.Audio.Downloads[^1].Should().Be(Samples.Video("v3"));
+    }
+
+    [Fact]
+    public async Task A_failed_download_waits_for_its_retry_and_no_ring_ends_the_pause()
+    {
+        var rig = new JobRig(Samples.Release(TrackCount));
+        rig.Audio.Script(Samples.Transient);
+        await rig.Start.HandleAsync(new StartJob.Command(Samples.AlbumUrl), Cancellation);
+
+        var failed = await rig.AdvanceAsync(steps: 2);
+
+        var wait = failed.Value.Should().BeOfType<AdvanceJobs.WaitUntil>().Subject;
+        var waiting = rig.Jobs.List(1)[0].State.Should().BeOfType<JobState.Waiting>().Subject;
+        wait.At.Should().Be(waiting.RetryAt);
+        wait.NotBefore.Should()
+            .BeOnOrAfter(TestTime.Start + TimeSpan.FromSeconds(AdvanceJobs.MinPauseSeconds))
+            .And.BeOnOrBefore(TestTime.Start + TimeSpan.FromSeconds(AdvanceJobs.MaxPauseSeconds));
     }
 
     [Fact]

@@ -28,7 +28,8 @@ public static class RemoveJob
         JobRegistry jobs,
         ActiveStep activeStep,
         IJobStore store,
-        IJobOutput output
+        IJobOutput output,
+        JobSignal signal
     ) : ICommandHandler<Command, Outcome>
     {
         public async ValueTask<Outcome> HandleAsync(
@@ -43,6 +44,7 @@ public static class RemoveJob
                 return new NotFound();
             }
 
+            signal.Ring();
             await activeStep.CancelAsync(command.Id);
             await store.DeleteAsync(command.Id, CancellationToken.None);
             output.Delete(command.Id);
