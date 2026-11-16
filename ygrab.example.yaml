@@ -1,5 +1,5 @@
 # Copy this file to ygrab.yaml in the working folder of the host (the host reloads it on change).
-# Each value below is the default, except for Logging, which hides the request logs of ASP.NET Core.
+# Each value below is the default.
 # Environment variables override this file (e.g. Storage__DataDirectory or Jobs__RetentionDays).
 
 # http://+:5000 listens on every interface, as in a container

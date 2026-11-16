@@ -1,0 +1,25 @@
+# Ignore everything by default
+*
+
+# Except the build inputs
+!/.editorconfig
+!/Directory.Build.props
+!/Directory.Packages.props
+!/global.json
+!/nuget.config
+!/mise.toml
+!/mise.lock
+!/eng/
+!/src/
+!/web/
+
+# Generated files and local settings stay ignored inside allowed dirs
+**/bin/
+**/obj/
+**/node_modules/
+**/__pycache__/
+**/.venv/
+**/.env
+**/.env.*
+src/YGrab.Host/wwwroot/
+src/YGrab.Cli/

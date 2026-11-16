@@ -7,6 +7,7 @@ using YGrab.Contracts;
 using YGrab.Contracts.Jobs;
 using YGrab.Host.Auth;
 using YGrab.Host.Events;
+using YGrab.Host.Health;
 using YGrab.Host.Jobs;
 
 namespace YGrab.Host;
@@ -22,6 +23,7 @@ internal static class EndpointExtensions
         {
             services.ConfigureHttpJsonOptions(options => ConfigureJson(options.SerializerOptions));
             services.AddProblemDetails();
+            services.AddHealthChecks();
             services.AddLoginRateLimit();
             // Host listens behind its proxy only, so it trusts the forwarded headers of any hop
             services.Configure<ForwardedHeadersOptions>(options =>
@@ -67,6 +69,7 @@ internal static class EndpointExtensions
             api.MapJobs();
             api.MapEvents();
             api.MapSession();
+            api.MapHealth();
             api.MapFallback("{**rest}", () => TypedResults.NotFound());
 
             // The fallback of the web client matches after the API fallback, which is more specific
