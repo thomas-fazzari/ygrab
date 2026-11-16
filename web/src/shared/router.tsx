@@ -59,11 +59,20 @@ type LinkProps = Omit<JSX.AnchorHTMLAttributes<HTMLAnchorElement>, "href" | "onC
   readonly href: string;
 };
 
-/** Renders an `<a>`. A plain click opens a page of the app without a page load. */
+/**
+ * Renders an `<a>`. A plain click opens a page of the app without a page load.
+ *
+ * A link to another site or with `download` stays a plain link.
+ */
 export function Link(props: LinkProps) {
   const router = useContext(RouterContext);
   const follow = (event: MouseEvent) => {
-    if (event.defaultPrevented || !isPlainClick(event) || !isOfThisSite(props.href)) {
+    if (
+      event.defaultPrevented ||
+      !isPlainClick(event) ||
+      !isOfThisSite(props.href) ||
+      props.download !== undefined
+    ) {
       return;
     }
     event.preventDefault();

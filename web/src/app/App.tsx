@@ -7,6 +7,7 @@ import { LoginPage } from "@/pages/login/LoginPage.tsx";
 import { NotFoundPage } from "@/pages/not-found/NotFoundPage.tsx";
 import { createRouter, RouterContext } from "@/shared/router.tsx";
 import { HOME_ROUTE, LOGIN_ROUTE } from "@/shared/session.ts";
+import { Button } from "@/shared/ui/Button.tsx";
 import { PageTitle } from "@/shared/ui/PageTitle.tsx";
 import styles from "./App.module.css";
 import { Header } from "./Header.tsx";
@@ -40,11 +41,11 @@ export function App() {
           <Errored
             fallback={(error, reset) => (
               <>
-                <PageTitle>Something broke</PageTitle>
+                <PageTitle>Something broke :(</PageTitle>
                 <p class={styles.crash}>{describe(error())}</p>
-                <button class={styles.retry} type="button" onClick={reset}>
-                  Try again
-                </button>
+                <div class={styles.retry}>
+                  <Button onClick={reset}>Try again</Button>
+                </div>
               </>
             )}
           >

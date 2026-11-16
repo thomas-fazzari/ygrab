@@ -38,11 +38,19 @@ run = 'dotnet publish src/YGrab.Cli --configuration Release --output artifacts/c
 
 [tasks.dev]
 description = "Runs the host and the Vite dev server, with the data in artifacts/dev and the auth off"
-run = [{ tasks = ["dev:host", "web:dev"] }]
+run = [{ tasks = ["dev:host", "dev:web"] }]
 
 [tasks."dev:host"]
-description = "Runs the host with hot reload on http://127.0.0.1:5000"
-run = "dotnet watch --project src/YGrab.Host --non-interactive"
+description = "Runs the host on http://127.0.0.1:5000"
+run = "dotnet run --project src/YGrab.Host"
+
+[tasks."dev:web"]
+description = "Starts the Vite dev server once the host of dev:host answers"
+hide = true
+run = [
+  "curl --silent --fail --output /dev/null --retry 120 --retry-delay 1 --retry-all-errors http://127.0.0.1:5000/api/health",
+  { task = "web:dev" },
+]
 
 [tasks."web:install"]
 description = "Installs the front-end dependencies from the lock file"

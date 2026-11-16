@@ -49,7 +49,7 @@ export function Header() {
           <HomeIcon />
         </IconLink>
       </nav>
-      <IconLink label="GitHub" href={REPOSITORY_URL}>
+      <IconLink label="GitHub" href={REPOSITORY_URL} newTab>
         <GitHubIcon />
       </IconLink>
       <Loading fallback={null}>

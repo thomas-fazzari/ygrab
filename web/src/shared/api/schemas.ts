@@ -29,6 +29,11 @@ export const JobStateSchema = v.picklist(JOB_STATES);
 export const TrackStateSchema = v.picklist(TRACK_STATES);
 export const EnrichmentFailureSchema = v.picklist(ENRICHMENT_FAILURES);
 
+export type JobMode = v.InferOutput<typeof JobModeSchema>;
+export type VideoQuality = v.InferOutput<typeof VideoQualitySchema>;
+
+export const DEFAULT_QUALITY: VideoQuality = "1080p";
+
 export const TrackSchema = v.object({
   number: v.pipe(v.number(), v.integer()),
   title: v.string(),

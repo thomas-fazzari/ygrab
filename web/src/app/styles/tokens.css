@@ -28,8 +28,10 @@
     --weight-regular: 400;
     --weight-medium: 500;
     --weight-bold: 600;
-    --text-label: 12px/16px var(--font-text);
-    --text-body: 14px/20px var(--font-text);
+    --line-label: 16px;
+    --line-body: 20px;
+    --text-label: 12px/var(--line-label) var(--font-text);
+    --text-body: 14px/var(--line-body) var(--font-text);
     --text-heading: 16px/22px var(--font-text);
     --text-title: 24px/32px var(--font-text);
 
@@ -42,5 +44,13 @@
     --header-height: 56px;
     --column-width: 880px;
     --form-width: 480px;
+    --dialog-width: 420px;
+    --cover-size: 64px;
+    --cover-size-small: 48px;
+    --badge-width: 100px;
+    --progress-height: 4px;
+    --track-number-width: 24px;
+    --track-row-height: calc(var(--line-label) + 2 * var(--space-2) + 1px);
+    --track-list-height: calc(10.5 * var(--track-row-height));
   }
 }

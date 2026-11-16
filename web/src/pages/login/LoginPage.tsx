@@ -1,29 +1,28 @@
 import { action, createOptimistic, createSignal, Show, useContext } from "solid-js";
-import { match, P } from "ts-pattern";
+import { match } from "ts-pattern";
+import ArrowIcon from "~icons/solar/arrow-right-linear";
 import LockIcon from "~icons/solar/lock-keyhole-minimalistic-linear";
 
 import { HTTP_UNAUTHORIZED, login } from "@/shared/api/client.ts";
 import type { ApiResult } from "@/shared/api/client.ts";
+import { failureOf } from "@/shared/api/failures.ts";
 import { RouterContext } from "@/shared/router.tsx";
 import { nextAfterLogin } from "@/shared/session.ts";
-import { Field, FieldSubmit } from "@/shared/ui/Field.tsx";
+import { Field } from "@/shared/ui/Field.tsx";
+import { IconButton } from "@/shared/ui/IconControl.tsx";
 import { Logo } from "@/shared/ui/Logo.tsx";
 import styles from "./LoginPage.module.css";
 
 const HTTP_TOO_MANY_REQUESTS = 429;
 
-const failureOf = (result: ApiResult<null>) =>
+const loginFailureOf = (result: ApiResult<null>) =>
   match(result)
-    .with({ kind: "ok" }, () => null)
     .with({ kind: "problem", status: HTTP_UNAUTHORIZED }, () => "Wrong token.")
     .with(
       { kind: "problem", status: HTTP_TOO_MANY_REQUESTS },
       () => "Too many attempts. Try again in a minute.",
     )
-    .with({ kind: "problem", problem: { title: P.string } }, ({ problem }) => problem.title)
-    .with({ kind: "problem" }, ({ status }) => `The server answered ${status}.`)
-    .with({ kind: "unreachable" }, () => "Cannot reach the server.")
-    .exhaustive();
+    .otherwise(failureOf);
 
 function createSignIn() {
   const router = useContext(RouterContext);
@@ -34,7 +33,7 @@ function createSignIn() {
     setSending(true);
     const result = await login({ token });
     yield;
-    setFailure(failureOf(result));
+    setFailure(loginFailureOf(result));
     if (result.kind === "ok") {
       router.navigate(nextAfterLogin(router.query()), { replace: true });
     }
@@ -71,7 +70,9 @@ function LoginForm() {
             setToken(event.currentTarget.value);
           }}
         />
-        <FieldSubmit label="Sign in" disabled={sending()} />
+        <IconButton type="submit" label="Sign in" main disabled={sending()}>
+          <ArrowIcon />
+        </IconButton>
       </Field>
       <Show when={failure()}>
         {(message) => (

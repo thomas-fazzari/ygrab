@@ -28,24 +28,7 @@
     color: var(--color-text-helper);
   }
 
-  .submit {
-    display: grid;
-    place-items: center;
-    inline-size: var(--control-height);
-    block-size: var(--control-height);
-    border: 0;
-    border-radius: var(--radius-small);
-    background: none;
-    color: var(--color-text);
-    cursor: pointer;
-  }
-
-  .submit:hover {
-    background: var(--color-layer-2);
-  }
-
-  .submit:disabled,
-  .field:has(input:placeholder-shown) .submit {
+  .field:has(input:placeholder-shown) [data-main] {
     color: var(--color-text-helper);
   }
 }

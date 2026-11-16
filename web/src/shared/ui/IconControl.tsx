@@ -8,17 +8,26 @@ import styles from "./IconControl.module.css";
 interface IconControlProps {
   /** Names the control, for screen readers and in its tooltip. */
   readonly label: string;
+  /** Completes the name for screen readers, such as the item that a row action acts on. */
+  readonly subject?: string;
+  /** Shows the icon in the text color, for the main action of a row. */
+  readonly main?: boolean;
   readonly children: JSX.Element;
 }
 
 interface IconButtonProps extends IconControlProps {
-  readonly onClick: () => void;
+  readonly type?: "button" | "submit";
+  readonly onClick?: () => void;
   readonly disabled?: boolean;
 }
 
 interface IconLinkProps extends IconControlProps {
   readonly href: string;
   readonly current?: boolean;
+  /** Saves the target as a file instead of opening it. */
+  readonly download?: boolean;
+  /** Opens the target in a new tab, without telling it which page linked to it. */
+  readonly newTab?: boolean;
 }
 
 /** Renders a button that shows only its icon, with its label in a tooltip. */
@@ -29,12 +38,12 @@ export function IconButton(props: IconButtonProps) {
         <TooltipTrigger
           class={styles.control}
           style={anchor}
-          type="button"
+          data-main={props.main}
+          type={props.type ?? "button"}
           disabled={props.disabled}
           onClick={props.onClick}
         >
-          {props.children}
-          <span class="visually-hidden">{props.label}</span>
+          <Content {...props} />
         </TooltipTrigger>
       )}
     </WithTooltip>
@@ -50,14 +59,28 @@ export function IconLink(props: IconLinkProps) {
           as={Link}
           class={styles.control}
           style={anchor}
+          data-main={props.main}
           href={props.href}
+          download={props.download === true ? "" : undefined}
+          target={props.newTab === true ? "_blank" : undefined}
+          rel={props.newTab === true ? "noopener noreferrer" : undefined}
           aria-current={props.current === true ? "page" : undefined}
         >
-          {props.children}
-          <span class="visually-hidden">{props.label}</span>
+          <Content {...props} />
         </TooltipTrigger>
       )}
     </WithTooltip>
+  );
+}
+
+function Content(props: IconControlProps) {
+  return (
+    <>
+      {props.children}
+      <span class="visually-hidden">
+        {props.subject === undefined ? props.label : `${props.label} ${props.subject}`}
+      </span>
+    </>
   );
 }
 

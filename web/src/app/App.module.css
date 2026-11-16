@@ -13,18 +13,7 @@
   }
 
   .retry {
+    display: flex;
     margin-block-start: var(--space-5);
-    block-size: var(--control-height);
-    padding-inline: var(--space-4);
-    border: 0;
-    border-radius: var(--radius);
-    background: var(--color-layer-1);
-    color: var(--color-text-secondary);
-    cursor: pointer;
-  }
-
-  .retry:hover {
-    background: var(--color-layer-2);
-    color: var(--color-text);
   }
 }

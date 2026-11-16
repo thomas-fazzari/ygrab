@@ -24,6 +24,10 @@
     color: var(--color-text);
   }
 
+  .control[data-main] {
+    color: var(--color-text);
+  }
+
   .control[aria-current="page"] {
     background: var(--color-layer-1);
     color: var(--color-text);

@@ -3,24 +3,39 @@ import { match } from "ts-pattern";
 import { DISCONNECTED, EventNames } from "@/shared/api/events.ts";
 import type { ApiEvent } from "@/shared/api/events.ts";
 import type { Cooldown, Job } from "@/shared/api/schemas.ts";
+import { nameOf } from "./jobView.ts";
 
 export interface JobFeed {
   readonly jobs: Job[];
   readonly cooldown: Cooldown | null;
   readonly offline: boolean;
+  /** Last state change of a job, for screen readers. */
+  readonly announcement: string;
 }
 
-export const emptyFeed: JobFeed = { jobs: [], cooldown: null, offline: false };
+export const emptyFeed: JobFeed = { jobs: [], cooldown: null, offline: false, announcement: "" };
 
 const upsert = (jobs: Job[], changed: Job) =>
   jobs.some((job) => job.id === changed.id)
     ? jobs.map((job) => (job.id === changed.id ? changed : job))
     : [changed, ...jobs];
 
+// A snapshot only repeats what the page shows, so only a job event announces anything
+function announce(feed: JobFeed, changed: Job) {
+  const previous = feed.jobs.find((job) => job.id === changed.id);
+  return previous === undefined || previous.state === changed.state
+    ? feed.announcement
+    : `${nameOf(changed)}: ${changed.state}`;
+}
+
 export function applyEvent(feed: JobFeed, event: ApiEvent): JobFeed {
   return match(event)
-    .with({ event: EventNames.snapshot }, ({ data }) => ({ ...data, offline: false }))
-    .with({ event: EventNames.job }, ({ data }) => ({ ...feed, jobs: upsert(feed.jobs, data) }))
+    .with({ event: EventNames.snapshot }, ({ data }) => ({ ...feed, ...data, offline: false }))
+    .with({ event: EventNames.job }, ({ data }) => ({
+      ...feed,
+      jobs: upsert(feed.jobs, data),
+      announcement: announce(feed, data),
+    }))
     .with({ event: EventNames.jobRemoved }, ({ data }) => ({
       ...feed,
       jobs: feed.jobs.filter((job) => job.id !== data.id),
