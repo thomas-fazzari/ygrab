@@ -3,6 +3,7 @@
 
 # Except this
 !/.gitignore
+!/.dockerignore
 !/.editorconfig
 !/.gitattributes
 !/.roslyn-bridge.json
@@ -22,6 +23,8 @@
 !/Directory.Packages.props
 !/global.json
 !/nuget.config
+!/Dockerfile
+!/compose.yaml
 
 !/.devcontainer/
 !/.devcontainer/**

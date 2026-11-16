@@ -48,6 +48,17 @@ public sealed class AuthTests
     }
 
     [Fact]
+    public async Task The_health_check_answers_without_the_token()
+    {
+        await using var factory = new HostFactory();
+        using var anonymous = factory.CreateClient();
+
+        var response = await anonymous.GetAsync(HostFactory.HealthUrl, Cancellation);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+    }
+
+    [Fact]
     public async Task A_login_cookie_opens_the_api_until_the_token_changes()
     {
         await using var factory = new HostFactory();

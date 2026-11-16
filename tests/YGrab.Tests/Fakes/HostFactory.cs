@@ -23,6 +23,7 @@ internal sealed class HostFactory : WebApplicationFactory<Program>
     public static readonly Uri JobsUrl = Relative("/api/jobs");
     public static readonly Uri EventsUrl = Relative("/api/events");
     public static readonly Uri LoginUrl = Relative("/api/login");
+    public static readonly Uri HealthUrl = Relative("/api/health");
     public static readonly Uri UnknownUrl = Relative("/api/nothing");
     public static readonly Uri UnknownRetryUrl = Relative(
         "/api/jobs/00000000-0000-0000-0000-000000000001/retry"
