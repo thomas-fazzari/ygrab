@@ -6,11 +6,13 @@ using System.Net.Http.Headers;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Http.Resilience;
+using YGrab.Engine.Diagnostics;
 using YGrab.Engine.Jobs;
 using YGrab.Infrastructure.Configuration;
 using YGrab.Infrastructure.Covers;
 using YGrab.Infrastructure.Database;
 using YGrab.Infrastructure.Deezer;
+using YGrab.Infrastructure.Diagnostics;
 using YGrab.Infrastructure.Jobs;
 using YGrab.Infrastructure.Output;
 using YGrab.Infrastructure.YtDlp;
@@ -68,6 +70,8 @@ public static class YGrabInfrastructureServiceCollectionExtensions
                 .AddStandardResilienceHandler(RetryExceptTooManyRequests);
             services.AddSingleton(typeof(LastValidOptions<>));
             services.AddSingleton<IRetentionSource, OptionsRetentionSource>();
+            services.AddSingleton<IComponentVersions, ToolVersions>();
+            services.AddSingleton<IServerUsage, ServerUsageProbe>();
 
             // Hosts start services in order and stop them in reverse, so the runs stop before the
             // writer that they save through

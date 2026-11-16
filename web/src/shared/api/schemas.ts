@@ -98,6 +98,37 @@ export type LoginRequest = v.InferOutput<typeof LoginRequestSchema>;
 export const SessionSchema = v.object({ authEnabled: v.boolean() });
 export type Session = v.InferOutput<typeof SessionSchema>;
 
+export const LOG_LEVELS = [
+  "trace",
+  "debug",
+  "information",
+  "warning",
+  "error",
+  "critical",
+] as const;
+export const LogLevelSchema = v.picklist(LOG_LEVELS);
+export type LogLevel = v.InferOutput<typeof LogLevelSchema>;
+
+export const LogEntrySchema = v.object({
+  time: TimestampSchema,
+  level: LogLevelSchema,
+  source: v.string(),
+  message: v.string(),
+});
+export type LogEntry = v.InferOutput<typeof LogEntrySchema>;
+
+export const LogEntriesSchema = v.array(LogEntrySchema);
+
+const ByteCountSchema = v.pipe(v.number(), v.integer(), v.minValue(0));
+
+export const StatusSchema = v.object({
+  startedAt: TimestampSchema,
+  components: v.array(v.object({ name: v.string(), version: NullableTextSchema })),
+  dataBytes: ByteCountSchema,
+  freeBytes: ByteCountSchema,
+});
+export type Status = v.InferOutput<typeof StatusSchema>;
+
 export const NoContentSchema = v.null();
 
 export const ProblemSchema = v.object({

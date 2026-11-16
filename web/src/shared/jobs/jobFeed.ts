@@ -1,9 +1,10 @@
 import { match } from "ts-pattern";
 
-import { DISCONNECTED, EventNames } from "@/shared/api/events.ts";
+import { apiEvents, DISCONNECTED, EventNames } from "@/shared/api/events.ts";
 import type { ApiEvent } from "@/shared/api/events.ts";
 import type { Cooldown, Job } from "@/shared/api/schemas.ts";
-import { nameOf } from "./jobView.ts";
+import { scan } from "@/shared/iterators.ts";
+import { nameOf } from "./jobNames.ts";
 
 export interface JobFeed {
   readonly jobs: Job[];
@@ -28,7 +29,7 @@ function announce(feed: JobFeed, changed: Job) {
     : `${nameOf(changed)}: ${changed.state}`;
 }
 
-export function applyEvent(feed: JobFeed, event: ApiEvent): JobFeed {
+function applyEvent(feed: JobFeed, event: ApiEvent): JobFeed {
   return match(event)
     .with({ event: EventNames.snapshot }, ({ data }) => ({ ...feed, ...data, offline: false }))
     .with({ event: EventNames.job }, ({ data }) => ({
@@ -44,3 +45,6 @@ export function applyEvent(feed: JobFeed, event: ApiEvent): JobFeed {
     .with({ event: DISCONNECTED }, () => (feed.offline ? feed : { ...feed, offline: true }))
     .exhaustive();
 }
+
+/** Folds the job events into the feed, for `createProjection`. */
+export const watchJobs = () => scan<ApiEvent, JobFeed>(apiEvents(), emptyFeed, applyEvent);

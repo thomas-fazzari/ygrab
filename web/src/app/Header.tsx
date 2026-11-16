@@ -3,7 +3,9 @@ import GitHubIcon from "~icons/simple-icons/github";
 import HomeIcon from "~icons/solar/home-linear";
 import LogoutIcon from "~icons/solar/logout-2-linear";
 import NotesIcon from "~icons/solar/document-text-linear";
+import PulseIcon from "~icons/solar/pulse-linear";
 
+import { DIAGNOSTICS_ROUTE } from "@/pages/diagnostics/DiagnosticsPage.tsx";
 import { RELEASE_NOTES_ROUTE } from "@/pages/release-notes/ReleaseNotesPage.tsx";
 import { getSession, logout } from "@/shared/api/client.ts";
 import { REPOSITORY_URL } from "@/shared/repository.ts";
@@ -56,6 +58,13 @@ export function Header() {
         current={router.path() === RELEASE_NOTES_ROUTE}
       >
         <NotesIcon />
+      </IconLink>
+      <IconLink
+        label="Diagnostics"
+        href={DIAGNOSTICS_ROUTE}
+        current={router.path() === DIAGNOSTICS_ROUTE}
+      >
+        <PulseIcon />
       </IconLink>
       <IconLink label="GitHub" href={REPOSITORY_URL} newTab>
         <GitHubIcon />

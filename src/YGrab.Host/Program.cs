@@ -3,6 +3,7 @@
 
 using YGrab.Host;
 using YGrab.Host.Auth;
+using YGrab.Host.Diagnostics;
 
 var builder = WebApplication.CreateSlimBuilder(args);
 
@@ -18,6 +19,7 @@ builder.Services.AddYGrabInfrastructure();
 builder.Services.AddYGrabPython(builder.Configuration);
 builder.Services.AddYGrabAuth();
 builder.Services.AddYGrabEndpoints();
+builder.Services.AddYGrabDiagnostics();
 
 var app = builder.Build();
 

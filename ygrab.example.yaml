@@ -9,6 +9,8 @@ Logging:
   LogLevel:
     Default: Information
     Microsoft.AspNetCore: Warning
+    System.Net.Http.HttpClient: Warning
+    Polly: Warning
 
 # A change needs a restart
 Storage:

@@ -2,6 +2,8 @@ import { match, P } from "ts-pattern";
 
 import type { Job, VideoQuality } from "@/shared/api/schemas.ts";
 import { formatClock, formatRelative } from "@/shared/clock.ts";
+import { isTrackJob, nameOf, videoIdOf } from "@/shared/jobs/jobNames.ts";
+import { isQueued, isRunning } from "@/shared/jobs/jobStates.ts";
 import type { BadgeTone } from "@/shared/ui/Badge.tsx";
 
 type JobState = Job["state"];
@@ -35,16 +37,8 @@ export const QUALITY_LABELS: Readonly<Record<VideoQuality, string>> = {
 const RECENT_LIMIT = 10;
 const FULL_PERCENT = 100;
 const COUNTER_DIGITS = 2;
-const YOUTU_BE = "youtu.be";
 const YOUTUBE_MUSIC = "music.youtube.com";
-const WWW = "www.";
 
-const RUNNING: ReadonlySet<JobState> = new Set([
-  "resolving",
-  "downloading",
-  "waiting",
-  "packaging",
-]);
 const FINISHED: ReadonlySet<JobState> = new Set([
   "ready",
   "incomplete",
@@ -52,9 +46,6 @@ const FINISHED: ReadonlySet<JobState> = new Set([
   "skipped",
   "expired",
 ]);
-
-export const isRunning = (job: Job) => RUNNING.has(job.state);
-export const isQueued = (job: Job) => job.state === "queued";
 
 export const plural = (count: number, noun: string) => `${count} ${noun}${count === 1 ? "" : "s"}`;
 
@@ -78,21 +69,6 @@ export const recentJobs = (jobs: readonly Job[]) =>
     .slice(0, RECENT_LIMIT)
     .toSorted((first, second) => Number(needsAttention(second)) - Number(needsAttention(first)));
 
-/** Returns the link without its scheme and `www.`, as a user would type it. */
-export function displayLink(url: string) {
-  const link = new URL(url);
-  const host = link.hostname.startsWith(WWW) ? link.hostname.slice(WWW.length) : link.hostname;
-  return `${host}${link.pathname}${link.search}`;
-}
-
-function videoIdOf(url: string) {
-  const link = new URL(url);
-  return link.hostname === YOUTU_BE ? link.pathname.slice(1) : link.searchParams.get("v");
-}
-
-/** A link to one track resolves to its album, so the job holds the album with one track. */
-export const isTrackJob = (job: Job) => job.mode === "audio" && videoIdOf(job.url) !== null;
-
 export const siteOf = (job: Job) =>
   new URL(job.url).hostname === YOUTUBE_MUSIC ? "YouTube Music" : "YouTube";
 
@@ -105,14 +81,6 @@ export function coverOf(job: Job) {
     ? null
     : `https://i.ytimg.com/vi/${encodeURIComponent(videoId)}/mqdefault.jpg`;
 }
-
-/** Returns the title to show, or null while the job has none and shows its link. */
-export function titleOf(job: Job) {
-  const [track] = job.tracks;
-  return isTrackJob(job) && track !== undefined ? track.title : job.title;
-}
-
-export const nameOf = (job: Job) => titleOf(job) ?? displayLink(job.url);
 
 /** Returns the name of the job that `job` duplicates, or null when `jobs` lacks it. */
 export function originalOf(jobs: readonly Job[], job: Job) {

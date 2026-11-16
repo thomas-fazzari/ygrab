@@ -3,9 +3,11 @@
 
 using CSnakes.Runtime;
 using Microsoft.Extensions.Configuration;
+using YGrab.Engine.Diagnostics;
 using YGrab.Engine.Jobs;
 using YGrab.Infrastructure.Python.Catalog;
 using YGrab.Infrastructure.Python.Configuration;
+using YGrab.Infrastructure.Python.Diagnostics;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -22,7 +24,7 @@ public static class YGrabPythonServiceCollectionExtensions
     extension(IServiceCollection services)
     {
         /// <summary>
-        /// Registers the Python environment and the catalog.
+        /// Registers the Python environment, the catalog and the versions of Python.
         /// </summary>
         /// <remarks>
         /// The environment is built before the host, so it reads its options from
@@ -59,6 +61,7 @@ public static class YGrabPythonServiceCollectionExtensions
                 .WithUvInstaller(requirements);
 
             services.AddSingleton<ICatalog, YtMusicCatalog>();
+            services.AddSingleton<IComponentVersions, PythonVersions>();
             return services;
         }
     }

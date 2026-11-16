@@ -2,25 +2,21 @@ import type { JSX } from "@solidjs/web";
 import { createMemo, createProjection, createSignal, For, Loading, Show } from "solid-js";
 import ClockIcon from "~icons/solar/clock-circle-linear";
 
-import { apiEvents } from "@/shared/api/events.ts";
-import type { ApiEvent } from "@/shared/api/events.ts";
 import type { Job, JobId } from "@/shared/api/schemas.ts";
 import { createMinuteClock, formatClock } from "@/shared/clock.ts";
-import { scan } from "@/shared/iterators.ts";
+import { emptyFeed, watchJobs } from "@/shared/jobs/jobFeed.ts";
+import type { JobFeed } from "@/shared/jobs/jobFeed.ts";
+import { isQueued } from "@/shared/jobs/jobStates.ts";
 import { Logo } from "@/shared/ui/Logo.tsx";
 import { SectionHeading } from "@/shared/ui/SectionHeading.tsx";
 import { GrabForm } from "./GrabForm.tsx";
 import styles from "./HomePage.module.css";
 import { JobCard } from "./JobCard.tsx";
-import { applyEvent, emptyFeed } from "./jobFeed.ts";
-import type { JobFeed } from "./jobFeed.ts";
-import { activeJobs, isQueued, originalOf, recentJobs } from "./jobView.ts";
+import { activeJobs, originalOf, recentJobs } from "./jobView.ts";
 import type { CardContext } from "./jobView.ts";
 
-const watchFeed = () => scan<ApiEvent, JobFeed>(apiEvents(), emptyFeed, applyEvent);
-
 export function HomePage() {
-  const feed = createProjection<JobFeed>(watchFeed, emptyFeed);
+  const feed = createProjection<JobFeed>(watchJobs, emptyFeed);
   const now = createMinuteClock();
   const [existingId, setExistingId] = createSignal<JobId | null>(null);
 

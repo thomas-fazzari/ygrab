@@ -1,5 +1,5 @@
 import type { JSX } from "@solidjs/web";
-import { createUniqueId } from "solid-js";
+import { createSignal, createUniqueId } from "solid-js";
 import { Tooltip, TooltipPanel, TooltipTrigger } from "terracotta/tooltip";
 
 import { Link } from "../router.tsx";
@@ -89,11 +89,25 @@ interface WithTooltipProps {
   readonly children: (anchor: JSX.CSSProperties) => JSX.Element;
 }
 
-// Ties the tooltip to its control through a CSS anchor of its own
+// Ties the tooltip to its control through a CSS anchor of its own. Terracotta keeps the tooltip of
+// a focused control open, so leaving with the pointer closes it unless the keyboard gave the focus
 function WithTooltip(props: WithTooltipProps) {
   const anchor = { "--anchor": `--tooltip-${createUniqueId()}` };
+  const [isOpen, setOpen] = createSignal(false);
+  const closeUnlessKeyboard = (event: PointerEvent & { currentTarget: HTMLDivElement }) => {
+    if (event.currentTarget.querySelector(":focus-visible") === null) {
+      setOpen(false);
+    }
+  };
   return (
-    <Tooltip class={styles.tooltip} defaultOpen={false}>
+    <Tooltip
+      class={styles.tooltip}
+      isOpen={isOpen()}
+      onChange={(open) => {
+        setOpen(open);
+      }}
+      onPointerLeave={closeUnlessKeyboard}
+    >
       {props.children(anchor)}
       <TooltipPanel class={styles.panel} style={anchor}>
         {props.label}

@@ -5,6 +5,8 @@ import {
   CooldownSchema,
   JobRemovedSchema,
   JobSchema,
+  LogEntriesSchema,
+  LogEntrySchema,
   parseJsonWith,
   SnapshotSchema,
 } from "./schemas.ts";
@@ -17,6 +19,11 @@ export const EventNames = {
   cooldown: "cooldown",
 } as const;
 
+export const LogEventNames = {
+  snapshot: "logs",
+  entry: "log",
+} as const;
+
 export const DISCONNECTED = "disconnected";
 
 const apiEventSchemas = {
@@ -24,6 +31,11 @@ const apiEventSchemas = {
   [EventNames.job]: JobSchema,
   [EventNames.jobRemoved]: JobRemovedSchema,
   [EventNames.cooldown]: CooldownSchema,
+};
+
+const logEventSchemas = {
+  [LogEventNames.snapshot]: LogEntriesSchema,
+  [LogEventNames.entry]: LogEntrySchema,
 };
 
 const RECONNECT_DELAYS_MS: readonly number[] = [1000, 2000, 5000];
@@ -50,6 +62,7 @@ export type StreamItem<TSchemas extends EventSchemas<TSchemas>> =
   | Disconnected;
 
 export type ApiEvent = StreamItem<typeof apiEventSchemas>;
+export type LogEvent = StreamItem<typeof logEventSchemas>;
 
 type RawItem<TName extends string> =
   | { readonly kind: "message"; readonly event: TName; readonly text: string }
@@ -255,3 +268,6 @@ async function isSignedIn(): Promise<boolean> {
 
 export const apiEvents = () =>
   reconnecting(() => streamEvents(`${API_PREFIX}/events`, apiEventSchemas), isSignedIn);
+
+export const logEvents = () =>
+  reconnecting(() => streamEvents(`${API_PREFIX}/logs`, logEventSchemas), isSignedIn);

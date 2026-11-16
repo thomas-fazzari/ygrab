@@ -10,9 +10,10 @@ import type { ApiResult } from "@/shared/api/client.ts";
 import { failureOf } from "@/shared/api/failures.ts";
 import { DEFAULT_QUALITY } from "@/shared/api/schemas.ts";
 import type { Job } from "@/shared/api/schemas.ts";
+import { nameOf } from "@/shared/jobs/jobNames.ts";
 import { IconButton, IconLink } from "@/shared/ui/IconControl.tsx";
 import styles from "./JobCard.module.css";
-import { canDownload, canRetry, nameOf, removalDeletesFiles, siteOf } from "./jobView.ts";
+import { canDownload, canRetry, removalDeletesFiles, siteOf } from "./jobView.ts";
 import { askToRemove, RemoveDialog } from "./RemoveDialog.tsx";
 
 /** A failed action, shown on its card until the job leaves the state it failed in. */

@@ -2,6 +2,7 @@ import { dynamic } from "@solidjs/web";
 import { createMemo, Errored, Show } from "solid-js";
 import type { Component } from "solid-js";
 
+import { DIAGNOSTICS_ROUTE, DiagnosticsPage } from "@/pages/diagnostics/DiagnosticsPage.tsx";
 import { HomePage } from "@/pages/home/HomePage.tsx";
 import { LoginPage } from "@/pages/login/LoginPage.tsx";
 import { NotFoundPage } from "@/pages/not-found/NotFoundPage.tsx";
@@ -22,6 +23,7 @@ const routes = new Map<string, Route>([
   [HOME_ROUTE, { page: HomePage, header: true }],
   [LOGIN_ROUTE, { page: LoginPage, header: false }],
   [RELEASE_NOTES_ROUTE, { page: ReleaseNotesPage, header: true }],
+  [DIAGNOSTICS_ROUTE, { page: DiagnosticsPage, header: true }],
 ]);
 
 const notFound: Route = { page: NotFoundPage, header: true };

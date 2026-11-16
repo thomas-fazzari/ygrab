@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.StaticFiles;
 using YGrab.Contracts;
 using YGrab.Contracts.Jobs;
 using YGrab.Host.Auth;
+using YGrab.Host.Diagnostics;
 using YGrab.Host.Events;
 using YGrab.Host.Health;
 using YGrab.Host.Jobs;
@@ -76,6 +77,7 @@ internal static class EndpointExtensions
             api.AddEndpointFilter<OriginFilter>();
             api.MapJobs();
             api.MapEvents();
+            api.MapDiagnostics();
             api.MapSession();
             api.MapHealth();
             api.MapFallback("{**rest}", () => TypedResults.NotFound());

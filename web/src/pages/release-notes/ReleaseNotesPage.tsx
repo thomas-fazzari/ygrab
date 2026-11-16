@@ -2,9 +2,10 @@ import { For, Show } from "solid-js";
 
 import { commitUrl, profileUrl } from "@/shared/repository.ts";
 import { Badge } from "@/shared/ui/Badge.tsx";
+import { CURRENT_VERSION } from "@/shared/version.ts";
 import { PageTitle } from "@/shared/ui/PageTitle.tsx";
 import { SectionHeading } from "@/shared/ui/SectionHeading.tsx";
-import { CURRENT_VERSION, readReleases } from "./changelog.ts";
+import { readReleases } from "./changelog.ts";
 import type { Change, Release } from "./changelog.ts";
 import styles from "./ReleaseNotesPage.module.css";
 

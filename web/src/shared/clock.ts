@@ -24,10 +24,39 @@ export function createMinuteClock(): Accessor<number> {
   return now;
 }
 
-const clockFormat = new Intl.DateTimeFormat("en-GB", { hour: "2-digit", minute: "2-digit" });
+const formatterOf = (format: Intl.DateTimeFormat) => (timestamp: string | number) =>
+  format.format(new Date(timestamp));
+
+const CLOCK_OPTIONS = { hour: "2-digit", minute: "2-digit" } as const;
 
 /** Formats a timestamp as a 24-hour `HH:MM` in the local time zone. */
-export const formatClock = (timestamp: string) => clockFormat.format(new Date(timestamp));
+export const formatClock = formatterOf(new Intl.DateTimeFormat("en-GB", CLOCK_OPTIONS));
+
+/** Formats a timestamp as a 24-hour `HH:MM:SS` in the local time zone. */
+export const formatTime = formatterOf(
+  new Intl.DateTimeFormat("en-GB", { ...CLOCK_OPTIONS, second: "2-digit" }),
+);
+
+/** Formats a timestamp as `YYYY-MM-DD` in the local time zone. */
+export const formatDay = formatterOf(
+  new Intl.DateTimeFormat("en-CA", { year: "numeric", month: "2-digit", day: "2-digit" }),
+);
+
+/**
+ * Formats a duration as its two largest units, such as `3 d 4 h` or `4 h 12 min`.
+ *
+ * A negative duration, from a browser clock behind the server, shows as `0 min`.
+ */
+export function formatDuration(milliseconds: number) {
+  const elapsed = Math.max(0, milliseconds);
+  const days = Math.floor(elapsed / DAY_MS);
+  const hours = Math.floor((elapsed % DAY_MS) / HOUR_MS);
+  const minutes = Math.floor((elapsed % HOUR_MS) / MINUTE_MS);
+  if (days > 0) {
+    return `${days} d ${hours} h`;
+  }
+  return hours > 0 ? `${hours} h ${minutes} min` : `${minutes} min`;
+}
 
 const relativeFormat = new Intl.RelativeTimeFormat("en", { numeric: "always" });
 

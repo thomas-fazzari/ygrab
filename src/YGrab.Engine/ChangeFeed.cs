@@ -68,12 +68,10 @@ public sealed class ChangeFeed
             _channel = channel;
         }
 
-        /// <returns>False when the subscription ended and its queue is empty.</returns>
-        public ValueTask<bool> WaitToReadAsync(CancellationToken cancellationToken) =>
-            _channel.Reader.WaitToReadAsync(cancellationToken);
-
-        public bool TryRead([MaybeNullWhen(false)] out Change change) =>
-            _channel.Reader.TryRead(out change);
+        /// <summary>
+        /// Reads the changes, and completes once the subscription ended and its queue is empty.
+        /// </summary>
+        public ChannelReader<Change> Reader => _channel.Reader;
 
         public void Dispose()
         {

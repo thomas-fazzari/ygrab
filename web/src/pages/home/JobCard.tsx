@@ -3,21 +3,12 @@ import { match, P } from "ts-pattern";
 import ChevronIcon from "~icons/solar/alt-arrow-right-linear";
 
 import type { Job, Track } from "@/shared/api/schemas.ts";
+import { displayLink, isTrackJob, titleOf } from "@/shared/jobs/jobNames.ts";
 import { Badge } from "@/shared/ui/Badge.tsx";
 import { JobActions } from "./JobActions.tsx";
 import type { ActionFailure } from "./JobActions.tsx";
 import styles from "./JobCard.module.css";
-import {
-  badgeTone,
-  coverOf,
-  displayLink,
-  doneTracks,
-  isTrackJob,
-  metaOf,
-  plural,
-  stateLineOf,
-  titleOf,
-} from "./jobView.ts";
+import { badgeTone, coverOf, doneTracks, metaOf, plural, stateLineOf } from "./jobView.ts";
 import type { CardContext, StateLine } from "./jobView.ts";
 
 interface JobCardProps {

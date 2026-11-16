@@ -1,9 +1,10 @@
 import { createUniqueId } from "solid-js";
 
 import type { Job } from "@/shared/api/schemas.ts";
+import { nameOf } from "@/shared/jobs/jobNames.ts";
 import { Button } from "@/shared/ui/Button.tsx";
 import styles from "./RemoveDialog.module.css";
-import { nameOf, removalDetail } from "./jobView.ts";
+import { removalDetail } from "./jobView.ts";
 
 const REMOVE = "remove";
 

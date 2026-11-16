@@ -20,8 +20,5 @@ const ReleaseSchema = v.object({
 });
 export type Release = v.InferOutput<typeof ReleaseSchema>;
 
-/** The version of this build, from the `VERSION` argument of the image build. */
-export const CURRENT_VERSION = import.meta.env.VITE_VERSION?.replace(/^v/u, "") ?? "unreleased";
-
 /** Reads the releases that `mise run release` writes, newest first. */
 export const readReleases = () => v.parse(v.array(ReleaseSchema), changelog);

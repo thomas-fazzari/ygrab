@@ -10,6 +10,7 @@ import {
   ProblemSchema,
   SessionSchema,
   StartedJobSchema,
+  StatusSchema,
 } from "./schemas.ts";
 import type { JobId, LoginRequest, Problem, StartJobRequest } from "./schemas.ts";
 import { redirectToLogin } from "../session.ts";
@@ -96,5 +97,6 @@ export const getJob = (id: JobId) => request("GET", `/jobs/${id}`, JobSchema);
 export const retryJob = (id: JobId) => request("POST", `/jobs/${id}/retry`, NoContentSchema);
 export const removeJob = (id: JobId) => request("DELETE", `/jobs/${id}`, NoContentSchema);
 export const getCooldown = () => request("GET", "/cooldown", CooldownSchema);
+export const getStatus = () => request("GET", "/status", StatusSchema);
 
 export const jobFileUrl = (id: JobId) => `${API_PREFIX}/jobs/${id}/file`;

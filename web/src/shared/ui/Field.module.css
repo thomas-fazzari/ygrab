@@ -9,6 +9,10 @@
     color: var(--color-text-helper);
   }
 
+  .field[data-small] {
+    block-size: var(--control-height);
+  }
+
   .field:focus-within {
     border-color: var(--color-text-helper);
   }

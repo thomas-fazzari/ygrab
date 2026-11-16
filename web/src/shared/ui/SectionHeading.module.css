@@ -1,6 +1,7 @@
 @layer components {
   .heading {
     display: flex;
+    flex-wrap: wrap;
     align-items: baseline;
     gap: var(--space-3);
     margin-block-start: var(--space-9);
