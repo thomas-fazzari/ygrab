@@ -181,8 +181,7 @@ def album(
     except requests.RequestException as error:
         raise TransientError(str(error)) from error
     tracks = []
-    for position, track in available:
-        audio_id = audio_ids.get(track["videoId"], track["videoId"])
+    for (position, track), audio_id in zip(available, audio_ids, strict=True):
         if video_id is not None and video_id not in (audio_id, track["videoId"]):
             continue
         tracks.append(
@@ -215,22 +214,19 @@ def _available_tracks(found: dict[str, Any]) -> list[tuple[int, dict[str, Any]]]
 
 def _audio_video_ids(
     found: dict[str, Any], available: list[tuple[int, dict[str, Any]]]
-) -> dict[str, str]:
+) -> list[str]:
     # Album tracks can point at music videos, and the audio playlist lists the audio tracks
-    # The playlist is read only when a track needs it, and it must match the available tracks
+    # Several tracks can point at the same music video, so the match goes by position
+    own = [track["videoId"] for _, track in available]
     playlist_id = found.get("audioPlaylistId")
     if not playlist_id or not any(
         track.get("videoType") == OMV_VIDEO_TYPE for _, track in available
     ):
-        return {}
+        return own
     items = _client.get_playlist(playlist_id, limit=None)["tracks"]
     if len(items) != len(available):
-        return {}
-    return {
-        track["videoId"]: item["videoId"]
-        for (_, track), item in zip(available, items, strict=True)
-        if item.get("videoId")
-    }
+        return own
+    return [item.get("videoId") or video_id for video_id, item in zip(own, items, strict=True)]
 
 
 def _names(artists: list[dict[str, Any]] | None) -> list[str]:
