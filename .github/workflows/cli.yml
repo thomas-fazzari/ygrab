@@ -49,25 +49,7 @@ jobs:
         env:
           RID: ${{ matrix.rid }}
           TAG: ${{ inputs.version }}
-        run: |
-          version=()
-          if [[ -n "$TAG" ]]; then
-            version=("-p:Version=${TAG#v}" -p:IncludeSourceRevisionInInformationalVersion=false)
-          fi
-          dotnet publish src/YGrab.Cli --configuration Release --runtime "$RID" --output artifacts/cli "${version[@]}"
-          extension=""
-          if [[ "$RID" == win-* ]]; then
-            extension=.exe
-          fi
-          binary="artifacts/release/ygrab-$RID$extension"
-          mkdir -p artifacts/release
-          cp "artifacts/cli/ygrab$extension" "$binary"
-          printed="$("$binary" --version)"
-          echo "$printed"
-          if [[ -n "$TAG" && "$printed" != "${TAG#v}" ]]; then
-            echo "The binary prints $printed instead of ${TAG#v}." >&2
-            exit 1
-          fi
+        run: eng/tasks/ci/publish-cli.sh "$RID" "$TAG"
       - uses: actions/upload-artifact@v7.0.2
         if: inputs.version != ''
         with:

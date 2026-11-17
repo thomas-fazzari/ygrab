@@ -50,10 +50,4 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ github.ref_name }}
           IMAGE: ghcr.io/${{ github.repository }}
-        run: |
-          (cd artifacts/release && sha256sum ygrab-* > SHA256SUMS)
-          {
-            git cliff --current --strip all
-            printf '\nImage: %s\n' "\`$IMAGE:${TAG#v}\`"
-          } > "$RUNNER_TEMP/notes.md"
-          gh release create "$TAG" artifacts/release/* --verify-tag --title "$TAG" --notes-file "$RUNNER_TEMP/notes.md"
+        run: eng/tasks/ci/publish-release.sh "$TAG" "$IMAGE"
