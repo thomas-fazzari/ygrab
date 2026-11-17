@@ -12,7 +12,7 @@ import CheckIcon from "~icons/solar/check-linear";
 import buttonStyles from "./Button.module.css";
 import choiceStyles from "./Choices.module.css";
 import { widestOf } from "./Choices.tsx";
-import { createListboxDisclosure } from "./listboxDisclosure.ts";
+import { createDisclosure } from "./disclosure.ts";
 import styles from "./MultiSelect.module.css";
 
 interface MultiSelectProps<TValue extends string> {
@@ -57,7 +57,7 @@ function summariesOf<TValue extends string>(props: MultiSelectProps<TValue>) {
  */
 export function MultiSelect<TValue extends string>(props: MultiSelectProps<TValue>) {
   const anchor = { "--anchor": `--select-${createUniqueId()}` };
-  const disclosure = createListboxDisclosure();
+  const disclosure = createDisclosure();
   return (
     <Listbox
       ref={disclosure.ref}

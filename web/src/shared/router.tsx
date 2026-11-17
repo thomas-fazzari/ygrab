@@ -45,9 +45,26 @@ export function createRouter(): Router {
         history.pushState(null, "", to);
       }
       sync();
-      window.scrollTo(0, 0);
+      if (location.hash === "") {
+        window.scrollTo(0, 0);
+        return;
+      }
+      // A frame later, a popup that the click closed has given the focus back to its button
+      onSettled(() => {
+        requestAnimationFrame(revealFragment);
+      });
     },
   };
+}
+
+function revealFragment() {
+  const target = document.querySelector(
+    `#${CSS.escape(decodeURIComponent(location.hash.slice(1)))}`,
+  );
+  if (target instanceof HTMLElement) {
+    target.scrollIntoView();
+    target.focus({ preventScroll: true });
+  }
 }
 
 const isPlainClick = (event: MouseEvent) =>

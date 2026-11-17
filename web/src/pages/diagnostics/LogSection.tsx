@@ -51,7 +51,7 @@ export function LogSection(props: { readonly feed: LogFeed }) {
     <section>
       <SectionHeading
         title={TITLE}
-        detail={props.feed.offline ? "offline, reconnecting" : undefined}
+        detail={props.feed.offline ? "offline" : undefined}
         aside={
           <>
             <SearchField

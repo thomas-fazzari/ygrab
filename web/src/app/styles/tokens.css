@@ -52,6 +52,7 @@
     --track-number-width: 24px;
     --change-type-width: 40px;
     --filter-width: 280px;
+    --notification-list-height: 360px;
     --log-indent: 13ch;
     --track-row-height: calc(var(--line-label) + 2 * var(--space-2) + 1px);
     --track-list-height: calc(10.5 * var(--track-row-height));
@@ -62,12 +63,14 @@
     --duration: 200ms;
     --duration-long: 250ms;
     --duration-spin: 700ms;
+    --duration-ring: 600ms;
   }
 
   @media (prefers-reduced-motion: reduce) {
     :root {
       --duration: 0s;
       --duration-long: 0s;
+      --duration-ring: 0s;
     }
   }
 }

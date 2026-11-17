@@ -135,7 +135,7 @@ interface ActiveStatusProps {
 
 function ActiveStatus(props: ActiveStatusProps) {
   return (
-    <Show when={!props.offline} fallback="offline, reconnecting">
+    <Show when={!props.offline} fallback="offline">
       <Show when={props.cooldownUntil}>
         {(until) => (
           <>

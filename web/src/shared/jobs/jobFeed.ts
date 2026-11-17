@@ -57,5 +57,9 @@ function applyEvent(feed: JobFeed, event: ApiEvent): JobFeed {
     .exhaustive();
 }
 
-/** Folds the job events into the feed, for `createProjection`. */
-export const watchJobs = () => scan<ApiEvent, JobFeed>(apiEvents(), emptyFeed, applyEvent);
+/** Folds the job events into the feed, for `createProjection`, and passes each one to `observe`. */
+export const watchJobs = (observe: (feed: JobFeed, event: ApiEvent) => void) =>
+  scan<ApiEvent, JobFeed>(apiEvents(), emptyFeed, (feed, event) => {
+    observe(feed, event);
+    return applyEvent(feed, event);
+  });

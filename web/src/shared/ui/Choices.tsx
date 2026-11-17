@@ -10,7 +10,7 @@ import ChevronIcon from "~icons/solar/alt-arrow-down-linear";
 
 import buttonStyles from "./Button.module.css";
 import styles from "./Choices.module.css";
-import { createListboxDisclosure } from "./listboxDisclosure.ts";
+import { createDisclosure } from "./disclosure.ts";
 
 interface ChoicesProps<TValue extends string> {
   /** Names the group for screen readers and its radios for the form. */
@@ -63,7 +63,7 @@ export function ChoiceSelect<TValue extends string>(props: ChoicesProps<TValue>)
       props.onChange(choice);
     }
   };
-  const disclosure = createListboxDisclosure();
+  const disclosure = createDisclosure();
   return (
     <Listbox
       ref={disclosure.ref}

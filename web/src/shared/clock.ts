@@ -58,6 +58,19 @@ export function formatDuration(milliseconds: number) {
   return hours > 0 ? `${hours} h ${minutes} min` : `${minutes} min`;
 }
 
+const AGO_UNITS = [
+  { size: DAY_MS, unit: "d" },
+  { size: HOUR_MS, unit: "h" },
+  { size: MINUTE_MS, unit: "min" },
+] as const;
+
+/** Formats the time since a timestamp in its largest unit, at least a minute, such as `7 min ago`. */
+export function formatAgo(timestamp: string, now: number) {
+  const elapsed = Math.max(MINUTE_MS, now - Date.parse(timestamp));
+  const { size, unit } = AGO_UNITS.find((step) => elapsed >= step.size) ?? AGO_UNITS[2];
+  return `${Math.floor(elapsed / size)} ${unit} ago`;
+}
+
 const relativeFormat = new Intl.RelativeTimeFormat("en", { numeric: "always" });
 
 /** Formats a timestamp relative to `now`, in days, hours or minutes, the largest unit it reaches. */

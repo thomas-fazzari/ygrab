@@ -35,7 +35,7 @@ export function JobsPage() {
         <section>
           <SectionHeading
             title={TITLE}
-            detail={feed.offline ? "offline, reconnecting" : matching().length}
+            detail={feed.offline ? "offline" : matching().length}
             aside={
               <FilterBar
                 filters={filters()}

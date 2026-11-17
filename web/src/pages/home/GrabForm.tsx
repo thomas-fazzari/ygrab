@@ -6,7 +6,7 @@ import LinkIcon from "~icons/solar/link-minimalistic-2-linear";
 import LoaderIcon from "~icons/solar/loader-linear";
 
 import { startJob } from "@/shared/api/client.ts";
-import { failureOf, previousIdOf } from "@/shared/api/failures.ts";
+import { failureOf, isRefusedInput, previousIdOf } from "@/shared/api/failures.ts";
 import {
   DEFAULT_QUALITY,
   JOB_MODES,
@@ -17,6 +17,7 @@ import {
 import type { JobId, JobMode, StartJobRequest, VideoQuality } from "@/shared/api/schemas.ts";
 import { isYouTubeMusicLink } from "@/shared/jobs/jobNames.ts";
 import { MODE_LABELS, QUALITY_LABELS } from "@/shared/jobs/jobView.ts";
+import { notifyError } from "@/shared/notifications.ts";
 import { storedAs } from "@/shared/storage.ts";
 import { Button } from "@/shared/ui/Button.tsx";
 import { ChoiceChips, ChoiceSelect } from "@/shared/ui/Choices.tsx";
@@ -71,7 +72,11 @@ function createGrab(props: GrabFormProps, clear: () => void) {
       }
     };
     props.onExisting(previousId === null ? null : { id: previousId, downloadAnyway });
-    setFailure(previousId === null ? failureOf(result) : null);
+    const text = previousId === null ? failureOf(result) : null;
+    setFailure(text);
+    if (text !== null && !isRefusedInput(result)) {
+      notifyError(`Cannot download ${request.link}`, text);
+    }
     if (result.kind === "ok") {
       clear();
     }
@@ -237,12 +242,14 @@ function QualityChoice(props: QualityChoiceProps) {
   );
 }
 
-const ignore = () => null;
+const notifyPasteFailure = () => {
+  notifyError("Cannot paste a link", "The browser refused to read the clipboard.");
+};
 
 // The clipboard API exists only in a secure context, such as HTTPS or localhost
 function PasteButton(props: { readonly onPaste: (text: string) => void }) {
   const paste = () => {
-    void navigator.clipboard.readText().then(props.onPaste, ignore);
+    void navigator.clipboard.readText().then(props.onPaste, notifyPasteFailure);
   };
   return (
     <Show when={window.isSecureContext}>
