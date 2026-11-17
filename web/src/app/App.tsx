@@ -1,6 +1,6 @@
 import { dynamic } from "@solidjs/web";
-import { createEffect, createMemo, Errored, Show } from "solid-js";
-import type { Component } from "solid-js";
+import { createEffect, createMemo, createProjection, Errored, Show } from "solid-js";
+import type { Component, ParentProps } from "solid-js";
 
 import { DIAGNOSTICS_ROUTE, DiagnosticsPage } from "@/pages/diagnostics/DiagnosticsPage.tsx";
 import { HomePage } from "@/pages/home/HomePage.tsx";
@@ -8,6 +8,8 @@ import { JobsPage } from "@/pages/jobs/JobsPage.tsx";
 import { LoginPage } from "@/pages/login/LoginPage.tsx";
 import { NotFoundPage } from "@/pages/not-found/NotFoundPage.tsx";
 import { RELEASE_NOTES_ROUTE, ReleaseNotesPage } from "@/pages/release-notes/ReleaseNotesPage.tsx";
+import { emptyFeed, JobFeedContext, watchJobs } from "@/shared/jobs/jobFeed.ts";
+import type { JobFeed } from "@/shared/jobs/jobFeed.ts";
 import { createRouter, RouterContext } from "@/shared/router.tsx";
 import { HOME_ROUTE, JOBS_ROUTE, LOGIN_ROUTE } from "@/shared/session.ts";
 import { Button } from "@/shared/ui/Button.tsx";
@@ -35,6 +37,12 @@ const notFound: Route = { page: NotFoundPage, header: true, title: "Page not fou
 
 const describe = (cause: unknown) => (cause instanceof Error ? cause.message : String(cause));
 
+// Login page stays off the event stream
+function SignedIn(props: ParentProps) {
+  const feed = createProjection<JobFeed>(watchJobs, emptyFeed);
+  return <JobFeedContext value={feed}>{props.children}</JobFeedContext>;
+}
+
 export function App() {
   const router = createRouter();
   const route = createMemo(() => routes.get(router.path()) ?? notFound);
@@ -49,25 +57,33 @@ export function App() {
   return (
     <RouterContext value={router}>
       <div class={styles.column}>
-        <Show when={route().header}>
-          <Header />
+        <Show when={route().header} fallback={<PageMain page={Page} />}>
+          <SignedIn>
+            <Header />
+            <PageMain page={Page} />
+          </SignedIn>
         </Show>
-        <main>
-          <Errored
-            fallback={(error, reset) => (
-              <>
-                <PageTitle>Something broke :(</PageTitle>
-                <p class={styles.crash}>{describe(error())}</p>
-                <div class={styles.retry}>
-                  <Button onClick={reset}>Try again</Button>
-                </div>
-              </>
-            )}
-          >
-            <Page />
-          </Errored>
-        </main>
       </div>
     </RouterContext>
+  );
+}
+
+function PageMain(props: { readonly page: Component }) {
+  return (
+    <main>
+      <Errored
+        fallback={(error, reset) => (
+          <>
+            <PageTitle>Something broke :(</PageTitle>
+            <p class={styles.crash}>{describe(error())}</p>
+            <div class={styles.retry}>
+              <Button onClick={reset}>Try again</Button>
+            </div>
+          </>
+        )}
+      >
+        <props.page />
+      </Errored>
+    </main>
   );
 }

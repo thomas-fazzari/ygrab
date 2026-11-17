@@ -1,11 +1,10 @@
 import type { JSX } from "@solidjs/web";
-import { createMemo, createProjection, createSignal, Loading, Show } from "solid-js";
+import { createMemo, createSignal, Loading, Show, useContext } from "solid-js";
 import ClockIcon from "~icons/solar/clock-circle-linear";
 
 import type { Job } from "@/shared/api/schemas.ts";
 import { createMinuteClock, formatClock } from "@/shared/clock.ts";
-import { emptyFeed, watchJobs } from "@/shared/jobs/jobFeed.ts";
-import type { JobFeed } from "@/shared/jobs/jobFeed.ts";
+import { JobFeedContext } from "@/shared/jobs/jobFeed.ts";
 import { createJobCards } from "@/shared/jobs/jobCards.tsx";
 import { JobList, JobListSkeleton } from "@/shared/jobs/JobList.tsx";
 import { activeJobs, recentJobs } from "@/shared/jobs/jobView.ts";
@@ -21,7 +20,7 @@ import { GrabForm } from "./GrabForm.tsx";
 import type { Existing } from "./GrabForm.tsx";
 
 export function HomePage() {
-  const feed = createProjection<JobFeed>(watchJobs, emptyFeed);
+  const feed = useContext(JobFeedContext);
   const now = createMinuteClock();
   const [existing, setExisting] = createSignal<Existing | null>(null);
 

@@ -1,10 +1,9 @@
-import { createMemo, createProjection, createSignal, Loading, Show } from "solid-js";
+import { createMemo, createSignal, Loading, Show, useContext } from "solid-js";
 
 import { JOB_MODES } from "@/shared/api/schemas.ts";
 import { createMinuteClock } from "@/shared/clock.ts";
 import { createJobCards } from "@/shared/jobs/jobCards.tsx";
-import { emptyFeed, watchJobs } from "@/shared/jobs/jobFeed.ts";
-import type { JobFeed } from "@/shared/jobs/jobFeed.ts";
+import { JobFeedContext } from "@/shared/jobs/jobFeed.ts";
 import { JobList, JobListSkeleton } from "@/shared/jobs/JobList.tsx";
 import { MODE_LABELS, plural } from "@/shared/jobs/jobView.ts";
 import { MultiSelect } from "@/shared/ui/MultiSelect.tsx";
@@ -21,7 +20,7 @@ const TITLE = "History";
 const NO_FILTERS: JobFilters = { query: "", states: STATE_FILTERS, modes: JOB_MODES };
 
 export function JobsPage() {
-  const feed = createProjection<JobFeed>(watchJobs, emptyFeed);
+  const feed = useContext(JobFeedContext);
   const now = createMinuteClock();
   const [filters, setFilters] = createSignal(NO_FILTERS);
   const matching = createMemo(() => filterJobs(feed.jobs, filters()));
