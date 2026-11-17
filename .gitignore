@@ -26,6 +26,7 @@
 !/nuget.config
 !/Dockerfile
 !/compose.yaml
+!/install-cli.sh
 
 !/.devcontainer/
 !/.devcontainer/**
