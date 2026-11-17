@@ -10,11 +10,11 @@ import type { ApiResult } from "@/shared/api/client.ts";
 import { failureOf, previousIdOf } from "@/shared/api/failures.ts";
 import { DEFAULT_QUALITY } from "@/shared/api/schemas.ts";
 import type { Job } from "@/shared/api/schemas.ts";
-import { nameOf } from "./jobNames.ts";
 import { notifyError } from "@/shared/notifications.ts";
 import { Button } from "@/shared/ui/Button.tsx";
 import { IconButton, IconLink } from "@/shared/ui/IconControl.tsx";
 import styles from "./JobCard.module.css";
+import { nameOf } from "./jobNames.ts";
 import { canDownload, canRetry, removalDeletesFiles, siteOf } from "./jobView.ts";
 import { askToRemove, RemoveDialog } from "./RemoveDialog.tsx";
 

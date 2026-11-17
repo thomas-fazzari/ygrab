@@ -53,6 +53,9 @@ export { errorAnnouncement };
 export const notifications = () => inbox().items;
 
 export function markAllRead() {
+  if (notifications().every((item) => item.read)) {
+    return;
+  }
   setInbox((current) => ({
     ...current,
     items: current.items.map((item) => ({ ...item, read: true })),
@@ -67,11 +70,14 @@ export function clearNotifications() {
   setInbox((current) => ({ ...current, items: [] }));
 }
 
+let errorCount = 0;
+
 /** Adds an error that answers a click, such as `Cannot remove Discovery`. */
 export function notifyError(title: string, detail: string) {
+  errorCount += 1;
   const at = new Date().toISOString();
   const item: NotificationItem = {
-    id: `error:${at}:${title}`,
+    id: `error:${at}:${errorCount}`,
     kind: "error",
     title,
     detail,
