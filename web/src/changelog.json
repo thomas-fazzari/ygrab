@@ -1,1 +1,86 @@
-[]
+[
+  {
+    "version": "0.1.0",
+    "date": "2026-11-17",
+    "changes": [
+      {
+        "type": "feat",
+        "text": "send security headers",
+        "author": "thomas-fazzari",
+        "sha": "a63b12828543fdc21b387f69535bd1e63d829526"
+      },
+      {
+        "type": "fix",
+        "text": "check the origin of every unsafe request",
+        "author": "thomas-fazzari",
+        "sha": "16a6c152814432b4eb9a4198364d2e7816ffad4b"
+      },
+      {
+        "type": "fix",
+        "text": "trust forwarded headers from proxies only",
+        "author": "thomas-fazzari",
+        "sha": "5e4a2c66e42d30f143a42654d063f79edf2bc937"
+      },
+      {
+        "type": "fix",
+        "text": "delete the cookies copy after each yt-dlp run",
+        "author": "thomas-fazzari",
+        "sha": "a2c50006dc50b8f9988255dbda29ab8692940296"
+      },
+      {
+        "type": "feat",
+        "text": "add a notification bell",
+        "author": "thomas-fazzari",
+        "sha": "21555eb4141c4df487635e77772e5e2ee1440078"
+      },
+      {
+        "type": "feat",
+        "text": "show file sizes and a plain audio fallback",
+        "author": "thomas-fazzari",
+        "sha": "64a073aa45fd050bb1bafce310860f5439ba5a79"
+      },
+      {
+        "type": "feat",
+        "text": "animate the web UI and polish its UX",
+        "author": "thomas-fazzari",
+        "sha": "5d37ce46a022fd6b2b6d3a588054234fe2c3074d"
+      },
+      {
+        "type": "feat",
+        "text": "add the web UI",
+        "author": "thomas-fazzari",
+        "sha": "68e10f4634a0fcee5709e9b97672be1ee3c5288e"
+      },
+      {
+        "type": "fix",
+        "text": "match album audio tracks by position",
+        "author": "thomas-fazzari",
+        "sha": "bc3cf406ffe56e1dfce8aaa0fc847efe768a6a29"
+      },
+      {
+        "type": "fix",
+        "text": "accept a blank token",
+        "author": "thomas-fazzari",
+        "sha": "f4fbf5a4a8c02a4655a09849bc7d2e9c10294d51"
+      },
+      {
+        "type": "feat",
+        "text": "docker image",
+        "author": "thomas-fazzari",
+        "sha": "7f562335fe42d8ced4d8e7773a998945ba1302b2"
+      },
+      {
+        "type": "fix",
+        "text": "wake the runner when a job is removed",
+        "author": "thomas-fazzari",
+        "sha": "27a6aeb2a7b09871116621981b70d546734ecf62"
+      },
+      {
+        "type": "feat",
+        "text": "initial ygrab engine",
+        "author": "thomas-fazzari",
+        "sha": "0f65ef352db9481dabb2af2b178a6b788b9e2716"
+      }
+    ]
+  }
+]
