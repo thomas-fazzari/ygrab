@@ -1,0 +1,74 @@
+name: CLI
+
+# Publishes the native CLI for each runtime, then uploads the binaries when a version is given
+on:
+  workflow_call:
+    inputs:
+      version:
+        description: The release tag, such as v1.2.3
+        type: string
+        default: ""
+
+permissions:
+  contents: read
+
+env:
+  DOTNET_CLI_TELEMETRY_OPTOUT: 1
+  DOTNET_NOLOGO: 1
+
+jobs:
+  publish:
+    name: CLI (${{ matrix.rid }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      # Native AOT compiles for the platform of the runner, so each runtime has its own runner.
+      # A Linux binary needs the glibc of its build or newer, so it builds on the oldest Ubuntu
+      matrix:
+        include:
+          - { rid: linux-x64, os: ubuntu-22.04 }
+          - { rid: linux-arm64, os: ubuntu-22.04-arm }
+          - { rid: osx-arm64, os: macos-26 }
+          - { rid: win-x64, os: windows-2025 }
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: jdx/mise-action@v5.2.9
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          install_args: dotnet
+      - name: Install the native toolchain
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install --yes --no-install-recommends clang zlib1g-dev
+      - name: Publish the CLI
+        env:
+          RID: ${{ matrix.rid }}
+          TAG: ${{ inputs.version }}
+        run: |
+          version=()
+          if [[ -n "$TAG" ]]; then
+            version=("-p:Version=${TAG#v}" -p:IncludeSourceRevisionInInformationalVersion=false)
+          fi
+          dotnet publish src/YGrab.Cli --configuration Release --runtime "$RID" --output artifacts/cli "${version[@]}"
+          extension=""
+          if [[ "$RID" == win-* ]]; then
+            extension=.exe
+          fi
+          binary="artifacts/release/ygrab-$RID$extension"
+          mkdir -p artifacts/release
+          cp "artifacts/cli/ygrab$extension" "$binary"
+          printed="$("$binary" --version)"
+          echo "$printed"
+          if [[ -n "$TAG" && "$printed" != "${TAG#v}" ]]; then
+            echo "The binary prints $printed instead of ${TAG#v}." >&2
+            exit 1
+          fi
+      - uses: actions/upload-artifact@v7.0.2
+        if: inputs.version != ''
+        with:
+          name: cli-${{ matrix.rid }}
+          path: artifacts/release/*
+          if-no-files-found: error

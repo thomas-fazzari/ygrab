@@ -1,0 +1,59 @@
+name: Release
+
+# `mise run release` pushes the tag from master, which CI has checked
+on:
+  push:
+    tags: [v*]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  image:
+    uses: ./.github/workflows/image.yml
+    permissions:
+      contents: read
+      packages: write
+    with:
+      version: ${{ github.ref_name }}
+
+  cli:
+    uses: ./.github/workflows/cli.yml
+    with:
+      version: ${{ github.ref_name }}
+
+  release:
+    name: GitHub release
+    needs: [image, cli]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          fetch-depth: 0
+      - uses: jdx/mise-action@v5.2.9
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          install_args: git-cliff
+      - uses: actions/download-artifact@v8.0.2
+        with:
+          pattern: cli-*
+          path: artifacts/release
+          merge-multiple: true
+      - name: Publish the release with the CLI binaries
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+          IMAGE: ghcr.io/${{ github.repository }}
+        run: |
+          (cd artifacts/release && sha256sum ygrab-* > SHA256SUMS)
+          {
+            git cliff --current --strip all
+            printf '\nImage: %s\n' "\`$IMAGE:${TAG#v}\`"
+          } > "$RUNNER_TEMP/notes.md"
+          gh release create "$TAG" artifacts/release/* --verify-tag --title "$TAG" --notes-file "$RUNNER_TEMP/notes.md"

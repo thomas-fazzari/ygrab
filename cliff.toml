@@ -1,7 +1,17 @@
-# git-cliff turns the commits into web/src/changelog.json, through `mise run release`
+# git-cliff turns the commits into web/src/changelog.json, through `mise run release`,
+# and into the notes of the GitHub release, through the release job of the CI
 
 [changelog]
-body = ""
+trim = true
+body = """
+{% for group, commits in commits | group_by(attribute="group") %}
+### {% if group == "feat" %}Features{% elif group == "fix" %}Fixes{% else %}Performance{% endif %}
+
+{% for commit in commits -%}
+- {{ commit.message | upper_first }} ({{ commit.id | truncate(length=7, end="") }})
+{% endfor -%}
+{% endfor %}
+"""
 
 [git]
 conventional_commits = true
@@ -10,7 +20,7 @@ filter_commits = true
 tag_pattern = "^v[0-9]+\\.[0-9]+\\.[0-9]+$"
 sort_commits = "newest"
 # A squash merge appends the pull request number to the title
-commit_preprocessors = [{ pattern = '\s*\(#\d+\)$', replace = "" }]
+commit_preprocessors = [{ pattern = '(?m)[ \t]*\(#\d+\)$', replace = "" }]
 commit_parsers = [
   { message = "^feat", group = "feat" },
   { message = "^fix", group = "fix" },
