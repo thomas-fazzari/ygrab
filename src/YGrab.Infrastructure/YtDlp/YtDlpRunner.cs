@@ -138,6 +138,7 @@ internal sealed partial class YtDlpRunner(
         string[] common =
         [
             "--ignore-config",
+            "--no-plugin-dirs",
             "--no-playlist",
             "--no-simulate",
             "--quiet",

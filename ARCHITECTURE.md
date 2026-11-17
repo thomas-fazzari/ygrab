@@ -6,7 +6,7 @@ YGrab downloads albums and tracks from YouTube Music as tagged audio, or one You
 
 ```mermaid
 flowchart TB
-    browser([Browser]) -->|"HTTP"| host["Host<br/>(composition root, endpoints, auth)"]
+    browser(["Browser<br/>(SolidJS client)"]) -->|"HTTP"| host["Host<br/>(composition root, endpoints, auth)"]
     cli["CLI"] -->|"HTTP"| host
     cli --> contracts["Contracts<br/>(API DTOs and JSON context)"]
     host --> contracts
