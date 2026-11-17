@@ -4,7 +4,7 @@ import "package://github.com/jdx/hk/releases/download/v2.10.0/hk@2.10.0#/Builtin
 local dotnet = "**/*.{cs,csx,csproj,props,targets,slnx,slnf,xml,config,resx}"
 local python = "src/YGrab.Infrastructure.Python/Python"
 local oxfmt = "web/node_modules/.bin/oxfmt --config web/.oxfmtrc.json"
-local exportRequirements = "uv export --locked --no-hashes --no-dev --no-emit-project --no-header --project \(python)"
+local exportRequirements = "uv export --locked --no-dev --no-emit-project --no-header --project \(python)"
 
 // Steps of `hk check` and `hk fix`. `mise run fix` runs them on every file
 local linters = new Mapping<String, Step> {

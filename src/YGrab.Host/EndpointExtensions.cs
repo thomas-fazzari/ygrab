@@ -18,6 +18,9 @@ namespace YGrab.Host;
 internal static class EndpointExtensions
 {
     internal const string ApiPrefix = "/api";
+
+    // We take small JSON bodies only
+    internal const int MaxRequestBodyBytes = 64 * 1024;
     private const string IndexFile = "index.html";
 
     // The web build names each file under it after a hash of its content
@@ -35,7 +38,11 @@ internal static class EndpointExtensions
             services.AddProblemDetails();
             services.AddHealthChecks();
             services.AddTrustedProxies();
-            services.Configure<KestrelServerOptions>(options => options.AddServerHeader = false);
+            services.Configure<KestrelServerOptions>(options =>
+            {
+                options.AddServerHeader = false;
+                options.Limits.MaxRequestBodySize = MaxRequestBodyBytes;
+            });
             return services;
         }
     }

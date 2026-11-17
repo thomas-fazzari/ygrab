@@ -9,8 +9,14 @@ namespace YGrab.Infrastructure.Covers;
 /// Fetches the cover of a release over HTTP.
 /// </summary>
 /// <remarks>
+/// <para>
 /// A cover is optional, so any failure except a cancellation is logged and gives null. That
 /// includes a timeout and an open circuit of the resilience handler.
+/// </para>
+/// <para>
+/// The URL comes from the catalog response, so only HTTPS URLs on the image hosts of YouTube
+/// are fetched.
+/// </para>
 /// </remarks>
 internal sealed partial class HttpCoverSource(
     IHttpClientFactory clients,
@@ -27,8 +33,21 @@ internal sealed partial class HttpCoverSource(
     /// </remarks>
     internal const int Size = 1200;
 
+    // A cover of Size pixels weighs a few hundred kb
+    internal const int MaxResponseBytes = 10 * 1024 * 1024;
+
+    private const string GoogleUserContent = ".googleusercontent.com";
+
+    private static readonly string[] _hosts = [GoogleUserContent, ".ggpht.com", ".ytimg.com"];
+
     public async ValueTask<Cover?> FetchAsync(Uri url, CancellationToken cancellationToken)
     {
+        if (!IsImageHost(url))
+        {
+            LogHostRefused(logger, url);
+            return null;
+        }
+
         try
         {
             var client = clients.CreateClient(ClientName);
@@ -48,11 +67,21 @@ internal sealed partial class HttpCoverSource(
 
         var text = url.AbsoluteUri;
         var options = text.LastIndexOf('=', StringComparison.Ordinal);
-        return url.Host.EndsWith(".googleusercontent.com", StringComparison.Ordinal) && options > 0
+        return url.Host.EndsWith(GoogleUserContent, StringComparison.Ordinal) && options > 0
             ? new Uri($"{text[..options]}=w{Size}-h{Size}-l90-rj")
             : url;
     }
 
+    private static bool IsImageHost(Uri url) =>
+        string.Equals(url.Scheme, Uri.UriSchemeHttps, StringComparison.Ordinal)
+        && _hosts.Any(host => url.Host.EndsWith(host, StringComparison.OrdinalIgnoreCase));
+
     [LoggerMessage(Level = LogLevel.Warning, Message = "Could not fetch the cover {Url}")]
     private static partial void LogFetchFailed(ILogger logger, Exception exception, Uri url);
+
+    [LoggerMessage(
+        Level = LogLevel.Warning,
+        Message = "Skipped the cover {Url}, which is not on an image host of YouTube"
+    )]
+    private static partial void LogHostRefused(ILogger logger, Uri url);
 }

@@ -55,7 +55,9 @@ public static class YGrabInfrastructureServiceCollectionExtensions
             services.AddSingleton<IJobOutput, JobOutput>();
             services.AddSingleton<ICoverSource, HttpCoverSource>();
             services
-                .AddHttpClient(HttpCoverSource.ClientName)
+                .AddHttpClient(HttpCoverSource.ClientName, client =>
+                    client.MaxResponseContentBufferSize = HttpCoverSource.MaxResponseBytes
+                )
                 .AddStandardResilienceHandler(RetryExceptTooManyRequests);
             services.AddSingleton<IReleaseEnricher, DeezerEnricher>();
             services

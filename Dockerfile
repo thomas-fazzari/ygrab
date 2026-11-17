@@ -54,15 +54,12 @@ RUN rm -rf /opt/python/CSnakes/*/python/build /opt/python/CSnakes/*/python/insta
   && llvm-strip --strip-debug /opt/python/CSnakes/*/python/install/bin/python3.[0-9][0-9]
 
 FROM mcr.microsoft.com/dotnet/aspnet:11.0
-RUN apt-get update \
-  && apt-get install --yes --no-install-recommends curl \
-  && rm -rf /var/lib/apt/lists/*
 COPY --from=mwader/static-ffmpeg:9.0.2-1 /ffmpeg /ffprobe /usr/local/bin/
 COPY --from=tools /opt/tools/deno /usr/local/bin/
 COPY --from=tools /opt/tools/yt-dlp /opt/yt-dlp
 COPY --from=tools /opt/python /opt/python
 COPY --from=publish /app /app
-RUN mkdir /data && chown "$APP_UID:$APP_UID" /data
+RUN mkdir /data && chown "$APP_UID:$APP_UID" /data && chmod 700 /data
 ENV PATH=/opt/yt-dlp:$PATH \
   CSNAKES_REDIST_CACHE=/opt/python \
   DENO_NO_UPDATE_CHECK=1 \
@@ -72,5 +69,6 @@ WORKDIR /app
 USER $APP_UID
 VOLUME /data
 EXPOSE 8080
-HEALTHCHECK CMD curl --fail --silent --output /dev/null "http://127.0.0.1:$ASPNETCORE_HTTP_PORTS/api/health" || exit 1
+# The Python of the host checks the health, so the image needs no HTTP client
+HEALTHCHECK CMD ["/opt/python/venv/bin/python", "-c", "import os, urllib.request; urllib.request.urlopen('http://127.0.0.1:' + os.environ['ASPNETCORE_HTTP_PORTS'] + '/api/health', timeout=5)"]
 ENTRYPOINT ["dotnet", "YGrab.Host.dll"]

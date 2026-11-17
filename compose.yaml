@@ -3,6 +3,15 @@ services:
     image: ygrab
     build: .
     restart: unless-stopped
+    # We write to /data, /tmp and /home/app only
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /home/app:uid=1654,gid=1654
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
     # Only the reverse proxy on this machine can reach the port
     ports:
       - "127.0.0.1:8080:8080"
