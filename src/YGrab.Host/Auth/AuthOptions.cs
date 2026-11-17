@@ -14,6 +14,9 @@ namespace YGrab.Host.Auth;
 /// is read at start.
 /// </para>
 /// <para>
+/// The host refuses to start with <see cref="Disabled"/> set outside the Development environment.
+/// </para>
+/// <para>
 /// Without a token, the host generates one at start and keeps it in a file of the data folder. A
 /// start with <see cref="Disabled"/> set generates none.
 /// </para>

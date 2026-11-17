@@ -1,13 +1,10 @@
 // SPDX-FileCopyrightText: 2026 Thomas Fazzari
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-using System.Security.Claims;
-using Microsoft.AspNetCore.Authentication.Cookies;
-
 namespace YGrab.Host.Auth;
 
 /// <summary>
-/// Refuses an unsafe request that a session cookie signed in, unless the request is same-origin.
+/// Refuses an unsafe request from another site, unless it carries a bearer token.
 /// </summary>
 /// <remarks>
 /// <para>
@@ -15,7 +12,9 @@ namespace YGrab.Host.Auth;
 /// <c>Sec-Fetch-Site: same-origin</c> or an <c>Origin</c> that matches its own host.
 /// </para>
 /// <para>
-/// A request with a bearer token or without auth has no cookie to abuse and passes.
+/// A browser never adds a bearer token on its own, and another site cannot set one without a CORS
+/// preflight that the host does not answer. Any other request needs the same origin, even an
+/// anonymous one such as the login.
 /// </para>
 /// </remarks>
 internal sealed class OriginFilter : IEndpointFilter
@@ -29,13 +28,8 @@ internal sealed class OriginFilter : IEndpointFilter
         EndpointFilterDelegate next
     )
     {
-        var http = context.HttpContext;
-        if (IsSafeMethod(http.Request.Method) || !IsCookieOnly(http.User))
-        {
-            return next(context);
-        }
-
-        return IsSameOrigin(http.Request)
+        var request = context.HttpContext.Request;
+        return IsSafeMethod(request.Method) || HasBearerToken(request) || IsSameOrigin(request)
             ? next(context)
             : ValueTask.FromResult<object?>(
                 TypedResults.StatusCode(StatusCodes.Status403Forbidden)
@@ -48,18 +42,8 @@ internal sealed class OriginFilter : IEndpointFilter
         || HttpMethods.IsOptions(method)
         || HttpMethods.IsTrace(method);
 
-    private static bool IsCookieOnly(ClaimsPrincipal user)
-    {
-        var signedIn = user.Identities.Where(identity => identity.IsAuthenticated).ToList();
-        return signedIn.Count > 0
-            && signedIn.All(identity =>
-                string.Equals(
-                    identity.AuthenticationType,
-                    CookieAuthenticationDefaults.AuthenticationScheme,
-                    StringComparison.Ordinal
-                )
-            );
-    }
+    private static bool HasBearerToken(HttpRequest request) =>
+        BearerHandler.HeaderOf(request) is not null;
 
     private static bool IsSameOrigin(HttpRequest request)
     {

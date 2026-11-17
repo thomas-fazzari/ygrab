@@ -3,9 +3,12 @@
 
 using System.Net;
 using System.Net.Http.Headers;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 using YGrab.Contracts;
 using YGrab.Contracts.Auth;
 using YGrab.Host.Auth;
@@ -81,11 +84,12 @@ public sealed class AuthTests
     }
 
     [Fact]
-    public async Task A_cookie_request_that_changes_state_needs_the_same_origin_and_a_bearer_request_does_not()
+    public async Task A_request_that_changes_state_needs_the_same_origin_or_a_bearer_token()
     {
         await using var factory = new HostFactory();
         using var cookie = factory.CreateCookieClient();
         using var bearer = factory.CreateBearerClient();
+        using var anonymous = factory.CreateClient();
         await LoginAsync(cookie, HostFactory.Token);
         using var sameOrigin = new HttpRequestMessage(HttpMethod.Post, HostFactory.UnknownRetryUrl);
         sameOrigin.Headers.Add(OriginFilter.SecFetchSiteHeader, "same-origin");
@@ -101,9 +105,58 @@ public sealed class AuthTests
             content: null,
             Cancellation
         );
+        var crossSiteLogin = await anonymous.PostAsJsonAsync(
+            HostFactory.LoginUrl,
+            new LoginRequest(HostFactory.Token),
+            ApiJsonContext.Default.LoginRequest,
+            Cancellation
+        );
 
         crossSite.StatusCode.Should().Be(HttpStatusCode.Forbidden);
         allowed.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        token.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        crossSiteLogin.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task The_host_refuses_to_start_without_auth_outside_development()
+    {
+        await using var factory = new HostFactory();
+        await using var production = factory.WithWebHostBuilder(builder =>
+            builder.UseEnvironment(Environments.Production).UseSetting("Auth:Disabled", "true")
+        );
+
+        var start = () => production.CreateClient();
+
+        start.Should().Throw<OptionsValidationException>();
+    }
+
+    [Fact]
+    public async Task Without_auth_a_request_that_changes_state_still_needs_the_same_origin_or_a_bearer_token()
+    {
+        await using var factory = new HostFactory();
+        await using var open = factory.WithWebHostBuilder(builder =>
+            builder.UseSetting("Auth:Disabled", "true")
+        );
+        using var anonymous = open.CreateClient();
+        using var bearer = open.CreateClient();
+        bearer.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
+            BearerHandler.SchemeName,
+            "any"
+        );
+
+        var crossSite = await anonymous.PostAsync(
+            HostFactory.UnknownRetryUrl,
+            content: null,
+            Cancellation
+        );
+        var token = await bearer.PostAsync(
+            HostFactory.UnknownRetryUrl,
+            content: null,
+            Cancellation
+        );
+
+        crossSite.StatusCode.Should().Be(HttpStatusCode.Forbidden);
         token.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
@@ -176,11 +229,16 @@ public sealed class AuthTests
         return context.Response.StatusCode;
     }
 
-    private static Task<HttpResponseMessage> LoginAsync(HttpClient client, string token) =>
-        client.PostAsJsonAsync(
-            HostFactory.LoginUrl,
-            new LoginRequest(token),
-            ApiJsonContext.Default.LoginRequest,
-            Cancellation
-        );
+    private static async Task<HttpResponseMessage> LoginAsync(HttpClient client, string token)
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Post, HostFactory.LoginUrl)
+        {
+            Content = JsonContent.Create(
+                new LoginRequest(token),
+                ApiJsonContext.Default.LoginRequest
+            ),
+        };
+        request.Headers.Add(OriginFilter.SecFetchSiteHeader, "same-origin");
+        return await client.SendAsync(request, Cancellation);
+    }
 }
