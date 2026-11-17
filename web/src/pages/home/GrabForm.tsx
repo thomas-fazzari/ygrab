@@ -1,9 +1,10 @@
 import { makePersisted } from "@solid-primitives/storage";
-import { action, createOptimistic, createSignal, Show } from "solid-js";
+import { action, createOptimistic, createSignal, onSettled, Show } from "solid-js";
 import { match, P } from "ts-pattern";
 import ArrowIcon from "~icons/solar/arrow-right-linear";
 import ClipboardIcon from "~icons/solar/clipboard-linear";
 import LinkIcon from "~icons/solar/link-minimalistic-2-linear";
+import LoaderIcon from "~icons/solar/loader-linear";
 
 import { startJob } from "@/shared/api/client.ts";
 import type { ApiResult } from "@/shared/api/client.ts";
@@ -29,9 +30,13 @@ import { Button } from "@/shared/ui/Button.tsx";
 import { ChoiceChips, ChoiceSelect } from "@/shared/ui/Choices.tsx";
 import { Field } from "@/shared/ui/Field.tsx";
 import { IconButton } from "@/shared/ui/IconControl.tsx";
+import { IconSwap } from "@/shared/ui/IconSwap.tsx";
 import styles from "./GrabForm.module.css";
 
 const HTTP_CONFLICT = 409;
+// A paste in one of these stays there
+const PASTE_TARGETS =
+  "input:not([type=radio], [type=checkbox], [type=button], [type=submit]), textarea, [contenteditable]:not([contenteditable=false]), dialog";
 
 const [chosenMode, setChosenMode] = makePersisted(
   createSignal<JobMode>("audio"),
@@ -92,7 +97,7 @@ function createGrab(props: GrabFormProps, clear: () => void) {
   return { failure, sending, grab };
 }
 
-export function GrabForm(props: GrabFormProps) {
+function createLink() {
   const [link, setLink] = createSignal("");
   // Only a link that becomes a music link switches the mode, so a later choice of Video holds
   const changeLink = (text: string) => {
@@ -102,6 +107,19 @@ export function GrabForm(props: GrabFormProps) {
       setChosenMode("audio");
     }
   };
+  let input: HTMLInputElement | undefined;
+  onPasteOutsideFields((text) => {
+    changeLink(text);
+    input?.focus();
+  });
+  const bind = (element: HTMLInputElement) => {
+    input = element;
+  };
+  return { link, changeLink, bind };
+}
+
+export function GrabForm(props: GrabFormProps) {
+  const { link, changeLink, bind } = createLink();
   const { failure, sending, grab } = createGrab(props, () => {
     changeLink("");
   });
@@ -116,7 +134,13 @@ export function GrabForm(props: GrabFormProps) {
 
   return (
     <form class={styles.form} novalidate onSubmit={submit}>
-      <LinkField link={link()} mode={chosenMode()} sending={sending()} onInput={changeLink} />
+      <LinkField
+        ref={bind}
+        link={link()}
+        mode={chosenMode()}
+        sending={sending()}
+        onInput={changeLink}
+      />
       <div class={styles.options}>
         <ChoiceChips
           name="Mode"
@@ -142,7 +166,27 @@ export function GrabForm(props: GrabFormProps) {
   );
 }
 
+/** Calls back with the text of a paste outside any text field, such as Ctrl+V on the page. */
+function onPasteOutsideFields(onPaste: (text: string) => void) {
+  const paste = (event: ClipboardEvent) => {
+    const text = event.clipboardData?.getData("text").trim() ?? "";
+    const inField = event.target instanceof Element && event.target.closest(PASTE_TARGETS) !== null;
+    if (text === "" || inField) {
+      return;
+    }
+    event.preventDefault();
+    onPaste(text);
+  };
+  onSettled(() => {
+    document.addEventListener("paste", paste);
+    return () => {
+      document.removeEventListener("paste", paste);
+    };
+  });
+}
+
 interface LinkFieldProps {
+  readonly ref: (element: HTMLInputElement) => void;
   readonly link: string;
   readonly mode: JobMode;
   readonly sending: boolean;
@@ -157,6 +201,7 @@ function LinkField(props: LinkFieldProps) {
         type="text"
         inputmode="url"
         autocomplete="off"
+        ref={props.ref}
         aria-label="Link"
         placeholder={PLACEHOLDERS[props.mode]}
         autofocus
@@ -166,7 +211,11 @@ function LinkField(props: LinkFieldProps) {
         }}
       />
       <IconButton type="submit" label="Download" main disabled={props.sending}>
-        <ArrowIcon />
+        <IconSwap
+          swapped={props.sending}
+          icon={<ArrowIcon />}
+          swappedIcon={<LoaderIcon class={styles.spinner} />}
+        />
       </IconButton>
     </Field>
   );

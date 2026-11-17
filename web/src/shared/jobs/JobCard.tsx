@@ -3,7 +3,7 @@ import { match, P } from "ts-pattern";
 import ChevronIcon from "~icons/solar/alt-arrow-right-linear";
 
 import type { Job, Track } from "@/shared/api/schemas.ts";
-import { displayLink, isTrackJob, nameOf, titleOf } from "./jobNames.ts";
+import { albumOf, displayLink, isTrackJob, nameOf, titleOf } from "./jobNames.ts";
 import { STATE_LABELS } from "./jobStates.ts";
 import { Badge } from "@/shared/ui/Badge.tsx";
 import { SkeletonText } from "@/shared/ui/Skeleton.tsx";
@@ -72,8 +72,8 @@ export function JobCard(props: JobCardProps) {
           setFailure(next);
         }}
       />
-      <Show when={hasTrackList() && tracksOpen()}>
-        <TrackList id={tracksId} job={props.job} />
+      <Show when={hasTrackList()}>
+        <TrackList id={tracksId} job={props.job} open={tracksOpen()} />
       </Show>
     </article>
   );
@@ -108,6 +108,9 @@ function Meta(props: MetaProps) {
   return (
     <div class={styles.meta}>
       <For each={metaOf(props.job)}>{(part) => <span>{part}</span>}</For>
+      <Show when={albumOf(props.job)}>
+        {(album) => <span class={styles.album}>from {album()}</span>}
+      </Show>
       <Show when={props.toggle}>
         <TracksToggle
           job={props.job}
@@ -228,27 +231,38 @@ const trackView = (job: Job, track: Track) =>
 
 const number = (track: Track) => String(track.number).padStart(2, "0");
 
-function TrackList(props: { readonly id: string; readonly job: Job }) {
+interface TrackListProps {
+  readonly id: string;
+  readonly job: Job;
+  readonly open: boolean;
+}
+
+// Stays mounted while folded, so its height can animate
+function TrackList(props: TrackListProps) {
   return (
-    // Scrolls past ten tracks, so it takes focus for the keyboard
-    <ol
-      id={props.id}
-      class={styles.tracks}
-      aria-label={`Tracks of ${nameOf(props.job)}`}
-      tabindex="0"
-    >
-      <For each={props.job.tracks}>
-        {(track) => {
-          const view = createMemo(() => trackView(props.job, track));
-          return (
-            <li class={styles.track} data-kind={view().kind}>
-              <span>{number(track)}</span>
-              <span>{track.title}</span>
-              <span>{view().label}</span>
-            </li>
-          );
-        }}
-      </For>
-    </ol>
+    <div class={styles.fold} data-open={props.open} inert={!props.open}>
+      <div>
+        {/* Scrolls past ten tracks, so it takes focus for the keyboard */}
+        <ol
+          id={props.id}
+          class={styles.tracks}
+          aria-label={`Tracks of ${nameOf(props.job)}`}
+          tabindex="0"
+        >
+          <For each={props.job.tracks}>
+            {(track) => {
+              const view = createMemo(() => trackView(props.job, track));
+              return (
+                <li class={styles.track} data-kind={view().kind}>
+                  <span>{number(track)}</span>
+                  <span>{track.title}</span>
+                  <span>{view().label}</span>
+                </li>
+              );
+            }}
+          </For>
+        </ol>
+      </div>
+    </div>
   );
 }

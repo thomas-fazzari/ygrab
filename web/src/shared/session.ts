@@ -1,5 +1,6 @@
 export const LOGIN_ROUTE = "/login";
 export const HOME_ROUTE = "/";
+export const JOBS_ROUTE = "/jobs";
 
 const NEXT_PARAM = "next";
 

@@ -28,4 +28,8 @@
     color: var(--color-text-secondary);
     font: var(--weight-regular) var(--text-label);
   }
+
+  .aside > a:hover {
+    color: var(--color-text);
+  }
 }

@@ -7,12 +7,11 @@ import NotesIcon from "~icons/solar/megaphone-linear";
 import PulseIcon from "~icons/solar/pulse-linear";
 
 import { DIAGNOSTICS_ROUTE } from "@/pages/diagnostics/DiagnosticsPage.tsx";
-import { JOBS_ROUTE } from "@/pages/jobs/JobsPage.tsx";
 import { RELEASE_NOTES_ROUTE } from "@/pages/release-notes/ReleaseNotesPage.tsx";
 import { getSession, logout } from "@/shared/api/client.ts";
 import { REPOSITORY_URL } from "@/shared/repository.ts";
 import { RouterContext } from "@/shared/router.tsx";
-import { HOME_ROUTE, LOGIN_ROUTE } from "@/shared/session.ts";
+import { HOME_ROUTE, JOBS_ROUTE, LOGIN_ROUTE } from "@/shared/session.ts";
 import { IconButton, IconLink } from "@/shared/ui/IconControl.tsx";
 import styles from "./Header.module.css";
 

@@ -56,5 +56,18 @@
     --track-row-height: calc(var(--line-label) + 2 * var(--space-2) + 1px);
     --track-list-height: calc(10.5 * var(--track-row-height));
     --skeleton-delay: 300ms;
+
+    --ease-spring: cubic-bezier(0.53, 0.05, 0.23, 1.15);
+    --ease-out: cubic-bezier(0.53, 0.05, 0.23, 0.99);
+    --duration: 200ms;
+    --duration-long: 250ms;
+    --duration-spin: 700ms;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :root {
+      --duration: 0s;
+      --duration-long: 0s;
+    }
   }
 }

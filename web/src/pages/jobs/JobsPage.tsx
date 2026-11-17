@@ -15,8 +15,6 @@ import { filterJobs, STATE_FILTER_LABELS, STATE_FILTERS } from "./jobFilters.ts"
 import type { JobFilters } from "./jobFilters.ts";
 import styles from "./JobsPage.module.css";
 
-export const JOBS_ROUTE = "/jobs";
-
 const SHOWN_LIMIT = 100;
 const TITLE = "History";
 

@@ -9,6 +9,8 @@ import {
   Show,
 } from "solid-js";
 import { match } from "ts-pattern";
+import CheckIcon from "~icons/solar/check-linear";
+import CopyIcon from "~icons/solar/copy-linear";
 import DownloadIcon from "~icons/solar/download-minimalistic-linear";
 
 import { getStatus } from "@/shared/api/client.ts";
@@ -20,6 +22,7 @@ import { scan } from "@/shared/iterators.ts";
 import { emptyFeed, watchJobs } from "@/shared/jobs/jobFeed.ts";
 import type { JobFeed } from "@/shared/jobs/jobFeed.ts";
 import { Button } from "@/shared/ui/Button.tsx";
+import { IconSwap } from "@/shared/ui/IconSwap.tsx";
 import { PageTitle } from "@/shared/ui/PageTitle.tsx";
 import { SectionHeading } from "@/shared/ui/SectionHeading.tsx";
 import { Skeleton, SkeletonText } from "@/shared/ui/Skeleton.tsx";
@@ -185,11 +188,8 @@ function CopyReportButton(props: ReportButtonProps) {
   return (
     <>
       <Button onClick={copy}>
-        {match(state())
-          .with("idle", () => "Copy report")
-          .with("copied", () => "Copied")
-          .with("failed", () => "Cannot copy")
-          .exhaustive()}
+        <IconSwap swapped={state() === "copied"} icon={<CopyIcon />} swappedIcon={<CheckIcon />} />
+        {state() === "failed" ? "Cannot copy" : "Copy report"}
       </Button>
       <span class="visually-hidden" role="status">
         {copyStatusOf(state())}
