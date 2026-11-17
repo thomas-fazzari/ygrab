@@ -2,7 +2,7 @@ import { match, P } from "ts-pattern";
 
 import type { Job, JobMode, VideoQuality } from "@/shared/api/schemas.ts";
 import { formatClock, formatRelative } from "@/shared/clock.ts";
-import { isTrackJob, isYouTubeMusicLink, nameOf, videoIdOf } from "./jobNames.ts";
+import { isYouTubeMusicLink, nameOf, videoIdOf } from "./jobNames.ts";
 import { isFinished, isQueued, isRunning } from "./jobStates.ts";
 import type { BadgeTone } from "@/shared/ui/Badge.tsx";
 
@@ -116,7 +116,7 @@ export function metaOf(job: Job) {
       { mode: "video", quality: P.nonNullable },
       ({ quality }) => `video ${QUALITY_LABELS[quality]}`,
     )
-    .with({ title: P.string }, ({ title }) => (isTrackJob(job) ? `from ${title}` : null))
+    .with({ title: P.string }, () => null)
     .otherwise(() => "music");
   return kind === null ? artists : [...artists, kind];
 }

@@ -1,6 +1,55 @@
 @layer components {
   .cards {
+    --gap: var(--space-3);
+
     display: grid;
-    gap: var(--space-3);
+    gap: var(--gap);
+    interpolate-size: allow-keywords;
+
+    & > [data-motion] {
+      overflow: clip;
+    }
+
+    & > [data-motion="enter"] {
+      animation: card-in var(--duration-long) var(--ease-spring);
+    }
+
+    & > [data-motion="exit"] {
+      animation: card-out var(--duration) var(--ease-out) forwards;
+    }
+  }
+
+  @keyframes card-in {
+    from {
+      opacity: 0;
+      scale: 0.96;
+    }
+  }
+
+  /* Grows the card from nothing where the browser can animate to its auto height */
+  @supports (interpolate-size: allow-keywords) {
+    @keyframes card-in {
+      from {
+        block-size: 0;
+        margin-block-end: calc(-1 * var(--gap));
+        padding-block: 0;
+        opacity: 0;
+        scale: 0.96;
+      }
+    }
+  }
+
+  @keyframes card-out {
+    from {
+      block-size: var(--exit-size);
+    }
+
+    to {
+      block-size: 0;
+      margin-block-end: calc(-1 * var(--gap));
+      padding-block: 0;
+      opacity: 0;
+      scale: 0.96;
+    }
   }
 }

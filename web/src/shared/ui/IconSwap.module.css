@@ -1,0 +1,25 @@
+@layer components {
+  .swap {
+    display: inline-grid;
+
+    & > span {
+      display: grid;
+      grid-area: 1 / 1;
+      place-items: center;
+      transition:
+        opacity var(--duration),
+        scale var(--duration);
+    }
+  }
+
+  .swap > :last-child,
+  .swap[data-swapped] > :first-child {
+    opacity: 0;
+    scale: 0.4;
+  }
+
+  .swap[data-swapped] > :last-child {
+    opacity: 1;
+    scale: 1;
+  }
+}

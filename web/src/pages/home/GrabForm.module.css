@@ -26,6 +26,16 @@
     margin-inline-start: auto;
   }
 
+  .spinner {
+    animation: spin var(--duration-spin) linear infinite;
+  }
+
+  @keyframes spin {
+    to {
+      rotate: 1turn;
+    }
+  }
+
   .failure {
     margin-block-start: var(--space-3);
     color: var(--color-error);

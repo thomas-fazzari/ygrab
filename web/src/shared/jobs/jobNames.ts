@@ -3,6 +3,7 @@ import type { Job } from "@/shared/api/schemas.ts";
 const YOUTU_BE = "youtu.be";
 const YOUTUBE_MUSIC = "music.youtube.com";
 const WWW = "www.";
+const TITLE_SUFFIX = /\s[([]/u;
 
 /** Returns the link without its scheme and `www.`, as a user would type it. */
 export function displayLink(url: string) {
@@ -29,3 +30,19 @@ export function titleOf(job: Job) {
 }
 
 export const nameOf = (job: Job) => titleOf(job) ?? displayLink(job.url);
+
+/** Returns the album of a track job, or null when its title only repeats the track title. */
+export function albumOf(job: Job) {
+  const track = titleOf(job);
+  if (!isTrackJob(job) || job.title === null || track === null) {
+    return null;
+  }
+  const album = baseTitleOf(job.title);
+  const base = baseTitleOf(track);
+  return album === base || album.startsWith(`${base} `) ? null : job.title;
+}
+
+function baseTitleOf(title: string) {
+  const end = title.search(TITLE_SUFFIX);
+  return (end === -1 ? title : title.slice(0, end)).trim().toLowerCase();
+}

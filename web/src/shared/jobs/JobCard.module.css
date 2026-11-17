@@ -87,6 +87,8 @@
 
     & > svg {
       --icon-size: var(--space-4);
+
+      transition: rotate var(--duration) var(--ease-spring);
     }
   }
 
@@ -133,6 +135,7 @@
     & > div {
       block-size: 100%;
       background: var(--color-text);
+      transition: inline-size var(--duration) var(--ease-out);
     }
   }
 
@@ -146,16 +149,36 @@
     margin-inline-end: calc(-1 * var(--space-3));
   }
 
+  .fold {
+    display: grid;
+    grid-area: tracks;
+    grid-template-rows: 0fr;
+    margin-inline-end: calc(-1 * var(--space-4));
+    transition: grid-template-rows var(--duration) var(--ease-out);
+
+    & > div {
+      overflow: hidden;
+      min-block-size: 0;
+    }
+  }
+
+  .fold[data-open] {
+    grid-template-rows: 1fr;
+  }
+
   .tracks {
     overflow: auto;
-    grid-area: tracks;
     max-block-size: var(--track-list-height);
     margin-block-start: var(--space-4);
-    margin-inline-end: calc(-1 * var(--space-4));
     padding: 0;
     padding-inline-end: var(--space-4);
     list-style: none;
     overscroll-behavior: contain;
+  }
+
+  /* Fold clips anything outside the list */
+  .tracks:focus-visible {
+    outline-offset: -2px;
   }
 
   .track {
@@ -219,6 +242,10 @@
 
     .state {
       align-self: center;
+    }
+
+    .album {
+      display: none;
     }
 
     .actions {

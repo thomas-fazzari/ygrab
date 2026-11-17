@@ -4,12 +4,12 @@ import type { Component } from "solid-js";
 
 import { DIAGNOSTICS_ROUTE, DiagnosticsPage } from "@/pages/diagnostics/DiagnosticsPage.tsx";
 import { HomePage } from "@/pages/home/HomePage.tsx";
-import { JOBS_ROUTE, JobsPage } from "@/pages/jobs/JobsPage.tsx";
+import { JobsPage } from "@/pages/jobs/JobsPage.tsx";
 import { LoginPage } from "@/pages/login/LoginPage.tsx";
 import { NotFoundPage } from "@/pages/not-found/NotFoundPage.tsx";
 import { RELEASE_NOTES_ROUTE, ReleaseNotesPage } from "@/pages/release-notes/ReleaseNotesPage.tsx";
 import { createRouter, RouterContext } from "@/shared/router.tsx";
-import { HOME_ROUTE, LOGIN_ROUTE } from "@/shared/session.ts";
+import { HOME_ROUTE, JOBS_ROUTE, LOGIN_ROUTE } from "@/shared/session.ts";
 import { Button } from "@/shared/ui/Button.tsx";
 import { PageTitle } from "@/shared/ui/PageTitle.tsx";
 import styles from "./App.module.css";

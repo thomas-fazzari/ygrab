@@ -11,6 +11,8 @@ import { JobList, JobListSkeleton } from "@/shared/jobs/JobList.tsx";
 import { activeJobs, recentJobs } from "@/shared/jobs/jobView.ts";
 import { nameOf } from "@/shared/jobs/jobNames.ts";
 import { isFinished } from "@/shared/jobs/jobStates.ts";
+import { Link } from "@/shared/router.tsx";
+import { JOBS_ROUTE } from "@/shared/session.ts";
 import { Button } from "@/shared/ui/Button.tsx";
 import { Logo } from "@/shared/ui/Logo.tsx";
 import { SectionHeading } from "@/shared/ui/SectionHeading.tsx";
@@ -49,7 +51,12 @@ export function HomePage() {
           jobs={active()}
           card={card}
         />
-        <JobSection title="Recent" jobs={recent()} card={card} />
+        <JobSection
+          title="Recent"
+          aside={<Link href={JOBS_ROUTE}>All jobs</Link>}
+          jobs={recent()}
+          card={card}
+        />
         <p class="visually-hidden" role="status">
           {feed.announcement}
         </p>
@@ -112,14 +119,13 @@ interface JobSectionProps {
   readonly card: (job: Job) => JSX.Element;
 }
 
+// Hidden rather than unmounted while empty, so the first card to come in animates
 function JobSection(props: JobSectionProps) {
   return (
-    <Show when={props.jobs.length > 0 || props.pinned === true}>
-      <section>
-        <SectionHeading title={props.title} detail={props.count} aside={props.aside} />
-        <JobList jobs={props.jobs} card={props.card} />
-      </section>
-    </Show>
+    <section hidden={props.jobs.length === 0 && props.pinned !== true}>
+      <SectionHeading title={props.title} detail={props.count} aside={props.aside} />
+      <JobList jobs={props.jobs} card={props.card} />
+    </section>
   );
 }
 
