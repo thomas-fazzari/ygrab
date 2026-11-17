@@ -1,9 +1,9 @@
 import { match, P } from "ts-pattern";
 
-import type { Job, VideoQuality } from "@/shared/api/schemas.ts";
+import type { Job, JobMode, VideoQuality } from "@/shared/api/schemas.ts";
 import { formatClock, formatRelative } from "@/shared/clock.ts";
-import { isTrackJob, nameOf, videoIdOf } from "@/shared/jobs/jobNames.ts";
-import { isQueued, isRunning } from "@/shared/jobs/jobStates.ts";
+import { isTrackJob, nameOf, videoIdOf } from "./jobNames.ts";
+import { isFinished, isQueued, isRunning } from "./jobStates.ts";
 import type { BadgeTone } from "@/shared/ui/Badge.tsx";
 
 type JobState = Job["state"];
@@ -25,6 +25,8 @@ export interface CardContext {
   readonly now: number;
 }
 
+export const MODE_LABELS: Readonly<Record<JobMode, string>> = { audio: "Music", video: "Video" };
+
 export const QUALITY_LABELS: Readonly<Record<VideoQuality, string>> = {
   "720p": "720p",
   "1080p": "1080p",
@@ -38,14 +40,6 @@ const RECENT_LIMIT = 10;
 const FULL_PERCENT = 100;
 const COUNTER_DIGITS = 2;
 const YOUTUBE_MUSIC = "music.youtube.com";
-
-const FINISHED: ReadonlySet<JobState> = new Set([
-  "ready",
-  "incomplete",
-  "failed",
-  "skipped",
-  "expired",
-]);
 
 export const plural = (count: number, noun: string) => `${count} ${noun}${count === 1 ? "" : "s"}`;
 
@@ -64,7 +58,7 @@ export const activeJobs = (jobs: readonly Job[]) =>
 
 export const recentJobs = (jobs: readonly Job[]) =>
   jobs
-    .filter((job) => FINISHED.has(job.state))
+    .filter((job) => isFinished(job))
     .toSorted((first, second) => finishedTime(second) - finishedTime(first))
     .slice(0, RECENT_LIMIT)
     .toSorted((first, second) => Number(needsAttention(second)) - Number(needsAttention(first)));

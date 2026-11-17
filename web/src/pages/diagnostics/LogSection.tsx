@@ -1,12 +1,11 @@
 import { createMemo, createSignal, For, Show } from "solid-js";
 import DownloadIcon from "~icons/solar/download-minimalistic-linear";
-import SearchIcon from "~icons/solar/magnifer-linear";
 
 import { createMinuteClock, formatDay, formatTime } from "@/shared/clock.ts";
 import { Button } from "@/shared/ui/Button.tsx";
-import { Field } from "@/shared/ui/Field.tsx";
+import { MultiSelect } from "@/shared/ui/MultiSelect.tsx";
+import { SearchField } from "@/shared/ui/SearchField.tsx";
 import { SectionHeading } from "@/shared/ui/SectionHeading.tsx";
-import { LevelSelect } from "./LevelSelect.tsx";
 import type { LogFeed, LogLine } from "./logFeed.ts";
 import styles from "./LogSection.module.css";
 import {
@@ -15,6 +14,8 @@ import {
   FILTER_OF_LEVEL,
   highlight,
   LEVEL_CODES,
+  LEVEL_FILTER_LABELS,
+  LEVEL_FILTERS,
   logText,
   saveText,
 } from "./logText.ts";
@@ -42,27 +43,25 @@ export function LogSection(props: { readonly feed: LogFeed }) {
         title="Log"
         detail={props.feed.offline ? "offline, reconnecting" : undefined}
         aside={
-          <div class={styles.toolbar}>
-            <Field small>
-              <SearchIcon />
-              <input
-                type="text"
-                aria-label="Filter"
-                placeholder="filter"
-                value={query()}
-                onInput={(event) => {
-                  setQuery(event.currentTarget.value);
-                }}
-              />
-            </Field>
-            <LevelSelect
+          <>
+            <SearchField
+              label="Filter"
+              value={query()}
+              onInput={(value) => {
+                setQuery(value);
+              }}
+            />
+            <MultiSelect
+              name="Levels"
+              choices={LEVEL_FILTERS}
+              labels={LEVEL_FILTER_LABELS}
               value={levels()}
               onChange={(value) => {
                 setLevels(value);
               }}
             />
             <DownloadButton lines={props.feed.lines} />
-          </div>
+          </>
         }
       />
       <LogLines lines={visible()} query={query()} />

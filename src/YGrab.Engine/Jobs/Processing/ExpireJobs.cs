@@ -14,13 +14,18 @@ namespace YGrab.Engine.Jobs;
 /// A ready or incomplete job becomes expired and stays in the history, without its file.
 /// </para>
 /// <para>
+/// A job that finished longer ago than <see cref="Retention.History"/> is removed with its row
+/// and its files, through <see cref="RemoveJob"/>.
+/// </para>
+/// <para>
 /// A failed job keeps its state and loses its folder.
 /// </para>
 /// <para>
 /// A job that cannot be swept is logged and the sweep goes on with the others.
 /// </para>
 /// <para>
-/// The sweep reads the job again before it deletes the folder, since a retry can have queued it.
+/// The sweep reads the job again before it deletes the folder or removes the job, since a retry
+/// can have queued it.
 /// </para>
 /// </remarks>
 public static partial class ExpireJobs
@@ -30,6 +35,7 @@ public static partial class ExpireJobs
     internal sealed partial class Handler(
         JobRegistry jobs,
         IJobOutput output,
+        ICommandHandler<RemoveJob.Command, RemoveJob.Outcome> removeJob,
         TimeProvider timeProvider,
         ILogger<Handler> logger
     ) : ICommandHandler<Command, Done>
@@ -44,18 +50,13 @@ public static partial class ExpireJobs
             var now = timeProvider.GetUtcNow();
             foreach (var job in jobs.List(int.MaxValue))
             {
-                if (!IsDue(job, command, now))
-                {
-                    continue;
-                }
-
                 try
                 {
-                    await ExpireAsync(job.Id, command, now, cancellationToken);
+                    await SweepAsync(job, command, now, cancellationToken);
                 }
                 catch (Exception exception) when (!cancellationToken.IsCancellationRequested)
                 {
-                    LogExpireFailed(job.Id, exception);
+                    LogSweepFailed(job.Id, exception);
                 }
             }
 
@@ -64,6 +65,41 @@ public static partial class ExpireJobs
 
         private static bool IsDue(Job job, Command command, DateTimeOffset now) =>
             job.State is not JobState.Expired && command.Retention.ExpiresAt(job) < now;
+
+        private static bool IsForgotten(Job job, Command command, DateTimeOffset now) =>
+            command.Retention.RemovedAt(job) < now;
+
+        private async ValueTask SweepAsync(
+            Job job,
+            Command command,
+            DateTimeOffset now,
+            CancellationToken cancellationToken
+        )
+        {
+            if (IsForgotten(job, command, now))
+            {
+                await ForgetAsync(job.Id, command, now, cancellationToken);
+                return;
+            }
+
+            if (IsDue(job, command, now))
+            {
+                await ExpireAsync(job.Id, command, now, cancellationToken);
+            }
+        }
+
+        private async ValueTask ForgetAsync(
+            Guid id,
+            Command command,
+            DateTimeOffset now,
+            CancellationToken cancellationToken
+        )
+        {
+            if (jobs.Get(id) is { } job && IsForgotten(job, command, now))
+            {
+                await removeJob.HandleAsync(new RemoveJob.Command(id), cancellationToken);
+            }
+        }
 
         // The folder goes first, so a failed delete leaves the job to the next sweep
         private async ValueTask ExpireAsync(
@@ -85,7 +121,7 @@ public static partial class ExpireJobs
             }
         }
 
-        [LoggerMessage(Level = LogLevel.Error, Message = "Expiring the job {Id} failed")]
-        private partial void LogExpireFailed(Guid id, Exception exception);
+        [LoggerMessage(Level = LogLevel.Error, Message = "Sweeping the job {Id} failed")]
+        private partial void LogSweepFailed(Guid id, Exception exception);
     }
 }

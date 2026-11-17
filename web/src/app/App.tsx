@@ -4,6 +4,7 @@ import type { Component } from "solid-js";
 
 import { DIAGNOSTICS_ROUTE, DiagnosticsPage } from "@/pages/diagnostics/DiagnosticsPage.tsx";
 import { HomePage } from "@/pages/home/HomePage.tsx";
+import { JOBS_ROUTE, JobsPage } from "@/pages/jobs/JobsPage.tsx";
 import { LoginPage } from "@/pages/login/LoginPage.tsx";
 import { NotFoundPage } from "@/pages/not-found/NotFoundPage.tsx";
 import { RELEASE_NOTES_ROUTE, ReleaseNotesPage } from "@/pages/release-notes/ReleaseNotesPage.tsx";
@@ -22,6 +23,7 @@ interface Route {
 const routes = new Map<string, Route>([
   [HOME_ROUTE, { page: HomePage, header: true }],
   [LOGIN_ROUTE, { page: LoginPage, header: false }],
+  [JOBS_ROUTE, { page: JobsPage, header: true }],
   [RELEASE_NOTES_ROUTE, { page: ReleaseNotesPage, header: true }],
   [DIAGNOSTICS_ROUTE, { page: DiagnosticsPage, header: true }],
 ]);

@@ -32,6 +32,7 @@ YtDlp:
 Jobs:
   RetentionDays: 7
   VideoRetentionDays: 2
+  HistoryDays: 90
 
 Auth:
   # At least 16 characters. Without one, the host generates a token into the data folder and logs

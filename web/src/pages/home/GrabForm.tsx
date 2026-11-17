@@ -14,11 +14,9 @@ import { ChoiceChips, ChoiceSelect } from "@/shared/ui/Choices.tsx";
 import { Field } from "@/shared/ui/Field.tsx";
 import { IconButton } from "@/shared/ui/IconControl.tsx";
 import styles from "./GrabForm.module.css";
-import { QUALITY_LABELS } from "./jobView.ts";
+import { MODE_LABELS, QUALITY_LABELS } from "@/shared/jobs/jobView.ts";
 
 const HTTP_CONFLICT = 409;
-
-const MODE_LABELS: Readonly<Record<JobMode, string>> = { audio: "Music", video: "Video" };
 
 const PLACEHOLDERS: Readonly<Record<JobMode, string>> = {
   audio: "paste a YouTube Music link",

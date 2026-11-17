@@ -3,7 +3,7 @@ import { match, P } from "ts-pattern";
 import ChevronIcon from "~icons/solar/alt-arrow-right-linear";
 
 import type { Job, Track } from "@/shared/api/schemas.ts";
-import { displayLink, isTrackJob, titleOf } from "@/shared/jobs/jobNames.ts";
+import { displayLink, isTrackJob, titleOf } from "./jobNames.ts";
 import { Badge } from "@/shared/ui/Badge.tsx";
 import { JobActions } from "./JobActions.tsx";
 import type { ActionFailure } from "./JobActions.tsx";

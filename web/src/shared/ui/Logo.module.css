@@ -1,17 +1,17 @@
 @layer components {
   .logo {
     inline-size: max-content;
-    margin-block: var(--space-9);
+    margin-block: var(--space-5) var(--space-9);
     margin-inline: auto;
-    font: var(--weight-regular) 16px/18px var(--font-logo);
+    font: var(--weight-regular) 20px/22px var(--font-logo);
   }
 
   /* The art is fixed-width text, so it shrinks to fit a phone */
   @media (width <= 760px) {
     .logo {
-      margin-block: var(--space-5) var(--space-7);
-      font-size: 10px;
-      line-height: 12px;
+      margin-block: var(--space-3) var(--space-7);
+      font-size: 12px;
+      line-height: 14px;
     }
   }
 }

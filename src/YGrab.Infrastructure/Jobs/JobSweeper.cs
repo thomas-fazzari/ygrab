@@ -7,7 +7,7 @@ using YGrab.Engine.Jobs;
 namespace YGrab.Infrastructure.Jobs;
 
 /// <summary>
-/// Expires the finished jobs that are older than the retention, at start and then at intervals.
+/// Runs <see cref="ExpireJobs"/> at start and then at intervals.
 /// </summary>
 internal sealed partial class JobSweeper(
     ICommandHandler<ExpireJobs.Command, Done> expireJobs,

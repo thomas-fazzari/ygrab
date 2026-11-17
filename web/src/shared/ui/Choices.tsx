@@ -22,6 +22,15 @@ interface ChoicesProps<TValue extends string> {
   readonly class?: string | undefined;
 }
 
+/**
+ * Sizes a summary to the longest text it can show, so its button keeps its width when the choice changes.
+ *
+ * The width counts characters, which holds for the monospace font of the app.
+ */
+export const widestOf = (texts: readonly string[]) => ({
+  "--summary-width": `${Math.max(0, ...texts.map((text) => text.length))}ch`,
+});
+
 /** Renders one radio per choice, each drawn as a button. */
 export function ChoiceChips<TValue extends string>(props: ChoicesProps<TValue>) {
   return (
@@ -66,7 +75,12 @@ export function ChoiceSelect<TValue extends string>(props: ChoicesProps<TValue>)
     >
       <ListboxLabel class="visually-hidden">{props.name}</ListboxLabel>
       <ListboxButton class={[buttonStyles.button, styles.trigger]} style={anchor}>
-        {props.labels[props.value]}
+        <span
+          class={styles.summary}
+          style={widestOf(props.choices.map((choice) => props.labels[choice]))}
+        >
+          {props.labels[props.value]}
+        </span>
         <ChevronIcon />
       </ListboxButton>
       <ListboxOptions class={styles.options} style={anchor}>

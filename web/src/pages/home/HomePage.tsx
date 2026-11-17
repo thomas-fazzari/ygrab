@@ -1,41 +1,27 @@
 import type { JSX } from "@solidjs/web";
-import { createMemo, createProjection, createSignal, For, Loading, Show } from "solid-js";
+import { createMemo, createProjection, createSignal, Loading, Show } from "solid-js";
 import ClockIcon from "~icons/solar/clock-circle-linear";
 
 import type { Job, JobId } from "@/shared/api/schemas.ts";
 import { createMinuteClock, formatClock } from "@/shared/clock.ts";
 import { emptyFeed, watchJobs } from "@/shared/jobs/jobFeed.ts";
 import type { JobFeed } from "@/shared/jobs/jobFeed.ts";
-import { isQueued } from "@/shared/jobs/jobStates.ts";
+import { createJobCards } from "@/shared/jobs/jobCards.tsx";
+import { JobList } from "@/shared/jobs/JobList.tsx";
+import { activeJobs, recentJobs } from "@/shared/jobs/jobView.ts";
 import { Logo } from "@/shared/ui/Logo.tsx";
 import { SectionHeading } from "@/shared/ui/SectionHeading.tsx";
 import { GrabForm } from "./GrabForm.tsx";
-import styles from "./HomePage.module.css";
-import { JobCard } from "./JobCard.tsx";
-import { activeJobs, originalOf, recentJobs } from "./jobView.ts";
-import type { CardContext } from "./jobView.ts";
 
 export function HomePage() {
   const feed = createProjection<JobFeed>(watchJobs, emptyFeed);
   const now = createMinuteClock();
   const [existingId, setExistingId] = createSignal<JobId | null>(null);
 
-  const cooldownUntil = createMemo(() => {
-    const until = feed.cooldown?.until ?? null;
-    return until !== null && Date.parse(until) > now() ? until : null;
-  });
+  const { cooldownUntil, card } = createJobCards(feed, now);
   const active = createMemo(() => activeJobs(feed.jobs));
-  const queued = createMemo(() => active().filter((job) => isQueued(job)));
   const recent = createMemo(() => recentJobs(feed.jobs));
   const existing = createMemo(() => feed.jobs.filter((job) => job.id === existingId()));
-
-  const contextOf = (job: Job): CardContext => ({
-    ahead: queued().indexOf(job),
-    paused: cooldownUntil() !== null,
-    original: originalOf(feed.jobs, job),
-    now: now(),
-  });
-  const card = (job: Job) => <JobCard job={job} context={contextOf(job)} />;
 
   return (
     <>
@@ -79,9 +65,7 @@ function JobSection(props: JobSectionProps) {
     <Show when={props.jobs.length > 0 || props.pinned === true}>
       <section>
         <SectionHeading title={props.title} detail={props.count} aside={props.aside} />
-        <div class={styles.cards}>
-          <For each={props.jobs}>{props.card}</For>
-        </div>
+        <JobList jobs={props.jobs} card={props.card} />
       </section>
     </Show>
   );

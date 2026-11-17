@@ -10,7 +10,7 @@ import type { ApiResult } from "@/shared/api/client.ts";
 import { failureOf } from "@/shared/api/failures.ts";
 import { DEFAULT_QUALITY } from "@/shared/api/schemas.ts";
 import type { Job } from "@/shared/api/schemas.ts";
-import { nameOf } from "@/shared/jobs/jobNames.ts";
+import { nameOf } from "./jobNames.ts";
 import { IconButton, IconLink } from "@/shared/ui/IconControl.tsx";
 import styles from "./JobCard.module.css";
 import { canDownload, canRetry, removalDeletesFiles, siteOf } from "./jobView.ts";

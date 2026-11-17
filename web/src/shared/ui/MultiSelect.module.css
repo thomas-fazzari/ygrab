@@ -8,7 +8,7 @@
     visibility: hidden;
   }
 
-  /* A checked level shows its mark, not the look of the single choice */
+  /* A checked choice shows its mark and keeps the plain option look */
   [aria-multiselectable="true"] .option[aria-selected="true"] {
     background: none;
     font-weight: var(--weight-regular);

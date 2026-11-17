@@ -1,0 +1,11 @@
+@layer components {
+  .search {
+    inline-size: var(--filter-width);
+  }
+
+  @media (width <= 760px) {
+    .search {
+      inline-size: 100%;
+    }
+  }
+}

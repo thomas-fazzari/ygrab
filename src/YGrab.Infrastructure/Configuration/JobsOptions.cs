@@ -35,8 +35,18 @@ public sealed class JobsOptions
     [Range(1, MaxRetentionDays)]
     public int VideoRetentionDays { get; set; } = 2;
 
+    /// <summary>
+    /// The days that a finished job stays in the history, after which the sweep removes it.
+    /// </summary>
+    [Range(1, MaxRetentionDays)]
+    public int HistoryDays { get; set; } = 90;
+
     internal Retention Retention =>
-        new(TimeSpan.FromDays(RetentionDays), TimeSpan.FromDays(VideoRetentionDays));
+        new(
+            TimeSpan.FromDays(RetentionDays),
+            TimeSpan.FromDays(VideoRetentionDays),
+            TimeSpan.FromDays(HistoryDays)
+        );
 }
 
 [OptionsValidator]

@@ -5,8 +5,13 @@
     gap: var(--space-2);
   }
 
+  .chip,
+  .chip:hover {
+    background: none;
+  }
+
   .chip:has(input:checked) {
-    background: var(--color-layer-3);
+    background: var(--color-layer-1);
     color: var(--color-text);
     font-weight: var(--weight-bold);
   }
@@ -23,6 +28,11 @@
   .trigger {
     gap: var(--space-4);
     anchor-name: var(--anchor);
+  }
+
+  .summary {
+    inline-size: var(--summary-width);
+    text-align: start;
   }
 
   .trigger[aria-expanded="true"] {

@@ -20,7 +20,7 @@
   },
   "devDependencies": {
     "@iconify-json/simple-icons": "1.2.102",
-    "@iconify-json/solar": "1.2.15",
+    "@iconify-json/solar": "1.2.16",
     "@oxlint/plugins": "1.93.0",
     "@solidjs/vite-plugin": "3.0.0-next.57",
     "@types/node": "26.6.6",
