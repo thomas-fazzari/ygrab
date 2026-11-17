@@ -6,11 +6,11 @@ set -euo pipefail
 rid="$1"
 tag="${2:-}"
 
-version=()
+arguments=(src/YGrab.Cli --configuration Release --runtime "$rid" --output artifacts/cli)
 if [[ -n "$tag" ]]; then
-  version=("-p:Version=${tag#v}" -p:IncludeSourceRevisionInInformationalVersion=false)
+  arguments+=("-p:Version=${tag#v}" -p:IncludeSourceRevisionInInformationalVersion=false)
 fi
-dotnet publish src/YGrab.Cli --configuration Release --runtime "$rid" --output artifacts/cli "${version[@]}"
+dotnet publish "${arguments[@]}"
 
 extension=""
 if [[ "$rid" == win-* ]]; then
