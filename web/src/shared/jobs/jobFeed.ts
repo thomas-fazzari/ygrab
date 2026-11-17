@@ -1,3 +1,4 @@
+import { createContext } from "solid-js";
 import { match } from "ts-pattern";
 
 import { apiEvents, DISCONNECTED, EventNames } from "@/shared/api/events.ts";
@@ -16,6 +17,9 @@ export interface JobFeed {
 }
 
 export const emptyFeed: JobFeed = { jobs: [], cooldown: null, offline: false, announcement: "" };
+
+/** Feed of the signed-in pages, sharing one event stream. */
+export const JobFeedContext = createContext<JobFeed>();
 
 const upsert = (jobs: Job[], changed: Job) =>
   jobs.some((job) => job.id === changed.id)

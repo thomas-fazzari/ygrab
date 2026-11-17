@@ -7,6 +7,7 @@ import {
   onSettled,
   Repeat,
   Show,
+  useContext,
 } from "solid-js";
 import { match } from "ts-pattern";
 import CheckIcon from "~icons/solar/check-linear";
@@ -19,8 +20,7 @@ import type { LogEvent } from "@/shared/api/events.ts";
 import { failureOf } from "@/shared/api/failures.ts";
 import { createMinuteClock } from "@/shared/clock.ts";
 import { scan } from "@/shared/iterators.ts";
-import { emptyFeed, watchJobs } from "@/shared/jobs/jobFeed.ts";
-import type { JobFeed } from "@/shared/jobs/jobFeed.ts";
+import { JobFeedContext } from "@/shared/jobs/jobFeed.ts";
 import { Button } from "@/shared/ui/Button.tsx";
 import { IconSwap } from "@/shared/ui/IconSwap.tsx";
 import { PageTitle } from "@/shared/ui/PageTitle.tsx";
@@ -45,7 +45,7 @@ const SKELETON_FACTS = 4;
 const watchLogs = () => scan<LogEvent, LogFeed>(logEvents(), emptyLogFeed, applyLogEvent);
 
 export function DiagnosticsPage() {
-  const jobs = createProjection<JobFeed>(watchJobs, emptyFeed);
+  const jobs = useContext(JobFeedContext);
   const logs = createProjection<LogFeed>(watchLogs, emptyLogFeed);
   const status = createMemo(() => getStatus());
   const now = createMinuteClock();
