@@ -1,6 +1,7 @@
 import { match, P } from "ts-pattern";
 
 import type { Job, JobMode, VideoQuality } from "@/shared/api/schemas.ts";
+import { formatBytes } from "@/shared/bytes.ts";
 import { formatClock, formatRelative } from "@/shared/clock.ts";
 import { isYouTubeMusicLink, nameOf, videoIdOf } from "./jobNames.ts";
 import { isFinished, isQueued, isRunning } from "./jobStates.ts";
@@ -177,10 +178,13 @@ function waitingText(job: Job) {
   return job.reason === null ? when : `${when} · ${job.reason}`;
 }
 
-const readyLine = (job: Job, context: CardContext): StateLine =>
-  job.expiresAt === null
-    ? { kind: "none" }
-    : { kind: "text", text: `expires ${formatRelative(job.expiresAt, context.now)}` };
+function readyLine(job: Job, context: CardContext): StateLine {
+  const parts = [
+    job.fileSize === null ? null : formatBytes(job.fileSize),
+    job.expiresAt === null ? null : `expires ${formatRelative(job.expiresAt, context.now)}`,
+  ].filter((part) => part !== null);
+  return parts.length === 0 ? { kind: "none" } : { kind: "text", text: parts.join(" · ") };
+}
 
 // A longer retention set after the sweep moves the expiry past the deletion
 function deletedText(job: Job, context: CardContext) {

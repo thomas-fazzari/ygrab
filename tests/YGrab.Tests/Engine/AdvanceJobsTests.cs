@@ -74,7 +74,7 @@ public sealed class AdvanceJobsTests
 
         rig.Jobs.List(1)[0]
             .State.Should()
-            .Be(new JobState.Ready(FakeJobOutput.FileName, TestTime.Start));
+            .Be(new JobState.Ready(FakeJobOutput.FileName, FakeJobOutput.FileSize, TestTime.Start));
         rig.Cooldown.Current.Should().Be(Cooldown.None);
         rig.Store.Cooldown.Should().Be(Cooldown.None);
         packaged.Value.Should().BeOfType<AdvanceJobs.WaitUntil>();
@@ -91,7 +91,8 @@ public sealed class AdvanceJobsTests
         await rig.AdvanceAsync(steps: 1 + TrackCount + 1);
 
         var job = rig.Jobs.List(1)[0];
-        job.State.Should().Be(new JobState.Ready(FakeJobOutput.FileName, TestTime.Start));
+        job.State.Should()
+            .Be(new JobState.Ready(FakeJobOutput.FileName, FakeJobOutput.FileSize, TestTime.Start));
         job.EnrichmentFailure.Should().Be(EnrichmentFailure.Unreachable);
         rig.Output.Packaged.Should().Equal((ReleaseDetails?)null);
         rig.Cooldown.Current.Should().Be(Cooldown.None);
@@ -158,7 +159,7 @@ public sealed class AdvanceJobsTests
 
         rig.Jobs.Get(queued.Id)!
             .State.Should()
-            .Be(new JobState.Ready(FakeJobOutput.FileName, TestTime.Start));
+            .Be(new JobState.Ready(FakeJobOutput.FileName, FakeJobOutput.FileSize, TestTime.Start));
         rig.Videos.Downloads.Should().Equal((Samples.Video("vid"), VideoQuality.P2160));
         rig.Catalog.Lookups.Should().Be(0);
         rig.Enricher.Lookups.Should().BeEmpty();

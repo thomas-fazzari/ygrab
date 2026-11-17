@@ -17,6 +17,7 @@ import { redirectToLogin } from "../session.ts";
 
 export const API_PREFIX = "/api";
 export const HTTP_UNAUTHORIZED = 401;
+export const HTTP_CONFLICT = 409;
 
 const LOGIN_PATH = "/login";
 

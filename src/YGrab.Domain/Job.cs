@@ -81,6 +81,9 @@ public sealed record Job
 
     public bool CanRetry => State is JobState.Failed or JobState.Incomplete;
 
+    public bool CanFallBackToVideo =>
+        State is JobState.Failed && Resolved is null && Link is TrackLink;
+
     public bool IsFinished =>
         State
             is JobState.Ready
@@ -397,9 +400,15 @@ public sealed record Job
     }
 
     /// <param name="enrichmentFailure">Why the files lack the provider tags, or null when they have them or the job has none to get.</param>
-    public Job Finish(string fileName, EnrichmentFailure? enrichmentFailure, DateTimeOffset now)
+    public Job Finish(
+        string fileName,
+        long fileSize,
+        EnrichmentFailure? enrichmentFailure,
+        DateTimeOffset now
+    )
     {
         ArgumentNullException.ThrowIfNull(fileName);
+        ArgumentOutOfRangeException.ThrowIfNegative(fileSize);
 
         return
             State is not JobState.Packaging
@@ -409,8 +418,8 @@ public sealed record Job
                 this with
                 {
                     State = Tracks.Any(track => track.IsMissing)
-                        ? new JobState.Incomplete(fileName, now)
-                        : new JobState.Ready(fileName, now),
+                        ? new JobState.Incomplete(fileName, fileSize, now)
+                        : new JobState.Ready(fileName, fileSize, now),
                     EnrichmentFailure = enrichmentFailure,
                     Percent = JobRelease.FinishedPercent,
                 }

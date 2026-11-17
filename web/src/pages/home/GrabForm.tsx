@@ -1,14 +1,12 @@
 import { makePersisted } from "@solid-primitives/storage";
 import { action, createOptimistic, createSignal, onSettled, Show } from "solid-js";
-import { match, P } from "ts-pattern";
 import ArrowIcon from "~icons/solar/arrow-right-linear";
 import ClipboardIcon from "~icons/solar/clipboard-linear";
 import LinkIcon from "~icons/solar/link-minimalistic-2-linear";
 import LoaderIcon from "~icons/solar/loader-linear";
 
 import { startJob } from "@/shared/api/client.ts";
-import type { ApiResult } from "@/shared/api/client.ts";
-import { failureOf } from "@/shared/api/failures.ts";
+import { failureOf, previousIdOf } from "@/shared/api/failures.ts";
 import {
   DEFAULT_QUALITY,
   JOB_MODES,
@@ -16,13 +14,7 @@ import {
   VIDEO_QUALITIES,
   VideoQualitySchema,
 } from "@/shared/api/schemas.ts";
-import type {
-  JobId,
-  JobMode,
-  StartedJob,
-  StartJobRequest,
-  VideoQuality,
-} from "@/shared/api/schemas.ts";
+import type { JobId, JobMode, StartJobRequest, VideoQuality } from "@/shared/api/schemas.ts";
 import { isYouTubeMusicLink } from "@/shared/jobs/jobNames.ts";
 import { MODE_LABELS, QUALITY_LABELS } from "@/shared/jobs/jobView.ts";
 import { storedAs } from "@/shared/storage.ts";
@@ -33,7 +25,6 @@ import { IconButton } from "@/shared/ui/IconControl.tsx";
 import { IconSwap } from "@/shared/ui/IconSwap.tsx";
 import styles from "./GrabForm.module.css";
 
-const HTTP_CONFLICT = 409;
 // A paste in one of these stays there
 const PASTE_TARGETS =
   "input:not([type=radio], [type=checkbox], [type=button], [type=submit]), textarea, [contenteditable]:not([contenteditable=false]), dialog";
@@ -64,14 +55,6 @@ interface GrabFormProps {
 }
 
 type GrabRequest = Omit<StartJobRequest, "force">;
-
-const previousIdOf = (result: ApiResult<StartedJob>) =>
-  match(result)
-    .with(
-      { kind: "problem", status: HTTP_CONFLICT, problem: { previousId: P.string } },
-      ({ problem }) => problem.previousId,
-    )
-    .otherwise(() => null);
 
 function createGrab(props: GrabFormProps, clear: () => void) {
   const [failure, setFailure] = createSignal<string | null>(null);

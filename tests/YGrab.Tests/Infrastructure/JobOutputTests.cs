@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 using Microsoft.Extensions.Options;
+using YGrab.Engine.Jobs;
 using YGrab.Infrastructure.Configuration;
 using YGrab.Infrastructure.Output;
 using YGrab.Tests.Fakes;
@@ -42,8 +43,15 @@ public sealed class JobOutputTests : IDisposable
         );
 
         second.Should().Be(first);
-        first.Should().Be(ReleaseNaming.VideoName(request.VideoId, Samples.VideoDetails, ".mkv"));
+        first
+            .Should()
+            .Be(
+                new PackagedFile(
+                    ReleaseNaming.VideoName(request.VideoId, Samples.VideoDetails, ".mkv"),
+                    "video".Length
+                )
+            );
         File.Exists(source).Should().BeFalse();
-        File.Exists(output.PathOf(job.Id, first)).Should().BeTrue();
+        File.Exists(output.PathOf(job.Id, first.Name)).Should().BeTrue();
     }
 }

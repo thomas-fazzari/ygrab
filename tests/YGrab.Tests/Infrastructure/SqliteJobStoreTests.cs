@@ -53,19 +53,19 @@ public sealed class SqliteJobStoreTests : IAsyncLifetime
             Mixed()
                 .CompleteTrack()
                 .StartPackaging(_now)
-                .Finish("a.zip", enrichmentFailure: null, _now),
+                .Finish("a.zip", 2048, enrichmentFailure: null, _now),
             Mixed()
                 .CompleteTrack()
                 .StartPackaging(_now)
-                .Finish("a.zip", EnrichmentFailure.NoMatch, _now),
+                .Finish("a.zip", 2048, EnrichmentFailure.NoMatch, _now),
             Mixed()
                 .CompleteTrack()
                 .StartPackaging(_now)
-                .Finish("a.zip", EnrichmentFailure.Unreachable, _now),
+                .Finish("a.zip", 2048, EnrichmentFailure.Unreachable, _now),
             Mixed()
                 .CompleteTrack()
                 .StartPackaging(_now)
-                .Finish("a.zip", EnrichmentFailure.ProviderError, _now)
+                .Finish("a.zip", 2048, EnrichmentFailure.ProviderError, _now)
                 .Expire(),
             Samples.Queued(Samples.AlbumLink()).Resume(_now).Skip(Guid.CreateVersion7(), _now),
             Samples.Queued(Samples.AlbumLink()).Abort("broken", _now),
@@ -75,8 +75,11 @@ public sealed class SqliteJobStoreTests : IAsyncLifetime
             Kept(),
             Kept().Requeue(),
             Kept().StartPackaging(_now),
-            Kept().StartPackaging(_now).Finish("video.mp4", enrichmentFailure: null, _now),
-            Kept().StartPackaging(_now).Finish("video.mp4", enrichmentFailure: null, _now).Expire(),
+            Kept().StartPackaging(_now).Finish("video.mp4", 2048, enrichmentFailure: null, _now),
+            Kept()
+                .StartPackaging(_now)
+                .Finish("video.mp4", 2048, enrichmentFailure: null, _now)
+                .Expire(),
             Samples.DownloadingVideo().Fail(new RemoteFailure.Unavailable("private"), _now),
         };
         var cooldown = Cooldown.None.Hit("429", _now);

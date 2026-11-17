@@ -23,12 +23,16 @@ public closed record JobState
 
     public sealed record Packaging : JobState;
 
-    public sealed record Ready(string FileName, DateTimeOffset FinishedAt) : JobState;
+    /// <param name="FileSize">The size in bytes, or null for a job stored without one.</param>
+    public sealed record Ready(string FileName, long? FileSize, DateTimeOffset FinishedAt)
+        : JobState;
 
     /// <summary>
     /// The file lacks the tracks that could not be downloaded.
     /// </summary>
-    public sealed record Incomplete(string FileName, DateTimeOffset FinishedAt) : JobState;
+    /// <param name="FileSize">The size in bytes, or null for a job stored without one.</param>
+    public sealed record Incomplete(string FileName, long? FileSize, DateTimeOffset FinishedAt)
+        : JobState;
 
     public sealed record Failed(string Reason, DateTimeOffset FinishedAt) : JobState;
 

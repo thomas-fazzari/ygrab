@@ -121,14 +121,14 @@ public sealed class JobTests
 
         downloaded
             .StartPackaging(_now)
-            .Finish("a.zip", enrichmentFailure: null, _now)
+            .Finish("a.zip", 2048, enrichmentFailure: null, _now)
             .State.Should()
-            .Be(new JobState.Ready("a.zip", _now));
+            .Be(new JobState.Ready("a.zip", 2048, _now));
         mixed
             .StartPackaging(_now)
-            .Finish("a.zip", enrichmentFailure: null, _now)
+            .Finish("a.zip", 2048, enrichmentFailure: null, _now)
             .State.Should()
-            .Be(new JobState.Incomplete("a.zip", _now));
+            .Be(new JobState.Incomplete("a.zip", 2048, _now));
         none.StartPackaging(_now)
             .State.Should()
             .Be(new JobState.Failed(Job.NothingDownloadedMessage, _now));
@@ -144,7 +144,7 @@ public sealed class JobTests
             .Fail(new RemoteFailure.Unavailable("private"), _now)
             .CompleteTrack()
             .StartPackaging(_now)
-            .Finish("a.zip", EnrichmentFailure.NoMatch, _now);
+            .Finish("a.zip", 2048, EnrichmentFailure.NoMatch, _now);
 
         var retried = incomplete.Retry(new HashSet<VideoId> { Samples.Video("v2") });
 
@@ -177,11 +177,11 @@ public sealed class JobTests
             .StartPackaging(_now);
         var queued = Samples.Queued(Samples.AlbumLink());
 
-        var finished = packaging.Finish("a.zip", EnrichmentFailure.Unreachable, _now);
+        var finished = packaging.Finish("a.zip", 2048, EnrichmentFailure.Unreachable, _now);
 
         finished.EnrichmentFailure.Should().Be(EnrichmentFailure.Unreachable);
         video
-            .Invoking(job => job.Finish("v.mp4", EnrichmentFailure.NoMatch, _now))
+            .Invoking(job => job.Finish("v.mp4", 2048, EnrichmentFailure.NoMatch, _now))
             .Should()
             .Throw<InvalidOperationException>();
         FluentActions
@@ -318,7 +318,8 @@ public sealed class JobTests
 
         var pending = queued.Resume(_now);
         var kept = pending.Progress(0.5).CompleteVideo(Samples.VideoDetails);
-        var finished = kept.StartPackaging(_now).Finish("video.mp4", enrichmentFailure: null, _now);
+        var finished = kept.StartPackaging(_now)
+            .Finish("video.mp4", 2048, enrichmentFailure: null, _now);
 
         pending.State.Should().BeOfType<JobState.Downloading>();
         pending.PendingVideo.Should().Be(Samples.VideoRequest());
@@ -332,7 +333,7 @@ public sealed class JobTests
             .Invoking(job => job.StartPackaging(_now))
             .Should()
             .Throw<InvalidOperationException>();
-        finished.State.Should().Be(new JobState.Ready("video.mp4", _now));
+        finished.State.Should().Be(new JobState.Ready("video.mp4", 2048, _now));
     }
 
     [Fact]
@@ -369,7 +370,7 @@ public sealed class JobTests
             .DownloadingVideo()
             .CompleteVideo(Samples.VideoDetails)
             .StartPackaging(_now)
-            .Finish("video.mp4", enrichmentFailure: null, _now)
+            .Finish("video.mp4", 2048, enrichmentFailure: null, _now)
             .Expire();
         var track = Samples.Queued(Samples.TrackLink("vid"));
 

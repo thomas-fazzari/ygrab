@@ -38,7 +38,7 @@ internal sealed class JobOutput(IOptions<StorageOptions> storage) : IJobOutput
     private const string AlbumFileBaseName = "package";
     private const string TrackFileBaseName = "track";
 
-    public async ValueTask<string> PackageAsync(
+    public async ValueTask<PackagedFile> PackageAsync(
         Job job,
         Cover? cover,
         ReleaseDetails? details,
@@ -47,26 +47,10 @@ internal sealed class JobOutput(IOptions<StorageOptions> storage) : IJobOutput
     {
         ArgumentNullException.ThrowIfNull(job);
 
-        if (job.Request is JobRequest.Video video)
-        {
-            return PackageVideo(job, video);
-        }
-
-        var release = job.Release
-            ?? throw new InvalidOperationException($"Job {job.Id} has no release to package.");
-        var done = job.Tracks.Where(track => track.State is TrackState.Done).ToList();
-        Directory.CreateDirectory(storage.Value.OutputDirectory(job.Id));
-
-        var (name, build) = job.Request is JobRequest.Audio { Link: TrackLink }
-            ? PackageSingle(job.Id, release, done[0].Track, cover, details)
-            : PackageAlbum(job.Id, release, done, cover, details);
-        var path = PathOf(job.Id, name);
-        var temporary = path + TemporaryExtension;
-        // A crash can leave a temporary file, which a zip cannot overwrite
-        File.Delete(temporary);
-        await build(temporary, cancellationToken);
-        File.Move(temporary, path, overwrite: true);
-        return name;
+        var name = job.Request is JobRequest.Video video
+            ? PackageVideo(job, video)
+            : await PackageAudioAsync(job, cover, details, cancellationToken);
+        return new PackagedFile(name, new FileInfo(PathOf(job.Id, name)).Length);
     }
 
     public string? FindFile(Guid jobId, string fileName)
@@ -91,6 +75,32 @@ internal sealed class JobOutput(IOptions<StorageOptions> storage) : IJobOutput
         {
             Directory.Delete(directory, recursive: true);
         }
+    }
+
+    private async ValueTask<string> PackageAudioAsync(
+        Job job,
+        Cover? cover,
+        ReleaseDetails? details,
+        CancellationToken cancellationToken
+    )
+    {
+        var release = job.Release
+            ?? throw new InvalidOperationException($"Job {job.Id} has no release to package.");
+        var done = job.Tracks.Where(track => track.State is TrackState.Done).ToList();
+        Directory.CreateDirectory(storage.Value.OutputDirectory(job.Id));
+
+        var (name, build) = job.Request is JobRequest.Audio { Link: TrackLink }
+            ? PackageSingle(job.Id, release, done[0].Track, cover, details)
+            : PackageAlbum(job.Id, release, done, cover, details);
+        var path = PathOf(job.Id, name);
+        var temporary = path + TemporaryExtension;
+
+        // A crash can leave a temporary file, which a zip cannot overwrite
+        File.Delete(temporary);
+
+        await build(temporary, cancellationToken);
+        File.Move(temporary, path, overwrite: true);
+        return name;
     }
 
     // The video is already tagged by yt-dlp, so a rename on the same file system is enough

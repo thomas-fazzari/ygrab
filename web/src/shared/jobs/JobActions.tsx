@@ -7,10 +7,11 @@ import TrashIcon from "~icons/solar/trash-bin-minimalistic-linear";
 
 import { jobFileUrl, removeJob, retryJob, startJob } from "@/shared/api/client.ts";
 import type { ApiResult } from "@/shared/api/client.ts";
-import { failureOf } from "@/shared/api/failures.ts";
+import { failureOf, previousIdOf } from "@/shared/api/failures.ts";
 import { DEFAULT_QUALITY } from "@/shared/api/schemas.ts";
 import type { Job } from "@/shared/api/schemas.ts";
 import { nameOf } from "./jobNames.ts";
+import { Button } from "@/shared/ui/Button.tsx";
 import { IconButton, IconLink } from "@/shared/ui/IconControl.tsx";
 import styles from "./JobCard.module.css";
 import { canDownload, canRetry, removalDeletesFiles, siteOf } from "./jobView.ts";
@@ -31,11 +32,19 @@ type Send = (job: Job) => Promise<ApiResult<unknown>>;
 
 type FocusTarget = (card: HTMLElement) => Element | null;
 
+type Run = (send: Send, focusTarget: FocusTarget) => void;
+
 const downloadAgain: Send = (job) =>
   startJob({ link: job.url, mode: job.mode, quality: job.quality ?? DEFAULT_QUALITY, force: true });
 
 const retry: Send = (job) => retryJob(job.id);
 const remove: Send = (job) => removeJob(job.id);
+
+// A video job that already holds the sound replaces the failed job as well
+const fallBackToVideo: Send = async (job) => {
+  const started = await startJob({ link: job.url, mode: "video", quality: "audio", force: false });
+  return started.kind === "ok" || previousIdOf(started) !== null ? removeJob(job.id) : started;
+};
 
 const restartOf = (job: Job) =>
   match(job)
@@ -88,6 +97,7 @@ export function JobActions(props: JobActionsProps) {
       }}
       class={styles.actions}
     >
+      <FallbackButton job={props.job} disabled={sending()} run={run} />
       <IconLink label={`Open on ${siteOf(props.job)}`} subject={name()} href={props.job.url} newTab>
         <OpenIcon />
       </IconLink>
@@ -119,6 +129,29 @@ export function JobActions(props: JobActionsProps) {
         }}
       />
     </div>
+  );
+}
+
+interface FallbackButtonProps {
+  readonly job: Job;
+  readonly disabled: boolean;
+  readonly run: Run;
+}
+
+function FallbackButton(props: FallbackButtonProps) {
+  return (
+    <Show when={props.job.canFallBackToVideo}>
+      <Button
+        quiet
+        disabled={props.disabled}
+        onClick={() => {
+          props.run(fallBackToVideo, aNeighbour);
+        }}
+      >
+        <DownloadIcon />
+        Download plain audio
+      </Button>
+    </Show>
   );
 }
 

@@ -18,8 +18,10 @@ namespace YGrab.Contracts.Jobs;
 /// <param name="Artists">The artists of the release, or the channel of a video.</param>
 /// <param name="CoverUrl">The cover of the release, once the job knows it.</param>
 /// <param name="FileName">The name that a download saves, once the job is ready.</param>
+/// <param name="FileSize">The size of that file in bytes, or null for a job stored without one.</param>
 /// <param name="Percent">The progress from 0 to 100.</param>
 /// <param name="CurrentTrack">The number of the track that the job downloads next.</param>
+/// <param name="CanFallBackToVideo">Whether the job failed before it found the album of its track link, so a video job can still download the link.</param>
 public sealed record JobDto(
     Guid Id,
     Uri Url,
@@ -36,10 +38,12 @@ public sealed record JobDto(
     ImmutableArray<string> Artists,
     Uri? CoverUrl,
     string? FileName,
+    long? FileSize,
     EnrichmentFailureCode? EnrichmentFailure,
     int Percent,
     ImmutableArray<TrackDto> Tracks,
-    int? CurrentTrack
+    int? CurrentTrack,
+    bool CanFallBackToVideo
 );
 
 /// <param name="Reason">Why the file lacks the track.</param>

@@ -218,6 +218,16 @@
       column-gap: var(--space-4);
     }
 
+    /* The fallback button needs a row of its own */
+    .card[data-fallback] {
+      grid-template:
+        "cover title badge" auto
+        "cover meta meta" var(--line-label)
+        "state state state" auto
+        "actions actions actions" var(--control-height)
+        / var(--cover-size-small) minmax(0, 1fr) auto;
+    }
+
     .cover {
       inline-size: var(--cover-size-small);
       block-size: var(--cover-size-small);

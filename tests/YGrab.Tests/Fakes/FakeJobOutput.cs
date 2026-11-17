@@ -9,6 +9,7 @@ namespace YGrab.Tests.Fakes;
 internal sealed class FakeJobOutput : IJobOutput
 {
     public const string FileName = "album.zip";
+    public const long FileSize = 1024;
 
     public List<Guid> Deleted { get; } = [];
 
@@ -16,7 +17,7 @@ internal sealed class FakeJobOutput : IJobOutput
 
     public List<ReleaseDetails?> Packaged { get; } = [];
 
-    public ValueTask<string> PackageAsync(
+    public ValueTask<PackagedFile> PackageAsync(
         Job job,
         Cover? cover,
         ReleaseDetails? details,
@@ -24,7 +25,7 @@ internal sealed class FakeJobOutput : IJobOutput
     )
     {
         Packaged.Add(details);
-        return ValueTask.FromResult(FileName);
+        return ValueTask.FromResult(new PackagedFile(FileName, FileSize));
     }
 
     public string? FindFile(Guid jobId, string fileName) => $"/jobs/{jobId:N}/{fileName}";

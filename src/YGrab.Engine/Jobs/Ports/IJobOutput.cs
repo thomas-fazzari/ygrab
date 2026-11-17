@@ -24,8 +24,7 @@ public interface IJobOutput
     /// </para>
     /// </remarks>
     /// <param name="details">What the provider knows about the release, or null for the tags of YouTube Music only.</param>
-    /// <returns>The name that the browser saves, which is not the name on disk.</returns>
-    ValueTask<string> PackageAsync(
+    ValueTask<PackagedFile> PackageAsync(
         Job job,
         Cover? cover,
         ReleaseDetails? details,
@@ -35,7 +34,7 @@ public interface IJobOutput
     /// <summary>
     /// The full path of the packaged file on disk, or null when the file is gone.
     /// </summary>
-    /// <param name="fileName">The name that <see cref="PackageAsync"/> returned.</param>
+    /// <param name="fileName">The <see cref="PackagedFile.Name"/> that <see cref="PackageAsync"/> returned.</param>
     string? FindFile(Guid jobId, string fileName);
 
     /// <summary>
@@ -43,3 +42,7 @@ public interface IJobOutput
     /// </summary>
     void Delete(Guid jobId);
 }
+
+/// <param name="Name">The name that the browser saves, which is not the name on disk.</param>
+/// <param name="Size">The size in bytes.</param>
+public sealed record PackagedFile(string Name, long Size);
