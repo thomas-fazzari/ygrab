@@ -38,6 +38,9 @@ internal static class HostConfigurationExtensions
         }
     }
 
+    internal static void FailOnUnknownKeys(BinderOptions options) =>
+        options.ErrorOnUnknownConfiguration = true;
+
     private static void MoveBeforeEnvironment(IList<IConfigurationSource> sources)
     {
         for (var index = sources.Count - 2; index >= 0; index--)

@@ -3,6 +3,7 @@
 
 using System.Net;
 using System.Net.Http.Headers;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using YGrab.Contracts;
@@ -104,6 +105,75 @@ public sealed class AuthTests
         crossSite.StatusCode.Should().Be(HttpStatusCode.Forbidden);
         allowed.StatusCode.Should().Be(HttpStatusCode.NotFound);
         token.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task Too_many_wrong_tokens_refuse_the_right_one_at_login()
+    {
+        await using var factory = new HostFactory();
+        using var client = factory.CreateCookieClient();
+
+        for (var attempt = 0; attempt < WrongTokenLimiter.Tries; attempt++)
+        {
+            var wrong = await LoginAsync(client, "wrong-token-0123456789");
+            wrong.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        }
+
+        var right = await LoginAsync(client, HostFactory.Token);
+
+        right.StatusCode.Should().Be(HttpStatusCode.TooManyRequests);
+    }
+
+    [Fact]
+    public async Task Wrong_bearer_tokens_count_by_the_forwarded_address_only_from_a_private_network()
+    {
+        await using var factory = new HostFactory();
+        const string publicClient = "203.0.113.5";
+        // A container sees the proxy through the Docker bridge, as an IPv4 address mapped to IPv6
+        const string proxy = "::ffff:172.18.0.1";
+
+        for (var attempt = 0; attempt < WrongTokenLimiter.Tries; attempt++)
+        {
+            var forwardedFor = $"198.51.100.{attempt}";
+            (await SendBearerAsync(factory, publicClient, forwardedFor, "wrong"))
+                .Should()
+                .Be(StatusCodes.Status401Unauthorized);
+            (await SendBearerAsync(factory, proxy, forwardedFor, "wrong"))
+                .Should()
+                .Be(StatusCodes.Status401Unauthorized);
+        }
+
+        var spoofed = await SendBearerAsync(
+            factory,
+            publicClient,
+            "198.51.100.99",
+            HostFactory.Token
+        );
+        var proxied = await SendBearerAsync(factory, proxy, "198.51.100.99", HostFactory.Token);
+
+        spoofed.Should().Be(StatusCodes.Status401Unauthorized);
+        proxied.Should().Be(StatusCodes.Status200OK);
+    }
+
+    private static async Task<int> SendBearerAsync(
+        HostFactory factory,
+        string remoteAddress,
+        string forwardedFor,
+        string token
+    )
+    {
+        var context = await factory.Server.SendAsync(
+            http =>
+            {
+                http.Connection.RemoteIpAddress = IPAddress.Parse(remoteAddress);
+                http.Request.Method = HttpMethods.Get;
+                http.Request.Path = HostFactory.JobsUrl.OriginalString;
+                http.Request.Headers["X-Forwarded-For"] = forwardedFor;
+                http.Request.Headers.Authorization = $"{BearerHandler.SchemeName} {token}";
+            },
+            Cancellation
+        );
+        return context.Response.StatusCode;
     }
 
     private static Task<HttpResponseMessage> LoginAsync(HttpClient client, string token) =>

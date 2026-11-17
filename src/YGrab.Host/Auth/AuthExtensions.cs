@@ -21,7 +21,10 @@ internal static class AuthExtensions
         {
             services
                 .AddOptions<AuthOptions>()
-                .BindConfiguration(AuthOptions.SectionName, FailOnUnknownKeys)
+                .BindConfiguration(
+                    AuthOptions.SectionName,
+                    HostConfigurationExtensions.FailOnUnknownKeys
+                )
                 .ValidateOnStart();
             services.AddSingleton<IValidateOptions<AuthOptions>, AuthOptionsValidator>();
             services.AddSingleton(provider => new HostStorage(
@@ -30,6 +33,7 @@ internal static class AuthExtensions
                 )
             ));
             services.AddSingleton<TokenStore>();
+            services.AddSingleton<WrongTokenLimiter>();
             services.AddHostedService<AuthStartup>();
 
             services
@@ -68,7 +72,6 @@ internal static class AuthExtensions
     {
         public IApplicationBuilder UseYGrabAuth()
         {
-            app.UseRateLimiter();
             app.UseAuthentication();
             app.UseAuthorization();
             return app;
@@ -94,7 +97,4 @@ internal static class AuthExtensions
             return Task.CompletedTask;
         };
     }
-
-    private static void FailOnUnknownKeys(BinderOptions options) =>
-        options.ErrorOnUnknownConfiguration = true;
 }

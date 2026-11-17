@@ -11,11 +11,16 @@ namespace YGrab.Host.Auth;
 /// <summary>
 /// Signs in a request that carries the token in its Authorization header, for the CLI.
 /// </summary>
+/// <remarks>
+/// A client that sent too many wrong tokens gets a 401 even with the right one, until its window
+/// ends.
+/// </remarks>
 internal sealed class BearerHandler(
     IOptionsMonitor<AuthenticationSchemeOptions> options,
     ILoggerFactory loggers,
     UrlEncoder encoder,
-    TokenStore tokens
+    TokenStore tokens,
+    WrongTokenLimiter limiter
 ) : AuthenticationHandler<AuthenticationSchemeOptions>(options, loggers, encoder)
 {
     internal const string SchemeName = "Bearer";
@@ -30,8 +35,14 @@ internal sealed class BearerHandler(
             return Task.FromResult(AuthenticateResult.NoResult());
         }
 
+        if (!limiter.CanTry(Context))
+        {
+            return Task.FromResult(AuthenticateResult.Fail("Too many wrong tokens."));
+        }
+
         if (!tokens.Matches(header.Parameter))
         {
+            limiter.CountWrong(Context);
             return Task.FromResult(AuthenticateResult.Fail("The token is wrong."));
         }
 

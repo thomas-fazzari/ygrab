@@ -34,6 +34,12 @@ Jobs:
   VideoRetentionDays: 2
   HistoryDays: 90
 
+# A change needs a restart
+Proxy:
+  # The networks that a reverse proxy may send the X-Forwarded-* headers from, separated by commas.
+  # A client in them can choose the address that limits wrong tokens. Empty trusts no proxy.
+  TrustedNetworks: "127.0.0.0/8, ::1/128, 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, fc00::/7"
+
 Auth:
   # At least 16 characters. Without one, the host generates a token into the data folder and logs
   # it once. YGRAB_TOKEN overrides it. A new token signs every browser out.
