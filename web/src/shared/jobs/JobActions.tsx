@@ -10,10 +10,11 @@ import type { ApiResult } from "@/shared/api/client.ts";
 import { failureOf, previousIdOf } from "@/shared/api/failures.ts";
 import { DEFAULT_QUALITY } from "@/shared/api/schemas.ts";
 import type { Job } from "@/shared/api/schemas.ts";
-import { nameOf } from "./jobNames.ts";
+import { notifyError } from "@/shared/notifications.ts";
 import { Button } from "@/shared/ui/Button.tsx";
 import { IconButton, IconLink } from "@/shared/ui/IconControl.tsx";
 import styles from "./JobCard.module.css";
+import { nameOf } from "./jobNames.ts";
 import { canDownload, canRetry, removalDeletesFiles, siteOf } from "./jobView.ts";
 import { askToRemove, RemoveDialog } from "./RemoveDialog.tsx";
 
@@ -28,29 +29,48 @@ interface JobActionsProps {
   readonly onFailure: (failure: ActionFailure | null) => void;
 }
 
-type Send = (job: Job) => Promise<ApiResult<unknown>>;
+interface JobAction {
+  readonly verb: string;
+  readonly send: (job: Job) => Promise<ApiResult<unknown>>;
+}
 
 type FocusTarget = (card: HTMLElement) => Element | null;
 
-type Run = (send: Send, focusTarget: FocusTarget) => void;
+type Run = (jobAction: JobAction, focusTarget: FocusTarget) => void;
 
-const downloadAgain: Send = (job) =>
-  startJob({ link: job.url, mode: job.mode, quality: job.quality ?? DEFAULT_QUALITY, force: true });
+const DOWNLOAD_AGAIN: JobAction = {
+  verb: "download",
+  send: (job) =>
+    startJob({
+      link: job.url,
+      mode: job.mode,
+      quality: job.quality ?? DEFAULT_QUALITY,
+      force: true,
+    }),
+};
 
-const retry: Send = (job) => retryJob(job.id);
-const remove: Send = (job) => removeJob(job.id);
+const RETRY: JobAction = { verb: "retry", send: (job) => retryJob(job.id) };
+const REMOVE: JobAction = { verb: "remove", send: (job) => removeJob(job.id) };
 
 // A video job that already holds the sound replaces the failed job as well
-const fallBackToVideo: Send = async (job) => {
-  const started = await startJob({ link: job.url, mode: "video", quality: "audio", force: false });
-  return started.kind === "ok" || previousIdOf(started) !== null ? removeJob(job.id) : started;
+const FALL_BACK_TO_VIDEO: JobAction = {
+  verb: "download the audio of",
+  send: async (job) => {
+    const started = await startJob({
+      link: job.url,
+      mode: "video",
+      quality: "audio",
+      force: false,
+    });
+    return started.kind === "ok" || previousIdOf(started) !== null ? removeJob(job.id) : started;
+  },
 };
 
 const restartOf = (job: Job) =>
   match(job)
-    .when(canRetry, () => ({ label: "Retry", send: retry }))
-    .with({ state: "expired" }, () => ({ label: "Download again", send: downloadAgain }))
-    .with({ state: "skipped" }, () => ({ label: "Download anyway", send: downloadAgain }))
+    .when(canRetry, () => ({ label: "Retry", jobAction: RETRY }))
+    .with({ state: "expired" }, () => ({ label: "Download again", jobAction: DOWNLOAD_AGAIN }))
+    .with({ state: "skipped" }, () => ({ label: "Download anyway", jobAction: DOWNLOAD_AGAIN }))
     .otherwise(() => null);
 
 // A restart hides its button, so the card itself takes the focus
@@ -70,19 +90,25 @@ const focusLost = (card: HTMLElement | null) =>
 // Sends one request at a time, so a double click starts no second job
 function createJobAction(props: JobActionsProps, cardOf: () => HTMLElement | null) {
   const [sending, setSending] = createOptimistic(false);
-  const run = action(async function* (send: Send, focusTarget: FocusTarget) {
+  const run = action(async function* (jobAction: JobAction, focusTarget: FocusTarget) {
     const card = cardOf();
     const target = focusTargetOf(card, focusTarget);
     setSending(true);
-    const { state } = props.job;
-    const text = failureOf(await send(props.job));
+    const { job } = props;
+    const text = failureOf(await jobAction.send(job));
     yield;
-    props.onFailure(text === null ? null : { state, text });
+    props.onFailure(text === null ? null : { state: job.state, text });
+    if (text !== null) {
+      notifyError(`Cannot ${jobAction.verb} ${nameOf(job)}`, text);
+    }
     if (text === null && target instanceof HTMLElement && focusLost(card)) {
       target.focus();
     }
   });
-  return { sending, run: (send: Send, focusTarget: FocusTarget) => void run(send, focusTarget) };
+  return {
+    sending,
+    run: (jobAction: JobAction, focusTarget: FocusTarget) => void run(jobAction, focusTarget),
+  };
 }
 
 export function JobActions(props: JobActionsProps) {
@@ -109,7 +135,7 @@ export function JobActions(props: JobActionsProps) {
             main
             disabled={sending()}
             onClick={() => {
-              run(restart().send, theCard);
+              run(restart().jobAction, theCard);
             }}
           >
             <RestartIcon />
@@ -125,7 +151,7 @@ export function JobActions(props: JobActionsProps) {
         job={props.job}
         disabled={sending()}
         onRemove={() => {
-          run(remove, aNeighbour);
+          run(REMOVE, aNeighbour);
         }}
       />
     </div>
@@ -145,7 +171,7 @@ function FallbackButton(props: FallbackButtonProps) {
         quiet
         disabled={props.disabled}
         onClick={() => {
-          props.run(fallBackToVideo, aNeighbour);
+          props.run(FALL_BACK_TO_VIDEO, aNeighbour);
         }}
       >
         <DownloadIcon />

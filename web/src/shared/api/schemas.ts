@@ -18,7 +18,7 @@ export const TRACK_STATES = ["pending", "done", "missing", "refused"] as const;
 export const ENRICHMENT_FAILURES = ["no_match", "unreachable", "provider_error"] as const;
 
 const IdSchema = v.pipe(v.string(), v.uuid());
-const TimestampSchema = v.pipe(v.string(), v.isoTimestamp());
+export const TimestampSchema = v.pipe(v.string(), v.isoTimestamp());
 const NullableTextSchema = v.nullable(v.string());
 const UrlSchema = v.pipe(v.string(), v.url());
 

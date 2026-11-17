@@ -71,8 +71,7 @@ export const recentJobs = (jobs: readonly Job[]) =>
     .toSorted((first, second) => Number(needsAttention(second)) - Number(needsAttention(first)));
 
 export const siteOf = (job: Job) => (isYouTubeMusicLink(job.url) ? "YouTube Music" : "YouTube");
-
-export const cardIdOf = (job: Job) => `job-${job.id}`;
+export const cardIdOf = (job: Pick<Job, "id">) => `job-${job.id}`;
 
 export function coverOf(job: Job) {
   if (job.coverUrl !== null) {
@@ -98,7 +97,8 @@ export function originalOf(jobs: readonly Job[], shown: readonly Job[], job: Job
 
 export const doneTracks = (job: Job) => job.tracks.filter((track) => track.state === "done").length;
 
-const failedTracks = (job: Job) => job.tracks.length - doneTracks(job);
+export const missingTracksText = (job: Job) =>
+  `${plural(job.tracks.length - doneTracks(job), "track")} missing`;
 
 export const badgeTone = (state: JobState) =>
   match<JobState, BadgeTone>(state)
@@ -206,10 +206,7 @@ export const stateLineOf = (job: Job, context: CardContext) =>
     .with("waiting", () => ({ kind: "text", text: waitingText(job) }))
     .with("packaging", () => ({ kind: "progress", percent: FULL_PERCENT, label: "finishing" }))
     .with("ready", () => readyLine(job, context))
-    .with("incomplete", () => ({
-      kind: "error",
-      text: `${plural(failedTracks(job), "track")} missing`,
-    }))
+    .with("incomplete", () => ({ kind: "error", text: missingTracksText(job) }))
     .with("failed", () => ({ kind: "error", text: job.reason ?? "failed" }))
     .with("skipped", () => ({ kind: "duplicate", original: context.original }))
     .with("expired", () => ({ kind: "text", text: deletedText(job, context) }))

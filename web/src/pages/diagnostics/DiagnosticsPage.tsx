@@ -21,6 +21,7 @@ import { failureOf } from "@/shared/api/failures.ts";
 import { createMinuteClock } from "@/shared/clock.ts";
 import { scan } from "@/shared/iterators.ts";
 import { JobFeedContext } from "@/shared/jobs/jobFeed.ts";
+import { notifyError } from "@/shared/notifications.ts";
 import { Button } from "@/shared/ui/Button.tsx";
 import { IconSwap } from "@/shared/ui/IconSwap.tsx";
 import { PageTitle } from "@/shared/ui/PageTitle.tsx";
@@ -182,6 +183,7 @@ function CopyReportButton(props: ReportButtonProps) {
       },
       () => {
         show("failed");
+        notifyError("Cannot copy the report", "The browser refused to write to the clipboard.");
       },
     );
   };

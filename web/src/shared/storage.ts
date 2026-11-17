@@ -1,3 +1,5 @@
+import { storageSync } from "@solid-primitives/storage";
+import type { PersistenceSyncAPI } from "@solid-primitives/storage";
 import type * as v from "valibot";
 
 import { parseJsonWith } from "@/shared/api/schemas.ts";
@@ -15,3 +17,17 @@ export const storedAs = <TValue>(key: string, schema: v.GenericSchema<unknown, T
   name: `${KEY_PREFIX}${key}`,
   deserialize: (text: string) => parseJsonWith(schema, text),
 });
+
+/**
+ * Syncs a persisted signal with the writes of the other tabs, for the `sync` option.
+ *
+ * `makePersisted` drops a `storageSync` event whose `url` is another page, so this one passes
+ * the event on without it.
+ */
+export const otherTabs: PersistenceSyncAPI = [
+  (subscriber) =>
+    storageSync[0]((event) => {
+      subscriber({ key: event.key, newValue: event.newValue, timeStamp: event.timeStamp });
+    }),
+  storageSync[1],
+];

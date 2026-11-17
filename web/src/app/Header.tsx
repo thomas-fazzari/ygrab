@@ -14,6 +14,7 @@ import { RouterContext } from "@/shared/router.tsx";
 import { HOME_ROUTE, JOBS_ROUTE, LOGIN_ROUTE } from "@/shared/session.ts";
 import { IconButton, IconLink } from "@/shared/ui/IconControl.tsx";
 import styles from "./Header.module.css";
+import { NotificationBell } from "./NotificationBell.tsx";
 
 async function signOut() {
   const result = await logout();
@@ -70,6 +71,7 @@ export function Header() {
       >
         <PulseIcon />
       </IconLink>
+      <NotificationBell />
       <IconLink label="GitHub" href={REPOSITORY_URL} newTab>
         <GitHubIcon />
       </IconLink>

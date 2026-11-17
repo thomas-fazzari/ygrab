@@ -10,6 +10,7 @@ import { NotFoundPage } from "@/pages/not-found/NotFoundPage.tsx";
 import { RELEASE_NOTES_ROUTE, ReleaseNotesPage } from "@/pages/release-notes/ReleaseNotesPage.tsx";
 import { emptyFeed, JobFeedContext, watchJobs } from "@/shared/jobs/jobFeed.ts";
 import type { JobFeed } from "@/shared/jobs/jobFeed.ts";
+import { noteEvent } from "@/shared/notifications.ts";
 import { createRouter, RouterContext } from "@/shared/router.tsx";
 import { HOME_ROUTE, JOBS_ROUTE, LOGIN_ROUTE } from "@/shared/session.ts";
 import { Button } from "@/shared/ui/Button.tsx";
@@ -39,7 +40,7 @@ const describe = (cause: unknown) => (cause instanceof Error ? cause.message : S
 
 // Login page stays off the event stream
 function SignedIn(props: ParentProps) {
-  const feed = createProjection<JobFeed>(watchJobs, emptyFeed);
+  const feed = createProjection<JobFeed>(() => watchJobs(noteEvent), emptyFeed);
   return <JobFeedContext value={feed}>{props.children}</JobFeedContext>;
 }
 

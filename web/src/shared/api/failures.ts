@@ -1,8 +1,10 @@
-import { match, P } from "ts-pattern";
+import { isMatching, match, P } from "ts-pattern";
 
 import { HTTP_CONFLICT } from "./client.ts";
 import type { ApiResult } from "./client.ts";
 import type { Problem } from "./schemas.ts";
+
+const VALIDATION_PROBLEM = "/problems/validation";
 
 // A validation problem names its fields in `errors` and has no `detail`
 const fieldErrorOf = (problem: Problem) =>
@@ -28,6 +30,10 @@ export const previousIdOf = <TValue>(result: ApiResult<TValue>) =>
       ({ problem }) => problem.previousId,
     )
     .otherwise(() => null);
+
+/** Whether the server refused the input of a request. */
+export const isRefusedInput = <TValue>(result: ApiResult<TValue>) =>
+  isMatching({ kind: "problem", problem: { type: VALIDATION_PROBLEM } }, result);
 
 /** Describes why a request failed, or returns null when it succeeded. */
 export const failureOf = <TValue>(result: ApiResult<TValue>) =>
