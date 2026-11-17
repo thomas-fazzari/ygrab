@@ -74,7 +74,7 @@ internal sealed partial class YtMusicCatalog(
             module,
             browseId,
             audioVideoId,
-            missing: "No YouTube Music album track matches this video. Paste the album link, or grab the video with the audio quality to keep its sound only."
+            missing: "No YouTube Music album has this track."
         );
     }
 

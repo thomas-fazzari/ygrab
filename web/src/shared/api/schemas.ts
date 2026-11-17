@@ -59,10 +59,12 @@ export const JobSchema = v.object({
   artists: v.array(v.string()),
   coverUrl: v.nullable(UrlSchema),
   fileName: NullableTextSchema,
+  fileSize: v.nullable(v.pipe(v.number(), v.integer())),
   enrichmentFailure: v.nullable(EnrichmentFailureSchema),
   percent: v.pipe(v.number(), v.integer()),
   tracks: v.array(TrackSchema),
   currentTrack: v.nullable(v.pipe(v.number(), v.integer())),
+  canFallBackToVideo: v.boolean(),
 });
 export type Job = v.InferOutput<typeof JobSchema>;
 

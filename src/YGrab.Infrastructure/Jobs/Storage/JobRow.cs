@@ -25,6 +25,7 @@ internal sealed record JobRow(
     long? RetryAt,
     string? Error,
     string? FileName,
+    long? FileSize,
     byte[]? DuplicateOf,
     long? FinishedAt,
     string? EnrichmentFailure
@@ -35,8 +36,9 @@ internal sealed record JobRow(
         quality AS Quality, force AS Force, status AS Status, created_at AS CreatedAt,
         release AS Release, tracks AS Tracks,
         video_title AS VideoTitle, video_channel AS VideoChannel, attempt AS Attempt,
-        retry_at AS RetryAt, error AS Error, file_name AS FileName, duplicate_of AS DuplicateOf,
-        finished_at AS FinishedAt, enrichment_failure AS EnrichmentFailure
+        retry_at AS RetryAt, error AS Error, file_name AS FileName, file_size AS FileSize,
+        duplicate_of AS DuplicateOf, finished_at AS FinishedAt,
+        enrichment_failure AS EnrichmentFailure
         """;
 }
 
@@ -95,6 +97,7 @@ internal static class JobRowMapper
             columns.RetryAt?.ToUnixTimeMilliseconds(),
             columns.Error,
             columns.FileName,
+            columns.FileSize,
             columns.DuplicateOf is { } duplicate ? GuidBlob.ToBlob(duplicate) : null,
             columns.FinishedAt?.ToUnixTimeMilliseconds(),
             job.EnrichmentFailure is { } failure ? Describe(failure) : null
@@ -108,6 +111,7 @@ internal static class JobRowMapper
             row.RetryAt is { } retryAt ? DateTimeOffset.FromUnixTimeMilliseconds(retryAt) : null,
             row.Error,
             row.FileName,
+            row.FileSize,
             row.DuplicateOf is { } duplicate ? GuidBlob.FromBlob(duplicate) : null,
             row.FinishedAt is { } finishedAt
                 ? DateTimeOffset.FromUnixTimeMilliseconds(finishedAt)
@@ -179,6 +183,7 @@ internal static class JobRowMapper
                 StateColumns.None with
                 {
                     FileName = ready.FileName,
+                    FileSize = ready.FileSize,
                     FinishedAt = ready.FinishedAt,
                 }
             ),
@@ -187,6 +192,7 @@ internal static class JobRowMapper
                 StateColumns.None with
                 {
                     FileName = incomplete.FileName,
+                    FileSize = incomplete.FileSize,
                     FinishedAt = incomplete.FinishedAt,
                 }
             ),
@@ -228,10 +234,12 @@ internal static class JobRowMapper
             PackagingStatus => new JobState.Packaging(),
             ReadyStatus => new JobState.Ready(
                 Required(columns.FileName, "file_name"),
+                columns.FileSize,
                 Required(columns.FinishedAt, "finished_at")
             ),
             IncompleteStatus => new JobState.Incomplete(
                 Required(columns.FileName, "file_name"),
+                columns.FileSize,
                 Required(columns.FinishedAt, "finished_at")
             ),
             FailedStatus => new JobState.Failed(
@@ -423,6 +431,7 @@ internal static class JobRowMapper
         DateTimeOffset? RetryAt,
         string? Error,
         string? FileName,
+        long? FileSize,
         Guid? DuplicateOf,
         DateTimeOffset? FinishedAt
     )

@@ -62,7 +62,15 @@ internal static class JobView
                 return ExitCodes.Ok;
             default:
                 var reason = job.Reason is null ? string.Empty : $": {job.Reason}";
-                return reporter.Fail($"{id} {WireNames.Of(job.State)}{reason}");
+                var code = reporter.Fail($"{id} {WireNames.Of(job.State)}{reason}");
+                if (job.CanFallBackToVideo)
+                {
+                    reporter.Warn(
+                        $"Run ygrab add --video --quality {WireNames.Of(VideoQualityCode.Audio)} '{job.Url}' to keep its sound only."
+                    );
+                }
+
+                return code;
         }
     }
 

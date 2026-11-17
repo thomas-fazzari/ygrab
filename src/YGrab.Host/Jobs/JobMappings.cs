@@ -28,11 +28,13 @@ internal static class JobMappings
                 job.Release?.Title ?? job.KeptVideo?.Title,
                 ArtistsOf(job),
                 job.Release?.CoverUrl,
-                FileNameOf(job.State),
+                job.State.FileName,
+                job.State.FileSize,
                 job.EnrichmentFailure is { } failure ? ToCode(failure) : null,
                 job.Percent,
                 [.. job.Tracks.Select(MapTrack)],
-                job.IsActive ? job.NextTrack?.Track.Number : null
+                job.IsActive ? job.NextTrack?.Track.Number : null,
+                job.CanFallBackToVideo
             );
     }
 
@@ -86,14 +88,6 @@ internal static class JobMappings
             JobState.Waiting waiting => waiting.Reason,
             JobState.Failed failed => failed.Reason,
             JobState.Skipped skipped => $"Already grabbed by job {skipped.DuplicateOf}",
-            _ => null,
-        };
-
-    private static string? FileNameOf(JobState state) =>
-        state switch
-        {
-            JobState.Ready ready => ready.FileName,
-            JobState.Incomplete incomplete => incomplete.FileName,
             _ => null,
         };
 
@@ -152,4 +146,23 @@ internal static class JobMappings
 
     private static InvalidOperationException UnknownCode<T>(T value)
         where T : struct, Enum => new($"The {typeof(T).Name} value {value} has no code.");
+
+    extension(JobState state)
+    {
+        private string? FileName =>
+            state switch
+            {
+                JobState.Ready ready => ready.FileName,
+                JobState.Incomplete incomplete => incomplete.FileName,
+                _ => null,
+            };
+
+        private long? FileSize =>
+            state switch
+            {
+                JobState.Ready ready => ready.FileSize,
+                JobState.Incomplete incomplete => incomplete.FileSize,
+                _ => null,
+            };
+    }
 }

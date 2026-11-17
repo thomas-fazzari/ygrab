@@ -29,12 +29,12 @@ internal sealed class SqliteJobStore(SqliteDatabase database, SqliteWriter write
     private const string InsertJobSql = """
         INSERT INTO jobs (
             id, url, link_kind, link_id, quality, force, status, created_at, release, tracks,
-            video_title, video_channel, attempt, retry_at, error, file_name, duplicate_of,
-            finished_at, enrichment_failure)
+            video_title, video_channel, attempt, retry_at, error, file_name, file_size,
+            duplicate_of, finished_at, enrichment_failure)
         VALUES (
             @Id, @Url, @LinkKind, @LinkId, @Quality, @Force, @Status, @CreatedAt, @Release, @Tracks,
-            @VideoTitle, @VideoChannel, @Attempt, @RetryAt, @Error, @FileName, @DuplicateOf,
-            @FinishedAt, @EnrichmentFailure)
+            @VideoTitle, @VideoChannel, @Attempt, @RetryAt, @Error, @FileName, @FileSize,
+            @DuplicateOf, @FinishedAt, @EnrichmentFailure)
         """;
 
     private const string UpdateJobSql = """
@@ -43,7 +43,7 @@ internal sealed class SqliteJobStore(SqliteDatabase database, SqliteWriter write
             force = @Force, status = @Status, created_at = @CreatedAt, release = @Release,
             tracks = @Tracks, video_title = @VideoTitle, video_channel = @VideoChannel,
             attempt = @Attempt, retry_at = @RetryAt, error = @Error, file_name = @FileName,
-            duplicate_of = @DuplicateOf, finished_at = @FinishedAt,
+            file_size = @FileSize, duplicate_of = @DuplicateOf, finished_at = @FinishedAt,
             enrichment_failure = @EnrichmentFailure
         WHERE id = @Id
         """;

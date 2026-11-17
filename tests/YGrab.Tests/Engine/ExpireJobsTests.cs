@@ -47,7 +47,7 @@ public sealed class ExpireJobsTests
             .DownloadingVideo()
             .CompleteVideo(Samples.VideoDetails)
             .StartPackaging(TestTime.Start)
-            .Finish("video.mp4", enrichmentFailure: null, TestTime.Start);
+            .Finish("video.mp4", 2048, enrichmentFailure: null, TestTime.Start);
         rig.Jobs.Load([audio, video]);
         rig.Time.Advance(videoRetention + TimeSpan.FromMinutes(1));
 

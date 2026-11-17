@@ -1,5 +1,6 @@
 import { match, P } from "ts-pattern";
 
+import { HTTP_CONFLICT } from "./client.ts";
 import type { ApiResult } from "./client.ts";
 import type { Problem } from "./schemas.ts";
 
@@ -18,6 +19,15 @@ const JOB_PROBLEMS: Readonly<Record<string, string>> = {
 
 const jobProblemOf = (problem: Problem) =>
   problem.type === undefined || problem.type === null ? undefined : JOB_PROBLEMS[problem.type];
+
+/** The job that already holds the link of a refused start, or null for any other result. */
+export const previousIdOf = <TValue>(result: ApiResult<TValue>) =>
+  match(result)
+    .with(
+      { kind: "problem", status: HTTP_CONFLICT, problem: { previousId: P.string } },
+      ({ problem }) => problem.previousId,
+    )
+    .otherwise(() => null);
 
 /** Describes why a request failed, or returns null when it succeeded. */
 export const failureOf = <TValue>(result: ApiResult<TValue>) =>

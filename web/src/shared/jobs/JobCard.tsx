@@ -28,26 +28,32 @@ interface JobCardProps {
 
 const NO_TRACK_LIST: ReadonlySet<Job["state"]> = new Set(["expired", "skipped"]);
 
-export function JobCard(props: JobCardProps) {
-  const titleId = createUniqueId();
-  const tracksId = createUniqueId();
-  // A ready job only lists done tracks, so its list starts folded
-  const [tracksOpen, setTracksOpen] = createSignal(untrack(() => props.job.state !== "ready"));
+function createStateLine(props: JobCardProps) {
   const [failure, setFailure] = createSignal<ActionFailure | null>(null);
-  const hasTrackList = () =>
-    !isTrackJob(props.job) && props.job.tracks.length > 0 && !NO_TRACK_LIST.has(props.job.state);
   const line = createMemo((): StateLine => {
     const current = failure();
     return current?.state === props.job.state
       ? { kind: "error", text: current.text }
       : stateLineOf(props.job, props.context);
   });
+  return { line, setFailure };
+}
+
+export function JobCard(props: JobCardProps) {
+  const titleId = createUniqueId();
+  const tracksId = createUniqueId();
+  // A ready job only lists done tracks, so its list starts folded
+  const [tracksOpen, setTracksOpen] = createSignal(untrack(() => props.job.state !== "ready"));
+  const { line, setFailure } = createStateLine(props);
+  const hasTrackList = () =>
+    !isTrackJob(props.job) && props.job.tracks.length > 0 && !NO_TRACK_LIST.has(props.job.state);
 
   return (
     <article
       id={cardIdOf(props.job)}
       class={styles.card}
       data-state={props.job.state}
+      data-fallback={props.job.canFallBackToVideo}
       aria-labelledby={titleId}
       tabindex="-1"
     >

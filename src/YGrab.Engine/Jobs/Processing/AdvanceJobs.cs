@@ -303,11 +303,11 @@ public static partial class AdvanceJobs
                 }
             }
 
-            var fileName = await output.PackageAsync(packaging, cover, details, cancellationToken);
+            var file = await output.PackageAsync(packaging, cover, details, cancellationToken);
             var finished = timeProvider.GetUtcNow();
             var done = await jobs.UpdateAsync(
                 job.Id,
-                current => current.Finish(fileName, enrichmentFailure, finished),
+                current => current.Finish(file.Name, file.Size, enrichmentFailure, finished),
                 cancellationToken
             );
 

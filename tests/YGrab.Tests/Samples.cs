@@ -90,7 +90,7 @@ internal static class Samples
         }
 
         return job.StartPackaging(TestTime.Start)
-            .Finish("file.zip", enrichmentFailure: null, TestTime.Start);
+            .Finish("file.zip", 2048, enrichmentFailure: null, TestTime.Start);
     }
 
     /// <summary>The job after its next track fails every retry with a transient failure.</summary>
@@ -131,9 +131,11 @@ internal static class Samples
             [],
             CoverUrl: null,
             FileName: null,
+            FileSize: null,
             EnrichmentFailure: null,
             Percent: 0,
             tracks,
-            currentTrack
+            currentTrack,
+            CanFallBackToVideo: false
         );
 }
