@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.StaticFiles;
 using YGrab.Contracts;
 using YGrab.Contracts.Jobs;
@@ -16,7 +17,7 @@ namespace YGrab.Host;
 
 internal static class EndpointExtensions
 {
-    private const string ApiPrefix = "/api";
+    internal const string ApiPrefix = "/api";
     private const string IndexFile = "index.html";
 
     // The web build names each file under it after a hash of its content
@@ -34,6 +35,7 @@ internal static class EndpointExtensions
             services.AddProblemDetails();
             services.AddHealthChecks();
             services.AddTrustedProxies();
+            services.Configure<KestrelServerOptions>(options => options.AddServerHeader = false);
             return services;
         }
     }
@@ -43,6 +45,8 @@ internal static class EndpointExtensions
         public IApplicationBuilder UseYGrabHttp()
         {
             app.UseForwardedHeaders();
+            app.UseHsts();
+            app.UseSecurityHeaders();
             app.UseExceptionHandler();
             app.UseStatusCodePages();
             app.UseStaticFiles(_webFiles);
