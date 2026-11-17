@@ -1,3 +1,4 @@
+import { makePersisted } from "@solid-primitives/storage";
 import { action, createOptimistic, createSignal, Show } from "solid-js";
 import { match, P } from "ts-pattern";
 import ArrowIcon from "~icons/solar/arrow-right-linear";
@@ -7,16 +8,32 @@ import LinkIcon from "~icons/solar/link-minimalistic-2-linear";
 import { startJob } from "@/shared/api/client.ts";
 import type { ApiResult } from "@/shared/api/client.ts";
 import { failureOf } from "@/shared/api/failures.ts";
-import { DEFAULT_QUALITY, JOB_MODES, VIDEO_QUALITIES } from "@/shared/api/schemas.ts";
+import {
+  DEFAULT_QUALITY,
+  JOB_MODES,
+  JobModeSchema,
+  VIDEO_QUALITIES,
+  VideoQualitySchema,
+} from "@/shared/api/schemas.ts";
 import type { JobId, JobMode, StartedJob, VideoQuality } from "@/shared/api/schemas.ts";
+import { MODE_LABELS, QUALITY_LABELS } from "@/shared/jobs/jobView.ts";
+import { storedAs } from "@/shared/storage.ts";
 import { Button } from "@/shared/ui/Button.tsx";
 import { ChoiceChips, ChoiceSelect } from "@/shared/ui/Choices.tsx";
 import { Field } from "@/shared/ui/Field.tsx";
 import { IconButton } from "@/shared/ui/IconControl.tsx";
 import styles from "./GrabForm.module.css";
-import { MODE_LABELS, QUALITY_LABELS } from "@/shared/jobs/jobView.ts";
 
 const HTTP_CONFLICT = 409;
+
+const [chosenMode, setChosenMode] = makePersisted(
+  createSignal<JobMode>("audio"),
+  storedAs("home.mode", JobModeSchema),
+);
+const [chosenQuality, setChosenQuality] = makePersisted(
+  createSignal<VideoQuality>(DEFAULT_QUALITY),
+  storedAs("home.quality", VideoQualitySchema),
+);
 
 const PLACEHOLDERS: Readonly<Record<JobMode, string>> = {
   audio: "paste a YouTube Music link",
@@ -57,8 +74,6 @@ function createGrab(props: GrabFormProps, clear: () => void) {
 
 export function GrabForm(props: GrabFormProps) {
   const [link, setLink] = createSignal("");
-  const [mode, setMode] = createSignal<JobMode>("audio");
-  const [quality, setQuality] = createSignal<VideoQuality>(DEFAULT_QUALITY);
   const changeLink = (text: string) => {
     setLink(text);
   };
@@ -70,28 +85,28 @@ export function GrabForm(props: GrabFormProps) {
     event.preventDefault();
     const trimmed = link().trim();
     if (trimmed !== "" && !sending()) {
-      void grab(trimmed, mode(), quality());
+      void grab(trimmed, chosenMode(), chosenQuality());
     }
   };
 
   return (
     <form class={styles.form} novalidate onSubmit={submit}>
-      <LinkField link={link()} mode={mode()} sending={sending()} onInput={changeLink} />
+      <LinkField link={link()} mode={chosenMode()} sending={sending()} onInput={changeLink} />
       <div class={styles.options}>
         <ChoiceChips
           name="Mode"
           choices={JOB_MODES}
           labels={MODE_LABELS}
-          value={mode()}
+          value={chosenMode()}
           onChange={(value) => {
-            setMode(value);
+            setChosenMode(value);
           }}
         />
-        <Show when={mode() === "video"}>
+        <Show when={chosenMode() === "video"}>
           <QualityChoice
-            value={quality()}
+            value={chosenQuality()}
             onChange={(value) => {
-              setQuality(value);
+              setChosenQuality(value);
             }}
           />
         </Show>

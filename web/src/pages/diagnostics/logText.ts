@@ -1,3 +1,5 @@
+import * as v from "valibot";
+
 import type { LogLevel } from "@/shared/api/schemas.ts";
 import { formatDay, formatTime } from "@/shared/clock.ts";
 import type { FactGroup } from "./serverFacts.ts";
@@ -11,6 +13,8 @@ export const LEVEL_FILTER_LABELS: Readonly<Record<LevelFilter, string>> = {
   warn: "Warn",
   error: "Error",
 };
+
+export const LevelFiltersSchema = v.pipe(v.array(v.picklist(LEVEL_FILTERS)), v.readonly());
 
 export const DEFAULT_LEVEL_FILTERS: readonly LevelFilter[] = ["info", "warn", "error"];
 

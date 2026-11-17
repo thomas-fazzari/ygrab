@@ -1,7 +1,9 @@
+import { makePersisted } from "@solid-primitives/storage";
 import { createMemo, createSignal, For, Show } from "solid-js";
 import DownloadIcon from "~icons/solar/download-minimalistic-linear";
 
 import { createMinuteClock, formatDay, formatTime } from "@/shared/clock.ts";
+import { storedAs } from "@/shared/storage.ts";
 import { Button } from "@/shared/ui/Button.tsx";
 import { MultiSelect } from "@/shared/ui/MultiSelect.tsx";
 import { SearchField } from "@/shared/ui/SearchField.tsx";
@@ -16,6 +18,7 @@ import {
   LEVEL_CODES,
   LEVEL_FILTER_LABELS,
   LEVEL_FILTERS,
+  LevelFiltersSchema,
   logText,
   saveText,
 } from "./logText.ts";
@@ -23,9 +26,13 @@ import type { LevelFilter } from "./logText.ts";
 
 const LOG_FILE_NAME = "ygrab-log.txt";
 
+const [levels, setLevels] = makePersisted(
+  createSignal<readonly LevelFilter[]>(DEFAULT_LEVEL_FILTERS),
+  storedAs("diagnostics.levels", LevelFiltersSchema),
+);
+
 export function LogSection(props: { readonly feed: LogFeed }) {
   const [query, setQuery] = createSignal("");
-  const [levels, setLevels] = createSignal<readonly LevelFilter[]>(DEFAULT_LEVEL_FILTERS);
   const visible = createMemo(() => {
     const needle = query().toLowerCase();
     const shown = new Set(levels());
@@ -40,7 +47,7 @@ export function LogSection(props: { readonly feed: LogFeed }) {
   return (
     <section>
       <SectionHeading
-        title="Log"
+        title="Log Stream"
         detail={props.feed.offline ? "offline, reconnecting" : undefined}
         aside={
           <>
