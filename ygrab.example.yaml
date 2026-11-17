@@ -44,5 +44,6 @@ Auth:
   # At least 16 characters. Without one, the host generates a token into the data folder and logs
   # it once. YGRAB_TOKEN overrides it. A new token signs every browser out.
   # Token:
+  # Works in the Development environment only.
   # A change needs a restart
   Disabled: false

@@ -27,10 +27,7 @@ internal sealed class BearerHandler(
 
     protected override Task<AuthenticateResult> HandleAuthenticateAsync()
     {
-        if (
-            !AuthenticationHeaderValue.TryParse(Request.Headers.Authorization, out var header)
-            || !string.Equals(header.Scheme, SchemeName, StringComparison.OrdinalIgnoreCase)
-        )
+        if (HeaderOf(Request) is not { } header)
         {
             return Task.FromResult(AuthenticateResult.NoResult());
         }
@@ -58,4 +55,11 @@ internal sealed class BearerHandler(
         Response.Headers.WWWAuthenticate = SchemeName;
         return Task.CompletedTask;
     }
+
+    /// <returns>The Authorization header when it has the bearer scheme, whatever its token.</returns>
+    internal static AuthenticationHeaderValue? HeaderOf(HttpRequest request) =>
+        AuthenticationHeaderValue.TryParse(request.Headers.Authorization, out var header)
+        && string.Equals(header.Scheme, SchemeName, StringComparison.OrdinalIgnoreCase)
+            ? header
+            : null;
 }

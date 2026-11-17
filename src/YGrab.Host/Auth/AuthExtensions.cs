@@ -25,6 +25,10 @@ internal static class AuthExtensions
                     AuthOptions.SectionName,
                     HostConfigurationExtensions.FailOnUnknownKeys
                 )
+                .Validate<IHostEnvironment>(
+                    (options, environment) => !options.Disabled || environment.IsDevelopment(),
+                    $"{AuthOptions.SectionName}:{nameof(AuthOptions.Disabled)} works in the Development environment only."
+                )
                 .ValidateOnStart();
             services.AddSingleton<IValidateOptions<AuthOptions>, AuthOptionsValidator>();
             services.AddSingleton(provider => new HostStorage(
