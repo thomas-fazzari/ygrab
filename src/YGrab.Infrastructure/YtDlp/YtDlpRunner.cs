@@ -16,7 +16,8 @@ namespace YGrab.Infrastructure.YtDlp;
 /// </para>
 /// <para>
 /// It empties the work folder before the run. yt-dlp writes its cookie jar back when it exits, so
-/// it gets a copy of the cookies file in the work folder.
+/// it gets a copy of the cookies file in the work folder. The copy is deleted once the process has
+/// exited, since it holds a signed-in YouTube session.
 /// </para>
 /// <para>
 /// The process is killed when the run throws or the timeout ends.
@@ -99,6 +100,10 @@ internal sealed partial class YtDlpRunner(
         {
             Stop(process);
             throw;
+        }
+        finally
+        {
+            File.Delete(Path.Combine(work, CookiesCopyName));
         }
 
         if (process.ExitCode == 0)
