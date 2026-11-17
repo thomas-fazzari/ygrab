@@ -41,6 +41,7 @@ internal static class SessionEndpoints
                 .AllowAnonymous()
                 .RequireRateLimiting(LoginPolicy);
             endpoints.MapPost("/logout", (Delegate)LogoutAsync).AllowAnonymous();
+            endpoints.MapGet("/session", GetSession);
             return endpoints;
         }
     }
@@ -59,6 +60,9 @@ internal static class SessionEndpoints
         await SessionCookie.SignInAsync(context, hash);
         return TypedResults.NoContent();
     }
+
+    private static Ok<SessionDto> GetSession(IOptions<AuthOptions> options) =>
+        TypedResults.Ok(new SessionDto(AuthEnabled: !options.Value.Disabled));
 
     private static async Task<NoContent> LogoutAsync(HttpContext context)
     {

@@ -1,0 +1,60 @@
+@layer components {
+  .tooltip {
+    display: contents;
+  }
+
+  .control {
+    --icon-size: var(--icon-size-large);
+
+    display: grid;
+    place-items: center;
+    inline-size: var(--control-height);
+    block-size: var(--control-height);
+    padding: 0;
+    border: 0;
+    border-radius: var(--radius);
+    background: none;
+    color: var(--color-text-helper);
+    cursor: pointer;
+    anchor-name: var(--anchor);
+  }
+
+  .control:hover {
+    background: var(--color-layer-2);
+    color: var(--color-text);
+  }
+
+  .control[data-main] {
+    color: var(--color-text);
+  }
+
+  .control[aria-current="page"] {
+    background: var(--color-layer-1);
+    color: var(--color-text);
+  }
+
+  .control:disabled {
+    background: none;
+    color: var(--color-text-helper);
+    cursor: default;
+  }
+
+  /* Fixed, so the position fallbacks measure against the viewport */
+  .panel {
+    position: fixed;
+    position-anchor: var(--anchor);
+    position-area: block-end;
+    position-try-fallbacks:
+      block-end span-inline-start,
+      block-end span-inline-end,
+      block-start;
+    margin: var(--space-2);
+    padding-block: var(--space-2);
+    padding-inline: var(--space-3);
+    border-radius: var(--radius-small);
+    background: var(--color-layer-3);
+    color: var(--color-text);
+    font: var(--weight-regular) var(--text-body);
+    white-space: nowrap;
+  }
+}

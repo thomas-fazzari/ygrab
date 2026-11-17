@@ -11,7 +11,8 @@
 - Write a store through its draft setter: `setStore((draft) => { draft.x = 1; })`.
 - Parse every API answer and event with a valibot schema from `src/shared/api/schemas.ts`, and derive its type with `v.InferOutput`. Add a schema before you add a call.
 - Add an endpoint as a one-line function on `request` in `src/shared/api/client.ts`. A client error is a result value. A schema mismatch throws.
-- Add an event to `EventNames` and `apiEventSchemas` in `src/shared/api/events.ts`, not to a new stream.
+- Add an event to `EventNames` and `apiEventSchemas` in `src/shared/api/events.ts`, not to a new stream. The log stream of `/api/logs` is the only other stream, with `LogEventNames` and `logEventSchemas`, so that only the Diagnostics page receives the log lines.
+- Put code that several pages use in `src/shared`. A page never imports from another page.
 - Branch on a union or on the shape of a value with `match(...).with(...).exhaustive()` from `ts-pattern`, not an `if` chain or a `switch`. Keep `if` for a guard clause or a single condition.
 - Use no type assertion, `any`, non-null assertion or `unknown` parameter. Type a value where it enters the app.
 - Prefer a generic helper to repeated code.

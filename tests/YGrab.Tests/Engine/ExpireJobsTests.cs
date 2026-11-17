@@ -9,6 +9,8 @@ namespace YGrab.Tests.Engine;
 
 public sealed class ExpireJobsTests
 {
+    private static readonly TimeSpan _history = TimeSpan.FromDays(90);
+
     [Fact]
     public async Task A_sweep_deletes_the_folder_of_an_old_failed_job_and_goes_on_when_a_delete_throws()
     {
@@ -23,7 +25,7 @@ public sealed class ExpireJobsTests
         rig.Time.Advance(retention + TimeSpan.FromMinutes(1));
 
         await rig.Expire.HandleAsync(
-            new ExpireJobs.Command(retention, retention),
+            new ExpireJobs.Command(new Retention(retention, retention, _history)),
             TestContext.Current.CancellationToken
         );
 
@@ -50,12 +52,34 @@ public sealed class ExpireJobsTests
         rig.Time.Advance(videoRetention + TimeSpan.FromMinutes(1));
 
         await rig.Expire.HandleAsync(
-            new ExpireJobs.Command(retention, videoRetention),
+            new ExpireJobs.Command(new Retention(retention, videoRetention, _history)),
             TestContext.Current.CancellationToken
         );
 
         rig.Jobs.Get(video.Id)!.State.Should().BeOfType<JobState.Expired>();
         rig.Jobs.Get(audio.Id)!.State.Should().BeOfType<JobState.Ready>();
         rig.Output.Deleted.Should().Equal(video.Id);
+    }
+
+    [Fact]
+    public async Task A_sweep_removes_the_jobs_that_finished_before_the_history()
+    {
+        var retention = TimeSpan.FromDays(7);
+        var release = Samples.Release(2);
+        var rig = new JobRig(release);
+        var old = Samples.Ready(release);
+        rig.Time.Advance(_history - TimeSpan.FromDays(1));
+        var recent = Samples.Downloading(release).Abort("broken", rig.Time.GetUtcNow());
+        rig.Jobs.Load([old, recent]);
+        rig.Time.Advance(TimeSpan.FromDays(2));
+
+        await rig.Expire.HandleAsync(
+            new ExpireJobs.Command(new Retention(retention, retention, _history)),
+            TestContext.Current.CancellationToken
+        );
+
+        rig.Jobs.Get(old.Id).Should().BeNull();
+        rig.Output.Deleted.Should().Equal(old.Id);
+        rig.Jobs.Get(recent.Id)!.State.Should().BeOfType<JobState.Failed>();
     }
 }

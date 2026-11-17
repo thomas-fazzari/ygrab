@@ -2,11 +2,23 @@ import { resolve } from "node:path";
 import { env } from "node:process";
 
 import solid from "@solidjs/vite-plugin";
+import icons from "unplugin-icons/vite";
 import { defineConfig } from "vite";
 
 export default defineConfig({
   resolve: { alias: { "@": resolve(import.meta.dirname, "src") } },
-  plugins: [solid()],
+  plugins: [
+    solid(),
+    icons({
+      compiler: "solid",
+      scale: 1,
+      defaultClass: "icon",
+      // Every icon sits beside a text or an accessible name
+      iconCustomizer(_collection, _icon, props) {
+        props["aria-hidden"] = "true";
+      },
+    }),
+  ],
   build: {
     outDir: resolve(import.meta.dirname, "../src/YGrab.Host/wwwroot"),
     emptyOutDir: true,

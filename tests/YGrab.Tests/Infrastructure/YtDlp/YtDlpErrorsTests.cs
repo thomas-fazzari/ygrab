@@ -31,4 +31,10 @@ public sealed class YtDlpErrorsTests
     [InlineData(null, typeof(RemoteFailure.Transient))]
     public void The_last_error_line_decides_the_kind_of_failure(string? line, Type kind) =>
         YtDlpErrors.Classify(line).Should().BeOfType(kind);
+
+    [Theory]
+    [InlineData("[youtube] abc: Private video. Sign in", "Private video. Sign in")]
+    [InlineData("HTTP Error 429: Too Many Requests", "HTTP Error 429: Too Many Requests")]
+    public void The_reason_drops_the_extractor_and_the_video_id(string line, string reason) =>
+        YtDlpErrors.Classify(line).Reason.Should().Be(reason);
 }

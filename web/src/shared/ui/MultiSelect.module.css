@@ -1,0 +1,24 @@
+@layer components {
+  .option {
+    gap: var(--space-3);
+    padding-inline-start: var(--space-3);
+  }
+
+  .check {
+    visibility: hidden;
+  }
+
+  /* A checked choice shows its mark and keeps the plain option look */
+  [aria-multiselectable="true"] .option[aria-selected="true"] {
+    background: none;
+    font-weight: var(--weight-regular);
+  }
+
+  [aria-multiselectable="true"] .option[aria-selected="true"]:focus {
+    background: var(--color-layer-2);
+  }
+
+  .option[aria-selected="true"] > .check {
+    visibility: visible;
+  }
+}

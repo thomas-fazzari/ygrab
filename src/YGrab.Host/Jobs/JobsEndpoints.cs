@@ -58,6 +58,7 @@ internal static class JobsEndpoints
     private static async Task<Results<Ok<ImmutableArray<JobDto>>, ProblemHttpResult>> ListAsync(
         int? limit,
         IQueryHandler<ListJobs.Query, ListJobs.Outcome> handler,
+        IRetentionSource retention,
         CancellationToken cancellationToken
     )
     {
@@ -68,7 +69,7 @@ internal static class JobsEndpoints
         return outcome.Value switch
         {
             ListJobs.Listed listed => TypedResults.Ok(
-                ImmutableArray.CreateRange(listed.Jobs, job => job.ToDto())
+                ImmutableArray.CreateRange(listed.Jobs, job => job.ToDto(retention.Current))
             ),
             Failure failure => failure.ToProblem(),
             _ => throw Unreachable.NullUnion(),
@@ -78,11 +79,12 @@ internal static class JobsEndpoints
     private static async Task<Results<Ok<JobDto>, ProblemHttpResult>> GetAsync(
         Guid id,
         IQueryHandler<GetJob.Query, GetJob.Outcome> handler,
+        IRetentionSource retention,
         CancellationToken cancellationToken
     ) =>
         await handler.HandleAsync(new GetJob.Query(id), cancellationToken) switch
         {
-            Job job => TypedResults.Ok(job.ToDto()),
+            Job job => TypedResults.Ok(job.ToDto(retention.Current)),
             Failure failure => failure.ToProblem(),
             null => throw Unreachable.NullUnion(),
         };

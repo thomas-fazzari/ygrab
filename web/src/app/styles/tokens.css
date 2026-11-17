@@ -1,0 +1,60 @@
+@layer tokens {
+  :root {
+    color-scheme: dark;
+
+    --color-background: #000;
+    --color-layer-1: #161616;
+    --color-layer-2: #262626;
+    --color-layer-3: #393939;
+    --color-text: #f4f4f4;
+    --color-text-secondary: #c6c6c6;
+    --color-text-helper: #8d8d8d;
+    --color-focus: #f4f4f4;
+    --color-error: #fa4d56;
+
+    --space-1: 2px;
+    --space-2: 4px;
+    --space-3: 8px;
+    --space-4: 12px;
+    --space-5: 16px;
+    --space-6: 24px;
+    --space-7: 32px;
+    --space-8: 40px;
+    --space-9: 48px;
+    --space-10: 64px;
+
+    --font-text: "IBM Plex Mono", ui-monospace, menlo, monospace;
+    --font-logo: "Atkinson Hyperlegible Mono", ui-monospace, menlo, monospace;
+    --weight-regular: 400;
+    --weight-medium: 500;
+    --weight-bold: 600;
+    --line-label: 16px;
+    --line-body: 20px;
+    --text-label: 12px/var(--line-label) var(--font-text);
+    --text-body: 14px/var(--line-body) var(--font-text);
+    --text-heading: 16px/22px var(--font-text);
+    --text-title: 24px/32px var(--font-text);
+
+    --radius: 6px;
+    --radius-small: 4px;
+    --icon-size: 16px;
+    --icon-size-large: 18px;
+    --control-height: 32px;
+    --field-height: 44px;
+    --header-height: 56px;
+    --column-width: 880px;
+    --form-width: 480px;
+    --dialog-width: 420px;
+    --cover-size: 64px;
+    --cover-size-small: 48px;
+    --badge-width: 100px;
+    --progress-height: 4px;
+    --track-number-width: 24px;
+    --change-type-width: 40px;
+    --filter-width: 280px;
+    --log-indent: 13ch;
+    --track-row-height: calc(var(--line-label) + 2 * var(--space-2) + 1px);
+    --track-list-height: calc(10.5 * var(--track-row-height));
+    --skeleton-delay: 300ms;
+  }
+}

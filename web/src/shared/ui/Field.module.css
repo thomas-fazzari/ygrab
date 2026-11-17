@@ -1,0 +1,38 @@
+@layer components {
+  .field {
+    display: flex;
+    align-items: center;
+    block-size: var(--field-height);
+    padding-inline: var(--space-4) var(--space-2);
+    border: 1px solid var(--color-layer-3);
+    border-radius: var(--radius);
+    color: var(--color-text-helper);
+  }
+
+  .field[data-small] {
+    block-size: var(--control-height);
+  }
+
+  .field:focus-within {
+    border-color: var(--color-text-helper);
+  }
+
+  .field > input {
+    flex: 1;
+    min-inline-size: 0;
+    block-size: 100%;
+    padding-inline: var(--space-4);
+    border: 0;
+    outline: 0;
+    background: none;
+    color: var(--color-text);
+  }
+
+  .field > input::placeholder {
+    color: var(--color-text-helper);
+  }
+
+  .field:has(input:placeholder-shown) [data-main] {
+    color: var(--color-text-helper);
+  }
+}

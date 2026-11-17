@@ -4,6 +4,7 @@
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using YGrab.Domain;
 using YGrab.Engine;
+using YGrab.Engine.Diagnostics;
 using YGrab.Engine.Jobs;
 
 namespace Microsoft.Extensions.DependencyInjection;
@@ -54,6 +55,10 @@ public static class YGrabEngineServiceCollectionExtensions
             services.AddSingleton<
                 IQueryHandler<GetCooldown.Query, Cooldown>,
                 GetCooldown.Handler
+            >();
+            services.AddSingleton<
+                IQueryHandler<GetStatus.Query, GetStatus.Status>,
+                GetStatus.Handler
             >();
             return services;
         }

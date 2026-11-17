@@ -5,6 +5,7 @@ using System.Globalization;
 using CSnakes.Runtime;
 using YGrab.Domain;
 using YGrab.Engine.Jobs;
+using YGrab.Infrastructure.Python.Extensions;
 
 namespace YGrab.Infrastructure.Python.Catalog;
 
@@ -13,11 +14,9 @@ namespace YGrab.Infrastructure.Python.Catalog;
 /// </summary>
 /// <remarks>
 /// <para>
-/// The Python module raises <c>TransientError</c>, <c>RateLimitedError</c> and
-/// <c>UnavailableError</c>. This adapter maps them to <see cref="RemoteFailure"/> by class name.
-/// </para>
-/// <para>
-/// A result that does not have the shape that the bindings expect is unavailable.
+/// An exception that the module raises on purpose maps to its <see cref="RemoteFailure"/>.
+/// Any other exception, or a result that does not have the shape that the bindings expect,
+/// is unavailable. Its reason is <see cref="UnreadableReason"/> and the log keeps the details.
 /// </para>
 /// </remarks>
 internal sealed partial class YtMusicCatalog(
@@ -25,8 +24,7 @@ internal sealed partial class YtMusicCatalog(
     ILogger<YtMusicCatalog> logger
 ) : ICatalog
 {
-    private const string RateLimitedErrorName = "RateLimitedError";
-    private const string TransientErrorName = "TransientError";
+    private const string UnreadableReason = "YouTube Music returned a page that YGrab cannot read.";
 
     // A call holds the GIL and blocks on the network, so it runs off the caller's thread
     // A cancelled caller stops waiting, and the call ends by itself
@@ -38,17 +36,6 @@ internal sealed partial class YtMusicCatalog(
         ArgumentNullException.ThrowIfNull(link);
 
         return await Task.Run(() => Find(link), cancellationToken).WaitAsync(cancellationToken);
-    }
-
-    internal static RemoteFailure Classify(PythonInvocationException exception)
-    {
-        var reason = exception.InnerException?.Message ?? exception.Message;
-        return exception.PythonExceptionType switch
-        {
-            RateLimitedErrorName => new RemoteFailure.RateLimited(reason),
-            TransientErrorName => new RemoteFailure.Transient(reason),
-            var type => new RemoteFailure.Unavailable($"{type}: {reason}"),
-        };
     }
 
     private CatalogLookup Find(MusicLink link)
@@ -70,16 +57,13 @@ internal sealed partial class YtMusicCatalog(
         }
         catch (PythonInvocationException exception)
         {
-            return Failed(link, Classify(exception));
+            return exception.ToRemoteFailure() is { } failure
+                ? Failed(link, failure)
+                : Unreadable(link, $"{exception.PythonExceptionType}: {exception.Reason}");
         }
         catch (InvalidCastException exception)
         {
-            return Failed(
-                link,
-                new RemoteFailure.Unavailable(
-                    $"YouTube Music returned an unexpected result: {exception.Message}"
-                )
-            );
+            return Unreadable(link, exception.Message);
         }
     }
 
@@ -109,7 +93,7 @@ internal sealed partial class YtMusicCatalog(
         return BrowseId.Create(browseId).TryGetValue(out BrowseId? parsed)
             ? Read(module, parsed, audioVideoId)
             : new RemoteFailure.Unavailable(
-                $"YouTube Music returned the invalid album id {browseId}."
+                $"YouTube Music sent an album id that YGrab cannot read ({browseId})."
             );
     }
 
@@ -168,9 +152,21 @@ internal sealed partial class YtMusicCatalog(
         return failure;
     }
 
+    private RemoteFailure.Unavailable Unreadable(MusicLink link, string details)
+    {
+        LogUnreadable(link, details);
+        return new RemoteFailure.Unavailable(UnreadableReason);
+    }
+
     [LoggerMessage(
         Level = LogLevel.Warning,
         Message = "YouTube Music lookup of {Link} failed: {Failure}"
     )]
     private partial void LogLookupFailed(MusicLink link, RemoteFailure failure);
+
+    [LoggerMessage(
+        Level = LogLevel.Warning,
+        Message = "YouTube Music lookup of {Link} returned a result YGrab cannot read: {Details}"
+    )]
+    private partial void LogUnreadable(MusicLink link, string details);
 }

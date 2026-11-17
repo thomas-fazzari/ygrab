@@ -7,7 +7,9 @@ idiomatic_version_file_enable_tools = ["dotnet"]
 bun = "1.4.4"
 "dotnet:csharpier" = "1.4.0"
 deno = "2.9.8"
+git-cliff = "2.14.2"
 hk = "2.12.0"
+jq = "1.8.2"
 ruff = "0.17.5"
 rumdl = "0.3.3"
 shellcheck = "0.11.0"
@@ -38,11 +40,19 @@ run = 'dotnet publish src/YGrab.Cli --configuration Release --output artifacts/c
 
 [tasks.dev]
 description = "Runs the host and the Vite dev server, with the data in artifacts/dev and the auth off"
-run = [{ tasks = ["dev:host", "web:dev"] }]
+run = [{ tasks = ["dev:host", "dev:web"] }]
 
 [tasks."dev:host"]
-description = "Runs the host with hot reload on http://127.0.0.1:5000"
-run = "dotnet watch --project src/YGrab.Host --non-interactive"
+description = "Runs the host on http://127.0.0.1:5000"
+run = "dotnet run --project src/YGrab.Host"
+
+[tasks."dev:web"]
+description = "Starts the Vite dev server once the host of dev:host answers"
+hide = true
+run = [
+  "curl --silent --fail --output /dev/null --retry 120 --retry-delay 1 --retry-all-errors http://127.0.0.1:5000/api/health",
+  { task = "web:dev" },
+]
 
 [tasks."web:install"]
 description = "Installs the front-end dependencies from the lock file"
@@ -80,6 +90,11 @@ run = [{ tasks = ["hooks:check", "fmt:check", "web:check"] }, { task = "test" }]
 description = "Formats every file and fixes lint through the steps of hk.pkl"
 depends = ["web:install"]
 run = "hk fix --all"
+
+[tasks.release]
+description = "Commits the notes of the next version into web/src/changelog.json and tags it"
+depends = ["web:install"]
+run = "eng/tasks/release.sh"
 
 [tasks."hooks:install"]
 description = "Installs the Git hooks"

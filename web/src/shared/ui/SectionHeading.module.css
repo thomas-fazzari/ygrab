@@ -1,0 +1,31 @@
+@layer components {
+  .heading {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--space-3);
+    margin-block-start: var(--space-9);
+    padding-block-end: var(--space-4);
+  }
+
+  .title {
+    font: var(--weight-bold) var(--text-heading);
+  }
+
+  .detail {
+    color: var(--color-text-helper);
+    font: var(--weight-regular) var(--text-label);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .aside {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2);
+    align-self: center;
+    margin-inline-start: auto;
+    color: var(--color-text-secondary);
+    font: var(--weight-regular) var(--text-label);
+  }
+}

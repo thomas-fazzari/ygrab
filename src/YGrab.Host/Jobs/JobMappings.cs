@@ -12,7 +12,7 @@ internal static class JobMappings
 {
     extension(Job job)
     {
-        public JobDto ToDto() =>
+        public JobDto ToDto(Retention retention) =>
             new(
                 job.Id,
                 job.Url,
@@ -20,10 +20,14 @@ internal static class JobMappings
                 job.Request is JobRequest.Video video ? ToCode(video.Quality) : null,
                 ToCode(job.State),
                 ReasonOf(job.State),
+                (job.State as JobState.Waiting)?.RetryAt,
+                (job.State as JobState.Skipped)?.DuplicateOf,
                 job.CreatedAt,
                 job.FinishedAt,
+                retention.ExpiresAt(job),
                 job.Release?.Title ?? job.KeptVideo?.Title,
                 ArtistsOf(job),
+                job.Release?.CoverUrl,
                 FileNameOf(job.State),
                 job.EnrichmentFailure is { } failure ? ToCode(failure) : null,
                 job.Percent,

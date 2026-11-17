@@ -1,0 +1,45 @@
+@layer components {
+  .form {
+    margin-block-start: var(--space-6);
+  }
+
+  .options {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2);
+    margin-block-start: var(--space-3);
+  }
+
+  .wide,
+  .narrow {
+    margin-inline-start: var(--space-3);
+    padding-inline-start: var(--space-4);
+    border-inline-start: 1px solid var(--color-layer-2);
+  }
+
+  .narrow {
+    display: none;
+  }
+
+  .paste {
+    margin-inline-start: auto;
+  }
+
+  .failure {
+    margin-block-start: var(--space-3);
+    color: var(--color-error);
+    font: var(--weight-regular) var(--text-label);
+    overflow-wrap: anywhere;
+  }
+
+  @media (width <= 760px) {
+    .wide {
+      display: none;
+    }
+
+    .narrow {
+      display: flex;
+    }
+  }
+}

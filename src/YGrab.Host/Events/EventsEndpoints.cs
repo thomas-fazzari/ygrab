@@ -14,11 +14,6 @@ namespace YGrab.Host.Events;
 
 internal static class EventsEndpoints
 {
-    internal static readonly TimeSpan HeartbeatInterval = TimeSpan.FromSeconds(15);
-
-    // An SSE comment line, which clients ignore and proxies count as traffic
-    private static readonly byte[] _heartbeat = ":\n\n"u8.ToArray();
-
     extension(IEndpointRouteBuilder endpoints)
     {
         public IEndpointRouteBuilder MapEvents()
@@ -32,6 +27,7 @@ internal static class EventsEndpoints
         ChangeFeed feed,
         IQueryHandler<ListJobs.Query, ListJobs.Outcome> listJobs,
         IQueryHandler<GetCooldown.Query, Cooldown> getCooldown,
+        IRetentionSource retention,
         IHostApplicationLifetime lifetime,
         TimeProvider timeProvider,
         HttpResponse response,
@@ -42,6 +38,7 @@ internal static class EventsEndpoints
                 feed,
                 listJobs,
                 getCooldown,
+                retention,
                 lifetime,
                 timeProvider,
                 response,
@@ -55,6 +52,7 @@ internal static class EventsEndpoints
         ChangeFeed feed,
         IQueryHandler<ListJobs.Query, ListJobs.Outcome> listJobs,
         IQueryHandler<GetCooldown.Query, Cooldown> getCooldown,
+        IRetentionSource retention,
         IHostApplicationLifetime lifetime,
         TimeProvider timeProvider,
         HttpResponse response,
@@ -64,8 +62,7 @@ internal static class EventsEndpoints
         using var subscription = feed.Subscribe();
         // Ending the subscription ends the stream, so the host does not wait for the client
         await using var stop = lifetime.ApplicationStopping.Register(subscription.Dispose);
-        await response.StartAsync(cancellationToken);
-        await response.Body.FlushAsync(cancellationToken);
+        await EventStream.OpenAsync(response, cancellationToken);
 
         var jobs = (
             await listJobs.HandleAsync(new ListJobs.Query(ListJobs.MaxLimit), cancellationToken)
@@ -81,7 +78,7 @@ internal static class EventsEndpoints
         yield return new SseItem<string>(
             JsonSerializer.Serialize(
                 new SnapshotDto(
-                    ImmutableArray.CreateRange(jobs, job => job.ToDto()),
+                    ImmutableArray.CreateRange(jobs, job => job.ToDto(retention.Current)),
                     cooldown.ToDto()
                 ),
                 ApiJsonContext.Default.SnapshotDto
@@ -89,50 +86,28 @@ internal static class EventsEndpoints
             EventNames.Snapshot
         );
 
-        using var timer = new PeriodicTimer(HeartbeatInterval, timeProvider);
-        var changedSinceTick = false;
-        var changes = subscription.WaitToReadAsync(cancellationToken).AsTask();
-        var ticks = timer.WaitForNextTickAsync(cancellationToken).AsTask();
-        while (true)
+        await foreach (
+            var item in EventStream.FollowAsync(
+                subscription.Reader,
+                change => ToItem(change, retention.Current),
+                response,
+                timeProvider,
+                cancellationToken
+            )
+        )
         {
-            if (await Task.WhenAny(changes, ticks) == ticks)
-            {
-                if (!await ticks)
-                {
-                    yield break;
-                }
-
-                if (!changedSinceTick)
-                {
-                    await response.Body.WriteAsync(_heartbeat, cancellationToken);
-                    await response.Body.FlushAsync(cancellationToken);
-                }
-
-                changedSinceTick = false;
-                ticks = timer.WaitForNextTickAsync(cancellationToken).AsTask();
-                continue;
-            }
-
-            if (!await changes)
-            {
-                yield break;
-            }
-
-            while (subscription.TryRead(out var change))
-            {
-                changedSinceTick = true;
-                yield return ToItem(change);
-            }
-
-            changes = subscription.WaitToReadAsync(cancellationToken).AsTask();
+            yield return item;
         }
     }
 
-    private static SseItem<string> ToItem(Change change) =>
+    private static SseItem<string> ToItem(Change change, Retention retention) =>
         change switch
         {
             JobChanged changed => new(
-                JsonSerializer.Serialize(changed.Job.ToDto(), ApiJsonContext.Default.JobDto),
+                JsonSerializer.Serialize(
+                    changed.Job.ToDto(retention),
+                    ApiJsonContext.Default.JobDto
+                ),
                 EventNames.Job
             ),
             JobRemoved removed => new(

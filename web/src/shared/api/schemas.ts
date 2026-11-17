@@ -20,6 +20,7 @@ export const ENRICHMENT_FAILURES = ["no_match", "unreachable", "provider_error"]
 const IdSchema = v.pipe(v.string(), v.uuid());
 const TimestampSchema = v.pipe(v.string(), v.isoTimestamp());
 const NullableTextSchema = v.nullable(v.string());
+const UrlSchema = v.pipe(v.string(), v.url());
 
 export type JobId = v.InferOutput<typeof IdSchema>;
 
@@ -28,6 +29,11 @@ export const VideoQualitySchema = v.picklist(VIDEO_QUALITIES);
 export const JobStateSchema = v.picklist(JOB_STATES);
 export const TrackStateSchema = v.picklist(TRACK_STATES);
 export const EnrichmentFailureSchema = v.picklist(ENRICHMENT_FAILURES);
+
+export type JobMode = v.InferOutput<typeof JobModeSchema>;
+export type VideoQuality = v.InferOutput<typeof VideoQualitySchema>;
+
+export const DEFAULT_QUALITY: VideoQuality = "1080p";
 
 export const TrackSchema = v.object({
   number: v.pipe(v.number(), v.integer()),
@@ -39,15 +45,19 @@ export type Track = v.InferOutput<typeof TrackSchema>;
 
 export const JobSchema = v.object({
   id: IdSchema,
-  url: v.pipe(v.string(), v.url()),
+  url: UrlSchema,
   mode: JobModeSchema,
   quality: v.nullable(VideoQualitySchema),
   state: JobStateSchema,
   reason: NullableTextSchema,
+  retryAt: v.nullable(TimestampSchema),
+  duplicateOf: v.nullable(IdSchema),
   createdAt: TimestampSchema,
   finishedAt: v.nullable(TimestampSchema),
+  expiresAt: v.nullable(TimestampSchema),
   title: NullableTextSchema,
   artists: v.array(v.string()),
+  coverUrl: v.nullable(UrlSchema),
   fileName: NullableTextSchema,
   enrichmentFailure: v.nullable(EnrichmentFailureSchema),
   percent: v.pipe(v.number(), v.integer()),
@@ -84,6 +94,40 @@ export type Snapshot = v.InferOutput<typeof SnapshotSchema>;
 
 export const LoginRequestSchema = v.object({ token: v.string() });
 export type LoginRequest = v.InferOutput<typeof LoginRequestSchema>;
+
+export const SessionSchema = v.object({ authEnabled: v.boolean() });
+export type Session = v.InferOutput<typeof SessionSchema>;
+
+export const LOG_LEVELS = [
+  "trace",
+  "debug",
+  "information",
+  "warning",
+  "error",
+  "critical",
+] as const;
+export const LogLevelSchema = v.picklist(LOG_LEVELS);
+export type LogLevel = v.InferOutput<typeof LogLevelSchema>;
+
+export const LogEntrySchema = v.object({
+  time: TimestampSchema,
+  level: LogLevelSchema,
+  source: v.string(),
+  message: v.string(),
+});
+export type LogEntry = v.InferOutput<typeof LogEntrySchema>;
+
+export const LogEntriesSchema = v.array(LogEntrySchema);
+
+const ByteCountSchema = v.pipe(v.number(), v.integer(), v.minValue(0));
+
+export const StatusSchema = v.object({
+  startedAt: TimestampSchema,
+  components: v.array(v.object({ name: v.string(), version: NullableTextSchema })),
+  dataBytes: ByteCountSchema,
+  freeBytes: ByteCountSchema,
+});
+export type Status = v.InferOutput<typeof StatusSchema>;
 
 export const NoContentSchema = v.null();
 

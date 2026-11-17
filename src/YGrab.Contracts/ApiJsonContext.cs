@@ -5,6 +5,7 @@ using System.Collections.Immutable;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using YGrab.Contracts.Auth;
+using YGrab.Contracts.Diagnostics;
 using YGrab.Contracts.Jobs;
 
 namespace YGrab.Contracts;
@@ -23,5 +24,9 @@ namespace YGrab.Contracts;
 [JsonSerializable(typeof(SnapshotDto))]
 [JsonSerializable(typeof(JobRemovedDto))]
 [JsonSerializable(typeof(LoginRequest))]
+[JsonSerializable(typeof(SessionDto))]
 [JsonSerializable(typeof(ProblemBody))]
+[JsonSerializable(typeof(LogEntryDto))]
+[JsonSerializable(typeof(ImmutableArray<LogEntryDto>))]
+[JsonSerializable(typeof(StatusDto))]
 public sealed partial class ApiJsonContext : JsonSerializerContext;

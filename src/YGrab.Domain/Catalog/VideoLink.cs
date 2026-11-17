@@ -21,7 +21,7 @@ namespace YGrab.Domain;
 public static class VideoLink
 {
     public const string InvalidMessage =
-        "Paste a YouTube video link. An album link grabs audio only.";
+        "Video mode takes a link to one YouTube video. An album downloads as music.";
 
     internal const string WatchPath = "/watch";
     internal const string VideoParameter = "v";
