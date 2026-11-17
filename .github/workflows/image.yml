@@ -1,8 +1,10 @@
 name: Image
 
 # Builds the image for each platform on a runner of that platform, since .NET does not run under QEMU.
-# With a version, pushes both images by digest and tags one multi-platform image
+# With a version, pushes both images by digest and tags one multi-platform image.
+# A manual run builds them without a push, to check the build before a release
 on:
+  workflow_dispatch:
   workflow_call:
     inputs:
       version:
@@ -10,7 +12,7 @@ on:
         type: string
         default: ""
 
-# The jobs take the permissions of the caller, which grants packages: write to push only
+# A call takes the permissions of its caller, which grants packages: write to push
 env:
   IMAGE: ghcr.io/${{ github.repository }}
 

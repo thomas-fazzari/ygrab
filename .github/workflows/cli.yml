@@ -1,7 +1,9 @@
 name: CLI
 
-# Publishes the native CLI for each runtime, then uploads the binaries when a version is given
+# Publishes the native CLI for each runtime, then uploads the binaries when a version is given.
+# A manual run builds them without a version, to check the build before a release
 on:
+  workflow_dispatch:
   workflow_call:
     inputs:
       version:

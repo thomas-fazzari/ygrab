@@ -53,20 +53,10 @@ jobs:
       - run: mise run install
       - run: mise run check
 
-  image:
-    needs: changes
-    if: needs.changes.outputs.code == 'true'
-    uses: ./.github/workflows/image.yml
-
-  cli:
-    needs: changes
-    if: needs.changes.outputs.code == 'true'
-    uses: ./.github/workflows/cli.yml
-
   # The only check that the master ruleset requires
   ci-ok:
     if: always()
-    needs: [changes, check, image, cli]
+    needs: [changes, check]
     runs-on: ubuntu-latest
     steps:
       - name: Require every job to pass or be skipped
