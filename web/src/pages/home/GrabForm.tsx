@@ -15,7 +15,14 @@ import {
   VIDEO_QUALITIES,
   VideoQualitySchema,
 } from "@/shared/api/schemas.ts";
-import type { JobId, JobMode, StartedJob, VideoQuality } from "@/shared/api/schemas.ts";
+import type {
+  JobId,
+  JobMode,
+  StartedJob,
+  StartJobRequest,
+  VideoQuality,
+} from "@/shared/api/schemas.ts";
+import { isYouTubeMusicLink } from "@/shared/jobs/jobNames.ts";
 import { MODE_LABELS, QUALITY_LABELS } from "@/shared/jobs/jobView.ts";
 import { storedAs } from "@/shared/storage.ts";
 import { Button } from "@/shared/ui/Button.tsx";
@@ -40,10 +47,18 @@ const PLACEHOLDERS: Readonly<Record<JobMode, string>> = {
   video: "paste a YouTube link",
 };
 
-interface GrabFormProps {
-  /** Shows the job that already grabbed the link, or clears it with null. */
-  readonly onExisting: (id: JobId | null) => void;
+export interface Existing {
+  readonly id: JobId;
+  /** Starts a new job on the link anyway. */
+  readonly downloadAnyway: () => void;
 }
+
+interface GrabFormProps {
+  /** Shows the job that already holds the link, or clears it with null. */
+  readonly onExisting: (existing: Existing | null) => void;
+}
+
+type GrabRequest = Omit<StartJobRequest, "force">;
 
 const previousIdOf = (result: ApiResult<StartedJob>) =>
   match(result)
@@ -57,12 +72,17 @@ function createGrab(props: GrabFormProps, clear: () => void) {
   const [failure, setFailure] = createSignal<string | null>(null);
   const [sending, setSending] = createOptimistic(false);
 
-  const grab = action(async function* (link: string, mode: JobMode, quality: VideoQuality) {
+  const grab = action(async function* (request: GrabRequest, force: boolean) {
     setSending(true);
-    const result = await startJob({ link, mode, quality, force: false });
+    const result = await startJob({ ...request, force });
     yield;
     const previousId = previousIdOf(result);
-    props.onExisting(previousId);
+    const downloadAnyway = () => {
+      if (!sending()) {
+        void grab(request, true);
+      }
+    };
+    props.onExisting(previousId === null ? null : { id: previousId, downloadAnyway });
     setFailure(previousId === null ? failureOf(result) : null);
     if (result.kind === "ok") {
       clear();
@@ -74,8 +94,13 @@ function createGrab(props: GrabFormProps, clear: () => void) {
 
 export function GrabForm(props: GrabFormProps) {
   const [link, setLink] = createSignal("");
+  // Only a link that becomes a music link switches the mode, so a later choice of Video holds
   const changeLink = (text: string) => {
+    const becomesMusic = !isYouTubeMusicLink(link().trim()) && isYouTubeMusicLink(text.trim());
     setLink(text);
+    if (becomesMusic) {
+      setChosenMode("audio");
+    }
   };
   const { failure, sending, grab } = createGrab(props, () => {
     changeLink("");
@@ -85,7 +110,7 @@ export function GrabForm(props: GrabFormProps) {
     event.preventDefault();
     const trimmed = link().trim();
     if (trimmed !== "" && !sending()) {
-      void grab(trimmed, chosenMode(), chosenQuality());
+      void grab({ link: trimmed, mode: chosenMode(), quality: chosenQuality() }, false);
     }
   };
 
@@ -140,7 +165,7 @@ function LinkField(props: LinkFieldProps) {
           props.onInput(event.currentTarget.value);
         }}
       />
-      <IconButton type="submit" label="Enqueue" main disabled={props.sending}>
+      <IconButton type="submit" label="Download" main disabled={props.sending}>
         <ArrowIcon />
       </IconButton>
     </Field>

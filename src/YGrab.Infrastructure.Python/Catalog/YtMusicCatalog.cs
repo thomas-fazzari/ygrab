@@ -93,7 +93,7 @@ internal sealed partial class YtMusicCatalog(
         return BrowseId.Create(browseId).TryGetValue(out BrowseId? parsed)
             ? Read(module, parsed, audioVideoId)
             : new RemoteFailure.Unavailable(
-                $"YouTube Music returned the invalid album id {browseId}."
+                $"YouTube Music sent an album id that YGrab cannot read ({browseId})."
             );
     }
 

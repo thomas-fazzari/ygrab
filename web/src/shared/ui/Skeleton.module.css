@@ -1,0 +1,36 @@
+@layer components {
+  /* Shows only once loading lasts, so a fast answer does not flash */
+  .skeleton {
+    animation: appear 0s var(--skeleton-delay) backwards;
+  }
+
+  .text {
+    display: inline-block;
+    max-inline-size: 100%;
+    block-size: 1em;
+    border-radius: var(--radius-small);
+    background: var(--color-layer-2);
+    vertical-align: middle;
+    animation:
+      appear 0s var(--skeleton-delay) backwards,
+      pulse 1s var(--skeleton-delay) ease-in-out infinite alternate;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .text {
+      animation: appear 0s var(--skeleton-delay) backwards;
+    }
+  }
+
+  @keyframes appear {
+    from {
+      visibility: hidden;
+    }
+  }
+
+  @keyframes pulse {
+    to {
+      opacity: 0.5;
+    }
+  }
+}

@@ -1,6 +1,7 @@
 import type { Job } from "@/shared/api/schemas.ts";
 
 const YOUTU_BE = "youtu.be";
+const YOUTUBE_MUSIC = "music.youtube.com";
 const WWW = "www.";
 
 /** Returns the link without its scheme and `www.`, as a user would type it. */
@@ -9,6 +10,9 @@ export function displayLink(url: string) {
   const host = link.hostname.startsWith(WWW) ? link.hostname.slice(WWW.length) : link.hostname;
   return `${host}${link.pathname}${link.search}`;
 }
+
+export const isYouTubeMusicLink = (text: string) =>
+  URL.canParse(text) && new URL(text).hostname === YOUTUBE_MUSIC;
 
 export function videoIdOf(url: string) {
   const link = new URL(url);

@@ -27,7 +27,7 @@ internal sealed class YtDlpAudioSource(YtDlpRunner runner, IOptions<StorageOptio
     // The drc formats have their dynamic range compressed
     private const string Format = "ba[format_id!*=drc]/ba";
     private const string FileTag = "file";
-    private const string NoFileMessage = "yt-dlp finished without a file";
+    private const string NoFileMessage = "YouTube sent no file.";
 
     public bool IsDownloaded(Guid jobId, VideoId videoId)
     {

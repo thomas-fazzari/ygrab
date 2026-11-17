@@ -4,6 +4,11 @@
   ::after {
     box-sizing: border-box;
     margin: 0;
+    scrollbar-width: thin;
+  }
+
+  :root {
+    scrollbar-color: var(--color-layer-3) transparent;
   }
 
   body {

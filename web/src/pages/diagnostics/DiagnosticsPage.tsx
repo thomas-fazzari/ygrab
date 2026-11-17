@@ -5,9 +5,11 @@ import {
   For,
   Loading,
   onSettled,
+  Repeat,
   Show,
 } from "solid-js";
 import { match } from "ts-pattern";
+import DownloadIcon from "~icons/solar/download-minimalistic-linear";
 
 import { getStatus } from "@/shared/api/client.ts";
 import { logEvents } from "@/shared/api/events.ts";
@@ -20,17 +22,22 @@ import type { JobFeed } from "@/shared/jobs/jobFeed.ts";
 import { Button } from "@/shared/ui/Button.tsx";
 import { PageTitle } from "@/shared/ui/PageTitle.tsx";
 import { SectionHeading } from "@/shared/ui/SectionHeading.tsx";
+import { Skeleton, SkeletonText } from "@/shared/ui/Skeleton.tsx";
 import styles from "./DiagnosticsPage.module.css";
 import { applyLogEvent, emptyLogFeed } from "./logFeed.ts";
 import type { LogFeed } from "./logFeed.ts";
-import { LogSection } from "./LogSection.tsx";
-import { reportText } from "./logText.ts";
+import { LogSection, LogSectionSkeleton } from "./LogSection.tsx";
+import { reportText, saveText } from "./logText.ts";
 import { appFacts, queueFacts, toolFacts } from "./serverFacts.ts";
 import type { FactGroup } from "./serverFacts.ts";
 
 export const DIAGNOSTICS_ROUTE = "/diagnostics";
 
 const COPIED_MS = 2000;
+const REPORT_FILE_NAME = "ygrab-report.txt";
+const SERVER_TITLE = "Server";
+const SKELETON_GROUPS = 3;
+const SKELETON_FACTS = 4;
 
 const watchLogs = () => scan<LogEvent, LogFeed>(logEvents(), emptyLogFeed, applyLogEvent);
 
@@ -49,11 +56,18 @@ export function DiagnosticsPage() {
   return (
     <>
       <PageTitle>Diagnostics</PageTitle>
-      <Loading>
+      <Loading
+        fallback={
+          <>
+            <ServerSectionSkeleton />
+            <LogSectionSkeleton />
+          </>
+        }
+      >
         <section>
           <SectionHeading
-            title="Server"
-            aside={<CopyReportButton report={() => reportText(groups(), logs.lines)} />}
+            title={SERVER_TITLE}
+            aside={<ReportButton report={() => reportText(groups(), logs.lines)} />}
           />
           <Show when={failureOf(status())} fallback={<FactCards groups={groups()} />}>
             {(failure) => <p class={styles.failure}>{failure()}</p>}
@@ -86,10 +100,66 @@ function FactCards(props: { readonly groups: readonly FactGroup[] }) {
   );
 }
 
+function ServerSectionSkeleton() {
+  return (
+    <section>
+      <SectionHeading title={SERVER_TITLE} />
+      <Skeleton>
+        <div class={styles.cards}>
+          <Repeat count={SKELETON_GROUPS}>
+            {() => (
+              <div class={styles.card}>
+                <Repeat count={SKELETON_FACTS}>
+                  {() => (
+                    <div class={styles.fact}>
+                      <SkeletonText chars={8} />
+                      <SkeletonText chars={10} />
+                    </div>
+                  )}
+                </Repeat>
+              </div>
+            )}
+          </Repeat>
+        </div>
+      </Skeleton>
+    </section>
+  );
+}
+
 type CopyState = "idle" | "copied" | "failed";
 
+interface ReportButtonProps {
+  readonly report: () => string;
+}
+
 // The clipboard API exists only in a secure context, such as HTTPS or localhost
-function CopyReportButton(props: { readonly report: () => string }) {
+function ReportButton(props: ReportButtonProps) {
+  const save = () => {
+    saveText(props.report(), REPORT_FILE_NAME);
+  };
+  return (
+    <Show
+      when={window.isSecureContext}
+      fallback={
+        <Button onClick={save}>
+          <DownloadIcon />
+          Save report
+        </Button>
+      }
+    >
+      <CopyReportButton report={props.report} />
+    </Show>
+  );
+}
+
+const copyStatusOf = (state: CopyState) =>
+  match(state)
+    .with("idle", () => "")
+    .with("copied", () => "Report copied")
+    .with("failed", () => "Cannot copy the report")
+    .exhaustive();
+
+function CopyReportButton(props: ReportButtonProps) {
   const [state, setState] = createSignal<CopyState>("idle");
   let timer: ReturnType<typeof setTimeout> | undefined;
   onSettled(() => () => {
@@ -113,7 +183,7 @@ function CopyReportButton(props: { readonly report: () => string }) {
     );
   };
   return (
-    <Show when={window.isSecureContext}>
+    <>
       <Button onClick={copy}>
         {match(state())
           .with("idle", () => "Copy report")
@@ -121,6 +191,9 @@ function CopyReportButton(props: { readonly report: () => string }) {
           .with("failed", () => "Cannot copy")
           .exhaustive()}
       </Button>
-    </Show>
+      <span class="visually-hidden" role="status">
+        {copyStatusOf(state())}
+      </span>
+    </>
   );
 }

@@ -5,7 +5,7 @@ import type { ParentProps } from "solid-js";
 import styles from "./SectionHeading.module.css";
 
 type SectionHeadingProps = ParentProps<{
-  readonly title: string;
+  readonly title: JSX.Element;
   /** Shows beside the title in a quiet style, such as a count or a date. */
   readonly detail?: number | string | undefined;
   /** Shows at the end of the line, such as a status or a link. */

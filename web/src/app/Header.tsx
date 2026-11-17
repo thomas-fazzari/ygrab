@@ -5,7 +5,6 @@ import JobsIcon from "~icons/solar/list-linear";
 import LogoutIcon from "~icons/solar/logout-2-linear";
 import NotesIcon from "~icons/solar/megaphone-linear";
 import PulseIcon from "~icons/solar/pulse-linear";
-import SettingsIcon from "~icons/solar/settings-linear";
 
 import { DIAGNOSTICS_ROUTE } from "@/pages/diagnostics/DiagnosticsPage.tsx";
 import { JOBS_ROUTE } from "@/pages/jobs/JobsPage.tsx";
@@ -34,7 +33,7 @@ function SignOut() {
   return (
     <Show when={authEnabled()}>
       <IconButton
-        label="Log out"
+        label="Sign out"
         onClick={() => {
           void signOut();
         }}
@@ -71,9 +70,6 @@ export function Header() {
         current={router.path() === DIAGNOSTICS_ROUTE}
       >
         <PulseIcon />
-      </IconLink>
-      <IconLink label="Settings" href="/settings" current={router.path() === "/settings"}>
-        <SettingsIcon />
       </IconLink>
       <IconLink label="GitHub" href={REPOSITORY_URL} newTab>
         <GitHubIcon />

@@ -8,6 +8,7 @@ import { Button } from "@/shared/ui/Button.tsx";
 import { MultiSelect } from "@/shared/ui/MultiSelect.tsx";
 import { SearchField } from "@/shared/ui/SearchField.tsx";
 import { SectionHeading } from "@/shared/ui/SectionHeading.tsx";
+import { Skeleton, SkeletonText } from "@/shared/ui/Skeleton.tsx";
 import type { LogFeed, LogLine } from "./logFeed.ts";
 import styles from "./LogSection.module.css";
 import {
@@ -25,6 +26,8 @@ import {
 import type { LevelFilter } from "./logText.ts";
 
 const LOG_FILE_NAME = "ygrab-log.txt";
+const TITLE = "Log Stream";
+const SKELETON_LINES = [56, 41, 68, 47, 33, 61, 44, 52];
 
 const [levels, setLevels] = makePersisted(
   createSignal<readonly LevelFilter[]>(DEFAULT_LEVEL_FILTERS),
@@ -47,12 +50,12 @@ export function LogSection(props: { readonly feed: LogFeed }) {
   return (
     <section>
       <SectionHeading
-        title="Log Stream"
+        title={TITLE}
         detail={props.feed.offline ? "offline, reconnecting" : undefined}
         aside={
           <>
             <SearchField
-              label="Filter"
+              label="Search"
               value={query()}
               onInput={(value) => {
                 setQuery(value);
@@ -67,7 +70,7 @@ export function LogSection(props: { readonly feed: LogFeed }) {
                 setLevels(value);
               }}
             />
-            <DownloadButton lines={props.feed.lines} />
+            <SaveButton lines={props.feed.lines} />
           </>
         }
       />
@@ -76,14 +79,33 @@ export function LogSection(props: { readonly feed: LogFeed }) {
   );
 }
 
-function DownloadButton(props: { readonly lines: readonly LogLine[] }) {
-  const download = () => {
+export function LogSectionSkeleton() {
+  return (
+    <section>
+      <SectionHeading title={TITLE} />
+      <Skeleton>
+        <div class={styles.lines}>
+          <For each={SKELETON_LINES}>
+            {(chars) => (
+              <div class={styles.line}>
+                <SkeletonText chars={chars} />
+              </div>
+            )}
+          </For>
+        </div>
+      </Skeleton>
+    </section>
+  );
+}
+
+function SaveButton(props: { readonly lines: readonly LogLine[] }) {
+  const save = () => {
     saveText(logText(props.lines), LOG_FILE_NAME);
   };
   return (
-    <Button onClick={download}>
+    <Button onClick={save}>
       <DownloadIcon />
-      Download
+      Save
     </Button>
   );
 }
@@ -107,7 +129,7 @@ function LogLines(props: LogLinesProps) {
   });
   return (
     <Show when={props.lines.length > 0}>
-      <div class={styles.lines} role="log" aria-live="off" aria-label="Server log" tabindex="0">
+      <div class={styles.lines} role="log" aria-live="off" aria-label={TITLE} tabindex="0">
         <For each={props.lines}>
           {(line) => (
             <>

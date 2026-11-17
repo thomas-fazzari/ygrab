@@ -2,37 +2,45 @@ import type { JSX } from "@solidjs/web";
 import { createMemo, createProjection, createSignal, Loading, Show } from "solid-js";
 import ClockIcon from "~icons/solar/clock-circle-linear";
 
-import type { Job, JobId } from "@/shared/api/schemas.ts";
+import type { Job } from "@/shared/api/schemas.ts";
 import { createMinuteClock, formatClock } from "@/shared/clock.ts";
 import { emptyFeed, watchJobs } from "@/shared/jobs/jobFeed.ts";
 import type { JobFeed } from "@/shared/jobs/jobFeed.ts";
 import { createJobCards } from "@/shared/jobs/jobCards.tsx";
-import { JobList } from "@/shared/jobs/JobList.tsx";
+import { JobList, JobListSkeleton } from "@/shared/jobs/JobList.tsx";
 import { activeJobs, recentJobs } from "@/shared/jobs/jobView.ts";
+import { nameOf } from "@/shared/jobs/jobNames.ts";
+import { isFinished } from "@/shared/jobs/jobStates.ts";
+import { Button } from "@/shared/ui/Button.tsx";
 import { Logo } from "@/shared/ui/Logo.tsx";
 import { SectionHeading } from "@/shared/ui/SectionHeading.tsx";
+import { SkeletonText } from "@/shared/ui/Skeleton.tsx";
 import { GrabForm } from "./GrabForm.tsx";
+import type { Existing } from "./GrabForm.tsx";
 
 export function HomePage() {
   const feed = createProjection<JobFeed>(watchJobs, emptyFeed);
   const now = createMinuteClock();
-  const [existingId, setExistingId] = createSignal<JobId | null>(null);
+  const [existing, setExisting] = createSignal<Existing | null>(null);
 
-  const { cooldownUntil, card } = createJobCards(feed, now);
-  const active = createMemo(() => activeJobs(feed.jobs));
-  const recent = createMemo(() => recentJobs(feed.jobs));
-  const existing = createMemo(() => feed.jobs.filter((job) => job.id === existingId()));
+  const isExisting = (job: Job) => job.id === existing()?.id;
+  const existingJobs = createMemo(() => feed.jobs.filter((job) => isExisting(job)));
+  const others = createMemo(() => feed.jobs.filter((job) => !isExisting(job)));
+  const active = createMemo(() => activeJobs(others()));
+  const recent = createMemo(() => recentJobs(others()));
+  const shown = createMemo(() => [...existingJobs(), ...active(), ...recent()]);
+  const { cooldownUntil, card } = createJobCards(feed, shown, now);
 
   return (
     <>
       <Logo />
       <GrabForm
-        onExisting={(id) => {
-          setExistingId(id);
+        onExisting={(value) => {
+          setExisting(value);
         }}
       />
-      <Loading>
-        <JobSection title="Already grabbed" jobs={existing()} card={card} />
+      <Loading fallback={<JobsSkeleton />}>
+        <ExistingSection existing={existing()} jobs={existingJobs()} card={card} />
         <JobSection
           title="Active"
           count={active().length}
@@ -47,6 +55,50 @@ export function HomePage() {
         </p>
       </Loading>
     </>
+  );
+}
+
+interface ExistingSectionProps {
+  readonly existing: Existing | null;
+  readonly jobs: readonly Job[];
+  readonly card: (job: Job) => JSX.Element;
+}
+
+// A finished job offers a new download, a running one has nothing to add
+function ExistingSection(props: ExistingSectionProps) {
+  const finished = () => props.jobs.some((job) => isFinished(job));
+  const title = () => (finished() ? "Already downloaded" : "Already in the queue");
+  return (
+    <>
+      <JobSection
+        title={title()}
+        aside={
+          <Show when={finished()}>
+            <Button
+              onClick={() => {
+                props.existing?.downloadAnyway();
+              }}
+            >
+              Download anyway
+            </Button>
+          </Show>
+        }
+        jobs={props.jobs}
+        card={props.card}
+      />
+      <p class="visually-hidden" role="status">
+        {props.jobs.map((job) => `${title()}: ${nameOf(job)}`)}
+      </p>
+    </>
+  );
+}
+
+function JobsSkeleton() {
+  return (
+    <section>
+      <SectionHeading title={<SkeletonText chars={6} />} />
+      <JobListSkeleton />
+    </section>
   );
 }
 
@@ -83,7 +135,7 @@ function ActiveStatus(props: ActiveStatusProps) {
         {(until) => (
           <>
             <ClockIcon />
-            cooldown until {formatClock(until())}
+            YouTube limit, paused until {formatClock(until())}
           </>
         )}
       </Show>

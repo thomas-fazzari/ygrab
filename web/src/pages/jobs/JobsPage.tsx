@@ -5,8 +5,8 @@ import { createMinuteClock } from "@/shared/clock.ts";
 import { createJobCards } from "@/shared/jobs/jobCards.tsx";
 import { emptyFeed, watchJobs } from "@/shared/jobs/jobFeed.ts";
 import type { JobFeed } from "@/shared/jobs/jobFeed.ts";
-import { JobList } from "@/shared/jobs/JobList.tsx";
-import { MODE_LABELS } from "@/shared/jobs/jobView.ts";
+import { JobList, JobListSkeleton } from "@/shared/jobs/JobList.tsx";
+import { MODE_LABELS, plural } from "@/shared/jobs/jobView.ts";
 import { MultiSelect } from "@/shared/ui/MultiSelect.tsx";
 import { PageTitle } from "@/shared/ui/PageTitle.tsx";
 import { SearchField } from "@/shared/ui/SearchField.tsx";
@@ -18,24 +18,26 @@ import styles from "./JobsPage.module.css";
 export const JOBS_ROUTE = "/jobs";
 
 const SHOWN_LIMIT = 100;
+const TITLE = "History";
 
 const NO_FILTERS: JobFilters = { query: "", states: STATE_FILTERS, modes: JOB_MODES };
 
 export function JobsPage() {
   const feed = createProjection<JobFeed>(watchJobs, emptyFeed);
   const now = createMinuteClock();
-  const { card } = createJobCards(feed, now);
   const [filters, setFilters] = createSignal(NO_FILTERS);
   const matching = createMemo(() => filterJobs(feed.jobs, filters()));
-  const hidden = createMemo(() => Math.max(0, matching().length - SHOWN_LIMIT));
+  const shown = createMemo(() => matching().slice(0, SHOWN_LIMIT));
+  const hidden = createMemo(() => matching().length - shown().length);
+  const { card } = createJobCards(feed, shown, now);
 
   return (
     <>
       <PageTitle>Jobs</PageTitle>
-      <Loading>
+      <Loading fallback={<HistorySkeleton />}>
         <section>
           <SectionHeading
-            title="History"
+            title={TITLE}
             detail={feed.offline ? "offline, reconnecting" : matching().length}
             aside={
               <FilterBar
@@ -46,16 +48,30 @@ export function JobsPage() {
               />
             }
           />
-          <JobList jobs={matching().slice(0, SHOWN_LIMIT)} card={card} />
+          <JobList jobs={shown()} card={card} />
           <Show when={hidden() > 0}>
-            <p class={styles.more}>{hidden()} more. Search or filter to narrow the list.</p>
+            <p class={styles.more}>
+              {plural(hidden(), "more job")} not shown. Search or filter to find them.
+            </p>
           </Show>
         </section>
         <p class="visually-hidden" role="status">
           {feed.announcement}
         </p>
+        <p class="visually-hidden" role="status">
+          {plural(matching().length, "job")}
+        </p>
       </Loading>
     </>
+  );
+}
+
+function HistorySkeleton() {
+  return (
+    <section>
+      <SectionHeading title={TITLE} />
+      <JobListSkeleton />
+    </section>
   );
 }
 

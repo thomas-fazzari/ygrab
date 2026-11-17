@@ -60,10 +60,16 @@ export function formatDuration(milliseconds: number) {
 
 const relativeFormat = new Intl.RelativeTimeFormat("en", { numeric: "always" });
 
-/** Formats a timestamp relative to `now`, in days, or in hours when less than a day away. */
+/** Formats a timestamp relative to `now`, in days, hours or minutes, the largest unit it reaches. */
 export function formatRelative(timestamp: string, now: number) {
   const offset = Date.parse(timestamp) - now;
-  return Math.abs(offset) < DAY_MS
-    ? relativeFormat.format(Math.round(offset / HOUR_MS), "hour")
-    : relativeFormat.format(Math.round(offset / DAY_MS), "day");
+  const distance = Math.abs(offset);
+  if (distance >= DAY_MS) {
+    return relativeFormat.format(Math.round(offset / DAY_MS), "day");
+  }
+  if (distance >= HOUR_MS) {
+    return relativeFormat.format(Math.round(offset / HOUR_MS), "hour");
+  }
+  const minutes = Math.max(1, Math.round(distance / MINUTE_MS));
+  return relativeFormat.format(offset < 0 ? -minutes : minutes, "minute");
 }

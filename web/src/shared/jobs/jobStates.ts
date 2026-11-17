@@ -15,6 +15,19 @@ const FINISHED: ReadonlySet<Job["state"]> = new Set([
   "expired",
 ]);
 
+export const STATE_LABELS: Readonly<Record<Job["state"], string>> = {
+  queued: "queued",
+  resolving: "looking up",
+  downloading: "downloading",
+  waiting: "retrying",
+  packaging: "finishing",
+  ready: "ready",
+  incomplete: "incomplete",
+  failed: "failed",
+  skipped: "duplicate",
+  expired: "expired",
+};
+
 export const isRunning = (job: Job) => RUNNING.has(job.state);
 export const isQueued = (job: Job) => job.state === "queued";
 export const isFinished = (job: Job) => FINISHED.has(job.state);

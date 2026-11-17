@@ -18,7 +18,7 @@ export const STATE_FILTER_LABELS: Readonly<Record<StateFilter, string>> = {
   ready: "Ready",
   incomplete: "Incomplete",
   failed: "Failed",
-  skipped: "Skipped",
+  skipped: "Duplicate",
   expired: "Expired",
 };
 
@@ -38,7 +38,10 @@ const stateFilterOf = (job: Job) =>
     .with("expired", () => "expired")
     .exhaustive();
 
-const searchTextOf = (job: Job) => [nameOf(job), job.url, ...job.artists].join("\n").toLowerCase();
+const searchTextOf = (job: Job) =>
+  [nameOf(job), job.title ?? "", job.url, ...job.artists, ...job.tracks.map((track) => track.title)]
+    .join("\n")
+    .toLowerCase();
 
 const byNewest = (first: Job, second: Job) =>
   Date.parse(second.createdAt) - Date.parse(first.createdAt) || first.id.localeCompare(second.id);

@@ -39,20 +39,20 @@ export function formatBytes(bytes: number) {
 export const appFacts = (status: Status, now: number): FactGroup => [
   { key: "YGrab", value: CURRENT_VERSION },
   { key: "Uptime", value: formatDuration(now - Date.parse(status.startedAt)) },
-  { key: "Data", value: formatBytes(status.dataBytes) },
-  { key: "Free disk", value: formatBytes(status.freeBytes) },
+  { key: "Data folder", value: formatBytes(status.dataBytes) },
+  { key: "Free space", value: formatBytes(status.freeBytes) },
 ];
 
 export const toolFacts = (status: Status): FactGroup =>
   status.components.map(({ name, version }) => ({ key: name, value: version ?? UNKNOWN }));
 
-function cooldownText(feed: JobFeed, now: number) {
+function pausedText(feed: JobFeed, now: number) {
   const until = feed.cooldown?.until ?? null;
-  return until !== null && Date.parse(until) > now ? `until ${formatClock(until)}` : "none";
+  return until !== null && Date.parse(until) > now ? `until ${formatClock(until)}` : "no";
 }
 
 export const queueFacts = (feed: JobFeed, now: number): FactGroup => [
   { key: "Running", value: String(feed.jobs.filter((job) => isRunning(job)).length) },
   { key: "Queued", value: String(feed.jobs.filter((job) => isQueued(job)).length) },
-  { key: "Cooldown", value: cooldownText(feed, now) },
+  { key: "Paused", value: pausedText(feed, now) },
 ];

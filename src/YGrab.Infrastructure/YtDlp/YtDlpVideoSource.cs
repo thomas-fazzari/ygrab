@@ -66,7 +66,7 @@ internal sealed partial class YtDlpVideoSource(
     private const string InfoTag = "info";
     private const string LiveTag = "live";
     private const string LiveTrue = "True";
-    private const string NoFileMessage = "yt-dlp finished without a file";
+    private const string NoFileMessage = "YouTube sent no file.";
 
     private static readonly string[] _audioFormatArguments =
     [

@@ -10,7 +10,9 @@ const ART = String.raw`_____.___. ________            ___.
 export function Logo() {
   return (
     <>
-      <h1 class="visually-hidden">YGrab</h1>
+      <h1 class="visually-hidden" tabindex="-1">
+        YGrab
+      </h1>
       <pre class={styles.logo} aria-hidden="true">
         {ART}
       </pre>

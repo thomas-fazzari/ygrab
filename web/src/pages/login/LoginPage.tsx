@@ -62,7 +62,7 @@ function LoginForm() {
           autocomplete="current-password"
           aria-label="Token"
           aria-describedby="login-help"
-          placeholder="access token"
+          placeholder="token"
           required
           autofocus
           value={token()}
@@ -91,8 +91,9 @@ export function LoginPage() {
       <Logo />
       <LoginForm />
       <p id="login-help" class={styles.help}>
-        The token is <code>Auth:Token</code> in the settings, or the content of{" "}
-        <code>auth-token</code> in the data folder.
+        Set the token with <code>YGRAB_TOKEN</code>, or as <code>Token</code> under{" "}
+        <code>Auth</code> in <code>ygrab.yaml</code>. Without either, the token is in the{" "}
+        <code>auth-token</code> file of the data folder.
       </p>
     </div>
   );

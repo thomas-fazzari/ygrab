@@ -1,5 +1,5 @@
 import { dynamic } from "@solidjs/web";
-import { createMemo, Errored, Show } from "solid-js";
+import { createEffect, createMemo, Errored, Show } from "solid-js";
 import type { Component } from "solid-js";
 
 import { DIAGNOSTICS_ROUTE, DiagnosticsPage } from "@/pages/diagnostics/DiagnosticsPage.tsx";
@@ -18,17 +18,20 @@ import { Header } from "./Header.tsx";
 interface Route {
   readonly page: Component;
   readonly header: boolean;
+  readonly title: string | null;
 }
 
+const APP_NAME = "YGrab";
+
 const routes = new Map<string, Route>([
-  [HOME_ROUTE, { page: HomePage, header: true }],
-  [LOGIN_ROUTE, { page: LoginPage, header: false }],
-  [JOBS_ROUTE, { page: JobsPage, header: true }],
-  [RELEASE_NOTES_ROUTE, { page: ReleaseNotesPage, header: true }],
-  [DIAGNOSTICS_ROUTE, { page: DiagnosticsPage, header: true }],
+  [HOME_ROUTE, { page: HomePage, header: true, title: null }],
+  [LOGIN_ROUTE, { page: LoginPage, header: false, title: "Sign in" }],
+  [JOBS_ROUTE, { page: JobsPage, header: true, title: "Jobs" }],
+  [RELEASE_NOTES_ROUTE, { page: ReleaseNotesPage, header: true, title: "Release notes" }],
+  [DIAGNOSTICS_ROUTE, { page: DiagnosticsPage, header: true, title: "Diagnostics" }],
 ]);
 
-const notFound: Route = { page: NotFoundPage, header: true };
+const notFound: Route = { page: NotFoundPage, header: true, title: "Page not found" };
 
 const describe = (cause: unknown) => (cause instanceof Error ? cause.message : String(cause));
 
@@ -36,6 +39,12 @@ export function App() {
   const router = createRouter();
   const route = createMemo(() => routes.get(router.path()) ?? notFound);
   const Page = dynamic(() => route().page);
+  createEffect(
+    () => route().title,
+    (title) => {
+      document.title = title === null ? APP_NAME : `${title} · ${APP_NAME}`;
+    },
+  );
 
   return (
     <RouterContext value={router}>

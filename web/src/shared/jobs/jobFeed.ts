@@ -5,6 +5,7 @@ import type { ApiEvent } from "@/shared/api/events.ts";
 import type { Cooldown, Job } from "@/shared/api/schemas.ts";
 import { scan } from "@/shared/iterators.ts";
 import { nameOf } from "./jobNames.ts";
+import { STATE_LABELS } from "./jobStates.ts";
 
 export interface JobFeed {
   readonly jobs: Job[];
@@ -24,9 +25,14 @@ const upsert = (jobs: Job[], changed: Job) =>
 // A snapshot only repeats what the page shows, so only a job event announces anything
 function announce(feed: JobFeed, changed: Job) {
   const previous = feed.jobs.find((job) => job.id === changed.id);
-  return previous === undefined || previous.state === changed.state
+  return previous?.state === changed.state
     ? feed.announcement
-    : `${nameOf(changed)}: ${changed.state}`;
+    : `${nameOf(changed)}: ${STATE_LABELS[changed.state]}`;
+}
+
+function announceRemoval(feed: JobFeed, id: Job["id"]) {
+  const removed = feed.jobs.find((job) => job.id === id);
+  return removed === undefined ? feed.announcement : `Removed ${nameOf(removed)}`;
 }
 
 function applyEvent(feed: JobFeed, event: ApiEvent): JobFeed {
@@ -40,6 +46,7 @@ function applyEvent(feed: JobFeed, event: ApiEvent): JobFeed {
     .with({ event: EventNames.jobRemoved }, ({ data }) => ({
       ...feed,
       jobs: feed.jobs.filter((job) => job.id !== data.id),
+      announcement: announceRemoval(feed, data.id),
     }))
     .with({ event: EventNames.cooldown }, ({ data }) => ({ ...feed, cooldown: data }))
     .with({ event: DISCONNECTED }, () => (feed.offline ? feed : { ...feed, offline: true }))

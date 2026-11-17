@@ -2,7 +2,7 @@ import { match, P } from "ts-pattern";
 
 import type { Job, JobMode, VideoQuality } from "@/shared/api/schemas.ts";
 import { formatClock, formatRelative } from "@/shared/clock.ts";
-import { isTrackJob, nameOf, videoIdOf } from "./jobNames.ts";
+import { isTrackJob, isYouTubeMusicLink, nameOf, videoIdOf } from "./jobNames.ts";
 import { isFinished, isQueued, isRunning } from "./jobStates.ts";
 import type { BadgeTone } from "@/shared/ui/Badge.tsx";
 
@@ -12,15 +12,22 @@ export type StateLine =
   | { readonly kind: "none" }
   | { readonly kind: "text"; readonly text: string }
   | { readonly kind: "error"; readonly text: string }
+  | { readonly kind: "duplicate"; readonly original: Original | null }
   | { readonly kind: "progress"; readonly percent: number; readonly label: string };
+
+export interface Original {
+  readonly name: string;
+  /** The fragment of its card, or null when the page does not show it. */
+  readonly anchor: string | null;
+}
 
 /** What a card needs to know about the other jobs. */
 export interface CardContext {
   /** The number of queued jobs that run before this one. */
   readonly ahead: number;
   readonly paused: boolean;
-  /** The name of the job that a skipped job duplicates, while the page holds it. */
-  readonly original: string | null;
+  /** The job that a skipped job duplicates, while the page holds it. */
+  readonly original: Original | null;
   /** The time in milliseconds, for the relative times. */
   readonly now: number;
 }
@@ -39,7 +46,6 @@ export const QUALITY_LABELS: Readonly<Record<VideoQuality, string>> = {
 const RECENT_LIMIT = 10;
 const FULL_PERCENT = 100;
 const COUNTER_DIGITS = 2;
-const YOUTUBE_MUSIC = "music.youtube.com";
 
 export const plural = (count: number, noun: string) => `${count} ${noun}${count === 1 ? "" : "s"}`;
 
@@ -63,8 +69,9 @@ export const recentJobs = (jobs: readonly Job[]) =>
     .slice(0, RECENT_LIMIT)
     .toSorted((first, second) => Number(needsAttention(second)) - Number(needsAttention(first)));
 
-export const siteOf = (job: Job) =>
-  new URL(job.url).hostname === YOUTUBE_MUSIC ? "YouTube Music" : "YouTube";
+export const siteOf = (job: Job) => (isYouTubeMusicLink(job.url) ? "YouTube Music" : "YouTube");
+
+export const cardIdOf = (job: Job) => `job-${job.id}`;
 
 export function coverOf(job: Job) {
   if (job.coverUrl !== null) {
@@ -76,10 +83,16 @@ export function coverOf(job: Job) {
     : `https://i.ytimg.com/vi/${encodeURIComponent(videoId)}/mqdefault.jpg`;
 }
 
-/** Returns the name of the job that `job` duplicates, or null when `jobs` lacks it. */
-export function originalOf(jobs: readonly Job[], job: Job) {
+/** Returns the job that `job` duplicates, or null when `jobs` lacks it. */
+export function originalOf(jobs: readonly Job[], shown: readonly Job[], job: Job): Original | null {
   const original = jobs.find((other) => other.id === job.duplicateOf);
-  return original === undefined ? null : nameOf(original);
+  if (original === undefined) {
+    return null;
+  }
+  return {
+    name: nameOf(original),
+    anchor: shown.some((other) => other.id === original.id) ? cardIdOf(original) : null,
+  };
 }
 
 export const doneTracks = (job: Job) => job.tracks.filter((track) => track.state === "done").length;
@@ -121,14 +134,15 @@ export const removalDeletesFiles = (job: Job) =>
 export function removalDetail(job: Job) {
   const verb = isRunning(job) ? "Stops the download and deletes" : "Deletes";
   return match(job)
+    .with({ mode: "video", quality: "audio" }, () => `${verb} the audio file.`)
     .with({ mode: "video" }, () => `${verb} the video file.`)
     .with({ fileName: P.string.endsWith(".zip") }, () => `${verb} the zip and its tracks.`)
     .when(canDownload, () => `${verb} the audio file.`)
     .when(
       (current) => doneTracks(current) === 0,
-      () => `${verb} the partial download.`,
+      () => `${verb} the partial file.`,
     )
-    .otherwise(() => `${verb} the ${plural(doneTracks(job), "track")} already grabbed.`);
+    .otherwise(() => `${verb} the ${plural(doneTracks(job), "track")} already downloaded.`);
 }
 
 // The track number is its number on the album, which can skip numbers or start past 1
@@ -154,12 +168,14 @@ function queuedLine(job: Job, context: CardContext): StateLine {
   return {
     kind: "progress",
     percent: job.percent,
-    label: `${counterOf(job, doneTracks(job))} ${where}`,
+    label: `${counterOf(job, doneTracks(job))} · ${where}`,
   };
 }
 
-const waitingText = (job: Job) =>
-  job.retryAt === null ? "retrying soon" : `retries at ${formatClock(job.retryAt)}`;
+function waitingText(job: Job) {
+  const when = job.retryAt === null ? "retries soon" : `retries at ${formatClock(job.retryAt)}`;
+  return job.reason === null ? when : `${when} · ${job.reason}`;
+}
 
 const readyLine = (job: Job, context: CardContext): StateLine =>
   job.expiresAt === null
@@ -174,26 +190,23 @@ function deletedText(job: Job, context: CardContext) {
   return `files deleted ${formatRelative(job.expiresAt, context.now)}`;
 }
 
-const skippedText = (context: CardContext) =>
-  context.original === null ? "already grabbed" : `already in ${context.original}`;
-
 export const stateLineOf = (job: Job, context: CardContext) =>
   match<JobState, StateLine>(job.state)
     .with("queued", () => queuedLine(job, context))
-    .with("resolving", () => ({ kind: "text", text: new URL(job.url).hostname }))
+    .with("resolving", () => ({ kind: "none" }))
     .with("downloading", () => ({
       kind: "progress",
       percent: job.percent,
       label: counterOf(job, currentPosition(job)),
     }))
     .with("waiting", () => ({ kind: "text", text: waitingText(job) }))
-    .with("packaging", () => ({ kind: "progress", percent: FULL_PERCENT, label: "packaging" }))
+    .with("packaging", () => ({ kind: "progress", percent: FULL_PERCENT, label: "finishing" }))
     .with("ready", () => readyLine(job, context))
     .with("incomplete", () => ({
       kind: "error",
       text: `${plural(failedTracks(job), "track")} missing`,
     }))
     .with("failed", () => ({ kind: "error", text: job.reason ?? "failed" }))
-    .with("skipped", () => ({ kind: "text", text: skippedText(context) }))
+    .with("skipped", () => ({ kind: "duplicate", original: context.original }))
     .with("expired", () => ({ kind: "text", text: deletedText(job, context) }))
     .exhaustive();

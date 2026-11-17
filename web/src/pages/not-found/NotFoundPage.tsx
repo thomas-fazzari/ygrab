@@ -6,7 +6,7 @@ import styles from "./NotFoundPage.module.css";
 export function NotFoundPage() {
   return (
     <>
-      <PageTitle>Page not found</PageTitle>
+      <PageTitle>Page not found :(</PageTitle>
       <p class={styles.text}>
         <Link href={HOME_ROUTE}>Back to the home page</Link>
       </p>

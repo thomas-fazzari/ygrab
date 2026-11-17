@@ -88,7 +88,12 @@ internal sealed partial class YtDlpRunner(
             )
         {
             Stop(process);
-            return new RemoteFailure.Transient($"yt-dlp did not finish within {timeout}.");
+            return new RemoteFailure.Transient(
+                string.Create(
+                    CultureInfo.InvariantCulture,
+                    $"The download took longer than {timeout.TotalMinutes:0} minutes."
+                )
+            );
         }
         catch
         {

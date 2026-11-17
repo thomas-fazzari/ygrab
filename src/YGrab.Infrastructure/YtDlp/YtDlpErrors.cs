@@ -10,7 +10,9 @@ namespace YGrab.Infrastructure.YtDlp;
 /// </summary>
 internal static class YtDlpErrors
 {
-    private const string NoErrorLine = "yt-dlp ended without an error line";
+    private const string NoErrorLine = "The download stopped without a reason.";
+
+    private const string IdEnd = ": ";
 
     private static readonly SearchValues<string> _rateLimited = SearchValues.Create(
         [
@@ -55,13 +57,29 @@ internal static class YtDlpErrors
         }
 
         var line = lastErrorLine.AsSpan();
+        var reason = ReasonOf(lastErrorLine);
         if (line.ContainsAny(_rateLimited))
         {
-            return new RemoteFailure.RateLimited(lastErrorLine);
+            return new RemoteFailure.RateLimited(reason);
         }
 
         return line.ContainsAny(_unavailable)
-            ? new RemoteFailure.Unavailable(lastErrorLine)
-            : new RemoteFailure.Transient(lastErrorLine);
+            ? new RemoteFailure.Unavailable(reason)
+            : new RemoteFailure.Transient(reason);
+    }
+
+    // yt-dlp starts the line with the extractor and the video id, such as "[youtube] abc: "
+    private static string ReasonOf(string line)
+    {
+        var extractorEnd = line.StartsWith('[', StringComparison.Ordinal)
+            ? line.IndexOf(']', StringComparison.Ordinal)
+            : -1;
+        if (extractorEnd < 0)
+        {
+            return line;
+        }
+
+        var idEnd = line.IndexOf(IdEnd, extractorEnd, StringComparison.Ordinal);
+        return idEnd < 0 ? line : line[(idEnd + IdEnd.Length)..];
     }
 }

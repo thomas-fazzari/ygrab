@@ -4,6 +4,7 @@
     margin-block: var(--space-5) var(--space-9);
     margin-inline: auto;
     font: var(--weight-regular) 20px/22px var(--font-logo);
+    user-select: none;
   }
 
   /* The art is fixed-width text, so it shrinks to fit a phone */
