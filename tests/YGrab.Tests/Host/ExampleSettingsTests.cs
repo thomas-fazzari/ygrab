@@ -3,6 +3,7 @@
 
 using Microsoft.Extensions.Configuration;
 using YGrab.Host.Auth;
+using YGrab.Host.Proxy;
 using YGrab.Infrastructure.Configuration;
 using YGrab.Infrastructure.Python.Configuration;
 
@@ -45,6 +46,11 @@ public sealed class ExampleSettingsTests
             .Get<AuthOptions>()
             .Should()
             .BeEquivalentTo(new AuthOptions());
+        configuration
+            .GetSection(ProxyOptions.SectionName)
+            .Get<ProxyOptions>()
+            .Should()
+            .BeEquivalentTo(new ProxyOptions());
         foreach (
             var (section, type) in new[]
             {
@@ -53,6 +59,7 @@ public sealed class ExampleSettingsTests
                 (YtDlpOptions.SectionName, typeof(YtDlpOptions)),
                 (JobsOptions.SectionName, typeof(JobsOptions)),
                 (AuthOptions.SectionName, typeof(AuthOptions)),
+                (ProxyOptions.SectionName, typeof(ProxyOptions)),
             }
         )
         {

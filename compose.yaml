@@ -3,8 +3,9 @@ services:
     image: ygrab
     build: .
     restart: unless-stopped
+    # Only the reverse proxy on this machine can reach the port
     ports:
-      - "8080:8080"
+      - "127.0.0.1:8080:8080"
     # Without a token, YGrab generates one and logs it at the first start
     # environment:
     #   YGRAB_TOKEN: at-least-16-characters

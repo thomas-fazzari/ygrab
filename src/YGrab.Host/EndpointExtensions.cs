@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 using System.Text.Json.Serialization;
-using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.StaticFiles;
 using YGrab.Contracts;
 using YGrab.Contracts.Jobs;
@@ -11,6 +10,7 @@ using YGrab.Host.Diagnostics;
 using YGrab.Host.Events;
 using YGrab.Host.Health;
 using YGrab.Host.Jobs;
+using YGrab.Host.Proxy;
 
 namespace YGrab.Host;
 
@@ -33,17 +33,7 @@ internal static class EndpointExtensions
             services.ConfigureHttpJsonOptions(options => ConfigureJson(options.SerializerOptions));
             services.AddProblemDetails();
             services.AddHealthChecks();
-            services.AddLoginRateLimit();
-            // Host listens behind its proxy only, so it trusts the forwarded headers of any hop
-            services.Configure<ForwardedHeadersOptions>(options =>
-            {
-                options.ForwardedHeaders =
-                    ForwardedHeaders.XForwardedFor
-                    | ForwardedHeaders.XForwardedProto
-                    | ForwardedHeaders.XForwardedHost;
-                options.KnownIPNetworks.Clear();
-                options.KnownProxies.Clear();
-            });
+            services.AddTrustedProxies();
             return services;
         }
     }

@@ -25,7 +25,7 @@ internal sealed class Reporter(IAnsiConsole output, IAnsiConsole error)
                 ExitCodes.Unreachable
             ),
             ApiFailure.BadToken => (
-                "The server refuses the token. Run ygrab login again.",
+                "The server refuses the token. Run ygrab login again, or wait a minute after too many wrong tokens.",
                 ExitCodes.Unreachable
             ),
         };
