@@ -10,9 +10,7 @@ on:
         type: string
         default: ""
 
-permissions:
-  contents: read
-
+# The jobs take the permissions of the caller, which grants packages: write to push only
 env:
   IMAGE: ghcr.io/${{ github.repository }}
 
@@ -21,9 +19,6 @@ jobs:
     name: Image (${{ matrix.arch }})
     runs-on: ${{ matrix.os }}
     timeout-minutes: 60
-    permissions:
-      contents: read
-      packages: write
     strategy:
       fail-fast: false
       matrix:
@@ -71,9 +66,6 @@ jobs:
     if: inputs.version != ''
     needs: build
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
     steps:
       - uses: actions/download-artifact@v8.0.2
         with:
