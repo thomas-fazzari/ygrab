@@ -6,7 +6,4 @@ namespace YGrab.Engine;
 /// <summary>
 /// Outcome of a command that has nothing to report.
 /// </summary>
-public readonly record struct Done
-{
-    public static ValueTask<Done> Completed => ValueTask.FromResult(new Done());
-}
+public readonly record struct Done;

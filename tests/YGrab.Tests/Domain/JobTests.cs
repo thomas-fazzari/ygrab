@@ -322,9 +322,9 @@ public sealed class JobTests
             .Finish("video.mp4", 2048, enrichmentFailure: null, _now);
 
         pending.State.Should().BeOfType<JobState.Downloading>();
-        pending.PendingVideo.Should().Be(Samples.VideoRequest());
+        pending.NextStep().Should().Be(new JobStep.DownloadVideo(Samples.VideoRequest()));
         pending.Progress(0.5).Percent.Should().BePositive();
-        kept.PendingVideo.Should().BeNull();
+        kept.NextStep().Should().BeOfType<JobStep.Package>();
         kept.KeptVideo.Should().Be(Samples.VideoDetails);
         kept.Invoking(job => job.CompleteVideo(Samples.VideoDetails))
             .Should()
@@ -337,14 +337,14 @@ public sealed class JobTests
     }
 
     [Fact]
-    public void A_requeued_video_job_that_kept_its_file_goes_back_to_downloading_without_a_pending_video()
+    public void A_requeued_video_job_that_kept_its_file_goes_back_to_downloading_then_packages()
     {
         var kept = Samples.DownloadingVideo().CompleteVideo(Samples.VideoDetails);
 
         var resumed = kept.Requeue().Resume(_now);
 
         resumed.State.Should().BeOfType<JobState.Downloading>();
-        resumed.PendingVideo.Should().BeNull();
+        resumed.NextStep().Should().BeOfType<JobStep.Package>();
         resumed.KeptVideo.Should().Be(Samples.VideoDetails);
     }
 

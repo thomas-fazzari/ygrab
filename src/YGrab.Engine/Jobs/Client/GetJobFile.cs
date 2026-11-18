@@ -30,8 +30,7 @@ public static class GetJobFile
                 null => new NotFound(),
                 { State: JobState.Expired } => new Expired(),
                 { State: JobState.Failed or JobState.Skipped } => new NotFound(),
-                { State: JobState.Ready { FileName: var name } } => File(id, name),
-                { State: JobState.Incomplete { FileName: var name } } => File(id, name),
+                { State: JobState.WithFile { FileName: var name } } => File(id, name),
                 _ => new NotReady(),
             };
 

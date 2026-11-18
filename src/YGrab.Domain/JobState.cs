@@ -23,24 +23,35 @@ public closed record JobState
 
     public sealed record Packaging : JobState;
 
+    /// <summary>
+    /// A state that only a retry or the sweep leaves.
+    /// </summary>
+    public closed record Finished(DateTimeOffset FinishedAt) : JobState;
+
+    /// <summary>
+    /// A finished state whose file the client can download.
+    /// </summary>
     /// <param name="FileSize">The size in bytes, or null for a job stored without one.</param>
+    public closed record WithFile(string FileName, long? FileSize, DateTimeOffset FinishedAt)
+        : Finished(FinishedAt);
+
     public sealed record Ready(string FileName, long? FileSize, DateTimeOffset FinishedAt)
-        : JobState;
+        : WithFile(FileName, FileSize, FinishedAt);
 
     /// <summary>
     /// The file lacks the tracks that could not be downloaded.
     /// </summary>
-    /// <param name="FileSize">The size in bytes, or null for a job stored without one.</param>
     public sealed record Incomplete(string FileName, long? FileSize, DateTimeOffset FinishedAt)
-        : JobState;
+        : WithFile(FileName, FileSize, FinishedAt);
 
-    public sealed record Failed(string Reason, DateTimeOffset FinishedAt) : JobState;
+    public sealed record Failed(string Reason, DateTimeOffset FinishedAt) : Finished(FinishedAt);
 
     /// <param name="DuplicateOf">The job that already covers the link.</param>
-    public sealed record Skipped(Guid DuplicateOf, DateTimeOffset FinishedAt) : JobState;
+    public sealed record Skipped(Guid DuplicateOf, DateTimeOffset FinishedAt)
+        : Finished(FinishedAt);
 
     /// <summary>
     /// The file is deleted after its retention.
     /// </summary>
-    public sealed record Expired(DateTimeOffset FinishedAt) : JobState;
+    public sealed record Expired(DateTimeOffset FinishedAt) : Finished(FinishedAt);
 }

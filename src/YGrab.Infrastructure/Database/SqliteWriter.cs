@@ -22,9 +22,6 @@ public sealed partial class SqliteWriter(
         }
     );
 
-    private readonly Action<Exception> _logAfterCommitFailed = exception =>
-        LogAfterCommitFailed(logger, exception);
-
     private SqliteConnection? _connection;
 
     /// <summary>
@@ -34,31 +31,11 @@ public sealed partial class SqliteWriter(
     /// The token stops a write only while it is queued. A write that has started commits even if
     /// the token is cancelled afterwards.
     /// </remarks>
-    public Task<T> WriteAsync<T>(
-        Func<SqliteConnection, T> work,
-        CancellationToken cancellationToken
-    ) => WriteAsync(work, afterCommit: null, cancellationToken);
-
-    /// <summary>
-    /// Like the overload above, then runs <paramref name="afterCommit"/> before the task completes.
-    /// </summary>
-    /// <remarks>
-    /// <para>
-    /// The callback runs on the writer thread and must not block.
-    /// </para>
-    /// <para>
-    /// A throw is logged and the commit stays.
-    /// </para>
-    /// </remarks>
-    public async Task<T> WriteAsync<T>(
-        Func<SqliteConnection, T> work,
-        Action<T>? afterCommit,
-        CancellationToken cancellationToken
-    )
+    public async Task WriteAsync(Action<SqliteConnection> work, CancellationToken cancellationToken)
     {
-        var item = new WorkItem<T>(work, afterCommit, _logAfterCommitFailed, cancellationToken);
+        var item = new WorkItem(work, cancellationToken);
         await _queue.Writer.WriteAsync(item, cancellationToken);
-        return await item.Completion.Task;
+        await item.Completion.Task;
     }
 
     public override async Task StartAsync(CancellationToken cancellationToken)
@@ -178,26 +155,15 @@ public sealed partial class SqliteWriter(
         }
     }
 
-    private abstract class WorkItem
-    {
-        public abstract bool TryCancel();
-
-        public abstract void Run(SqliteConnection connection, SqliteTransaction transaction);
-
-        public abstract void Fail(Exception exception);
-    }
-
-    private sealed class WorkItem<T>(
-        Func<SqliteConnection, T> work,
-        Action<T>? afterCommit,
-        Action<Exception> onAfterCommitFailed,
+    private sealed class WorkItem(
+        Action<SqliteConnection> work,
         CancellationToken cancellationToken
-    ) : WorkItem
+    )
     {
-        public TaskCompletionSource<T> Completion { get; } =
+        public TaskCompletionSource Completion { get; } =
             new(TaskCreationOptions.RunContinuationsAsynchronously);
 
-        public override bool TryCancel()
+        public bool TryCancel()
         {
             if (!cancellationToken.IsCancellationRequested)
             {
@@ -208,40 +174,16 @@ public sealed partial class SqliteWriter(
             return true;
         }
 
-        public override void Run(SqliteConnection connection, SqliteTransaction transaction)
+        public void Run(SqliteConnection connection, SqliteTransaction transaction)
         {
-            var result = work(connection);
+            work(connection);
             transaction.Commit();
-            RunAfterCommit(result);
-            Completion.TrySetResult(result);
+            Completion.TrySetResult();
         }
 
-        public override void Fail(Exception exception) => Completion.TrySetException(exception);
-
-        private void RunAfterCommit(T result)
-        {
-            if (afterCommit is null)
-            {
-                return;
-            }
-
-            try
-            {
-                afterCommit(result);
-            }
-            catch (Exception exception)
-            {
-                onAfterCommitFailed(exception);
-            }
-        }
+        public void Fail(Exception exception) => Completion.TrySetException(exception);
     }
 
     [LoggerMessage(Level = LogLevel.Error, Message = "A database write failed and was rolled back")]
     private partial void LogWriteFailed(Exception exception);
-
-    [LoggerMessage(
-        Level = LogLevel.Error,
-        Message = "A callback after a database commit failed. The commit stays."
-    )]
-    private static partial void LogAfterCommitFailed(ILogger logger, Exception exception);
 }

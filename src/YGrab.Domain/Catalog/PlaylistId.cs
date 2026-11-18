@@ -6,7 +6,7 @@ namespace YGrab.Domain;
 /// <summary>
 /// The id of the audio playlist of an album, which starts with <see cref="Prefix"/>.
 /// </summary>
-public sealed record PlaylistId : IStringValue<PlaylistId>
+public sealed record PlaylistId
 {
     internal const string Prefix = "OLAK5uy_";
 

@@ -6,7 +6,7 @@ namespace YGrab.Domain;
 /// <summary>
 /// The id of a YouTube Music album page, which starts with <see cref="Prefix"/>.
 /// </summary>
-public sealed record BrowseId : IStringValue<BrowseId>
+public sealed record BrowseId
 {
     internal const string Prefix = "MPREb_";
 

@@ -95,7 +95,7 @@ internal static class FollowProgress
 
         if (!bars.TryGetValue(job.Id, out var bar))
         {
-            if (watched is null && JobView.IsFinished(job))
+            if (watched is null && job.FinishedAt is not null)
             {
                 return;
             }
@@ -106,7 +106,7 @@ internal static class FollowProgress
 
         bar.Description = JobView.Progress(job);
         bar.Value = job.Percent;
-        if (JobView.IsFinished(job))
+        if (job.FinishedAt is not null)
         {
             bar.StopTask();
             finished[job.Id] = job;

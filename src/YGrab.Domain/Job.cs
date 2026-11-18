@@ -66,12 +66,6 @@ public sealed record Job
 
     public JobTrack? NextTrack => Resolved?.NextTrack;
 
-    /// <summary>
-    /// The request of a video job that is downloading and has no video file yet.
-    /// </summary>
-    public JobRequest.Video? PendingVideo =>
-        State is JobState.Downloading && KeptVideo is null ? Request as JobRequest.Video : null;
-
     public bool IsActive =>
         State
             is JobState.Resolving
@@ -84,24 +78,9 @@ public sealed record Job
     public bool CanFallBackToVideo =>
         State is JobState.Failed && Resolved is null && Link is TrackLink;
 
-    public bool IsFinished =>
-        State
-            is JobState.Ready
-                or JobState.Incomplete
-                or JobState.Failed
-                or JobState.Skipped
-                or JobState.Expired;
+    public bool IsFinished => State is JobState.Finished;
 
-    public DateTimeOffset? FinishedAt =>
-        State switch
-        {
-            JobState.Ready ready => ready.FinishedAt,
-            JobState.Incomplete incomplete => incomplete.FinishedAt,
-            JobState.Failed failed => failed.FinishedAt,
-            JobState.Skipped skipped => skipped.FinishedAt,
-            JobState.Expired expired => expired.FinishedAt,
-            _ => null,
-        };
+    public DateTimeOffset? FinishedAt => (State as JobState.Finished)?.FinishedAt;
 
     public static Job Create(Guid id, Uri url, JobRequest request, bool force, DateTimeOffset now)
     {
@@ -158,16 +137,11 @@ public sealed record Job
             { Request: JobRequest.Audio, KeptVideo: not null } => "an audio job has a kept video",
             { Request: JobRequest.Video, EnrichmentFailure: not null } =>
                 "a video job has an enrichment failure",
-            {
-                State: not (JobState.Ready or JobState.Incomplete or JobState.Expired),
-                EnrichmentFailure: not null,
-            } => $"a {state.GetType().Name} job has an enrichment failure",
+            { State: not (JobState.WithFile or JobState.Expired), EnrichmentFailure: not null } =>
+                $"a {state.GetType().Name} job has an enrichment failure",
             {
                 Request: JobRequest.Audio,
-                State: JobState.Downloading
-                    or JobState.Packaging
-                    or JobState.Ready
-                    or JobState.Incomplete,
+                State: JobState.Downloading or JobState.Packaging or JobState.WithFile,
                 Resolved: null,
             } => $"a {state.GetType().Name} job has no release",
             { Request: JobRequest.Video, Resolved: not null } => "a video job has a release",
@@ -281,6 +255,18 @@ public sealed record Job
                 }
             );
     }
+
+    /// <exception cref="InvalidOperationException">The job is neither resolving nor downloading.</exception>
+    public JobStep NextStep() =>
+        State switch
+        {
+            JobState.Resolving when Request is JobRequest.Audio { Link: var link } =>
+                new JobStep.Resolve(link),
+            JobState.Downloading when PendingVideo is { } video => new JobStep.DownloadVideo(video),
+            JobState.Downloading when NextTrack is { } track => new JobStep.DownloadTrack(track),
+            JobState.Downloading => new JobStep.Package(),
+            _ => throw Wrong(nameof(NextStep)),
+        };
 
     public Job Resolve(Release release)
     {
@@ -442,15 +428,12 @@ public sealed record Job
     }
 
     public Job Expire() =>
-        State switch
-        {
-            JobState.Ready ready => this with { State = new JobState.Expired(ready.FinishedAt) },
-            JobState.Incomplete incomplete => this with
+        State is JobState.WithFile withFile
+            ? this with
             {
-                State = new JobState.Expired(incomplete.FinishedAt),
-            },
-            _ => this,
-        };
+                State = new JobState.Expired(withFile.FinishedAt),
+            }
+            : this;
 
     /// <summary>
     /// Queues the job again with the work that its files do not hold.
@@ -489,7 +472,10 @@ public sealed record Job
         };
     }
 
-    private bool Counts => State is not (JobState.Expired or JobState.Failed or JobState.Skipped);
+    private bool Counts => State is JobState.WithFile or not JobState.Finished;
+
+    private JobRequest.Video? PendingVideo =>
+        State is JobState.Downloading && KeptVideo is null ? Request as JobRequest.Video : null;
 
     private MusicLink? Link => (Request as JobRequest.Audio)?.Link;
 
