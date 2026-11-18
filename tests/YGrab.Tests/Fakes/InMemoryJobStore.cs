@@ -24,9 +24,9 @@ internal sealed class InMemoryJobStore : IJobStore
         return ValueTask.CompletedTask;
     }
 
-    public ValueTask SaveAsync(Job job, CancellationToken cancellationToken)
+    public ValueTask SaveAsync(Func<Job?> current, CancellationToken cancellationToken)
     {
-        if (Jobs.ContainsKey(job.Id))
+        if (current() is { } job && Jobs.ContainsKey(job.Id))
         {
             Jobs[job.Id] = job;
         }

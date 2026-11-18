@@ -14,7 +14,9 @@ namespace YGrab.Engine.Jobs;
 /// order.
 /// </para>
 /// <para>
-/// The store write of an async change runs after the lock, since no lock covers I/O.
+/// The store write of an async change runs after the lock, since no lock covers I/O. The write
+/// reads the job when it runs, so the store ends with the newest job whatever order the writes
+/// run in.
 /// </para>
 /// </remarks>
 internal sealed class JobRegistry(ChangeFeed feed, IJobStore store)
@@ -71,29 +73,10 @@ internal sealed class JobRegistry(ChangeFeed feed, IJobStore store)
     /// Applies <paramref name="change"/> to the job and publishes the result when it differs.
     /// </summary>
     /// <returns>The job after the change, or null when the job is gone.</returns>
-    public Job? Update(Guid id, Func<Job, Job> change)
-    {
-        lock (_lock)
-        {
-            if (!_jobs.TryGetValue(id, out var job))
-            {
-                return null;
-            }
-
-            var updated = change(job);
-            if (updated == job)
-            {
-                return job;
-            }
-
-            _jobs = _jobs.SetItem(id, updated);
-            feed.Publish(new JobChanged(updated));
-            return updated;
-        }
-    }
+    public Job? Update(Guid id, Func<Job, Job> change) => Apply(id, change).Job;
 
     /// <summary>
-    /// Like <see cref="Update"/>, then stores the job.
+    /// Like <see cref="Update"/>, then stores the job when it differs.
     /// </summary>
     public async ValueTask<Job?> UpdateAsync(
         Guid id,
@@ -101,12 +84,12 @@ internal sealed class JobRegistry(ChangeFeed feed, IJobStore store)
         CancellationToken cancellationToken
     )
     {
-        if (Update(id, change) is not { } updated)
+        var (updated, changed) = Apply(id, change);
+        if (changed)
         {
-            return null;
+            await store.SaveAsync(() => Get(id), cancellationToken);
         }
 
-        await store.SaveAsync(updated, cancellationToken);
         return updated;
     }
 
@@ -126,6 +109,27 @@ internal sealed class JobRegistry(ChangeFeed feed, IJobStore store)
             _jobs = _jobs.Remove(id);
             feed.Publish(new JobRemoved(id));
             return job;
+        }
+    }
+
+    private (Job? Job, bool Changed) Apply(Guid id, Func<Job, Job> change)
+    {
+        lock (_lock)
+        {
+            if (!_jobs.TryGetValue(id, out var job))
+            {
+                return (null, false);
+            }
+
+            var updated = change(job);
+            if (updated == job)
+            {
+                return (job, false);
+            }
+
+            _jobs = _jobs.SetItem(id, updated);
+            feed.Publish(new JobChanged(updated));
+            return (updated, true);
         }
     }
 

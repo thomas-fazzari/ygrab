@@ -83,13 +83,18 @@ internal sealed class SqliteJobStore(SqliteDatabase database, SqliteWriter write
         );
     }
 
-    public async ValueTask SaveAsync(Job job, CancellationToken cancellationToken)
+    public async ValueTask SaveAsync(Func<Job?> current, CancellationToken cancellationToken)
     {
-        ArgumentNullException.ThrowIfNull(job);
+        ArgumentNullException.ThrowIfNull(current);
 
-        var row = JobRowMapper.ToRow(job);
         await writer.WriteAsync(
-            connection => connection.Execute(UpdateJobSql, row),
+            connection =>
+            {
+                if (current() is { } job)
+                {
+                    connection.Execute(UpdateJobSql, JobRowMapper.ToRow(job));
+                }
+            },
             cancellationToken
         );
     }
