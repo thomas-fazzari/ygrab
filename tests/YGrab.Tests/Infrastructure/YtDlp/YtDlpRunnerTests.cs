@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: 2026 Thomas Fazzari
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
+using System.ComponentModel;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
@@ -19,12 +20,7 @@ public sealed class YtDlpRunnerTests : IDisposable
     [Fact(Timeout = 10_000)]
     public async Task A_run_leaves_no_copy_of_the_cookies_in_the_work_folder()
     {
-        var cookies = Path.Combine(_temp.FullName, "cookies.txt");
-        await File.WriteAllTextAsync(
-            cookies,
-            "# Netscape HTTP Cookie File",
-            TestContext.Current.CancellationToken
-        );
+        var cookies = await WriteCookiesAsync();
         var work = Path.Combine(_temp.FullName, "work");
         // true exits with 0 whatever the arguments, so it stands in for yt-dlp
         var runner = Runner(new YtDlpOptions { Executable = "true", CookiesFile = cookies });
@@ -40,6 +36,40 @@ public sealed class YtDlpRunnerTests : IDisposable
 
         failure.Should().BeNull();
         Directory.EnumerateFiles(work).Should().BeEmpty();
+    }
+
+    [Fact(Timeout = 10_000)]
+    public async Task A_process_that_does_not_start_leaves_no_copy_of_the_cookies()
+    {
+        var cookies = await WriteCookiesAsync();
+        var work = Path.Combine(_temp.FullName, "work");
+        var runner = Runner(
+            new YtDlpOptions { Executable = "ygrab-missing-executable", CookiesFile = cookies }
+        );
+
+        var run = async () =>
+            await runner.RunAsync(
+                work,
+                Samples.Video("v1"),
+                TimeSpan.FromMinutes(1),
+                [],
+                _ => { },
+                TestContext.Current.CancellationToken
+            );
+
+        await run.Should().ThrowAsync<Win32Exception>();
+        Directory.EnumerateFiles(work).Should().BeEmpty();
+    }
+
+    private async Task<string> WriteCookiesAsync()
+    {
+        var cookies = Path.Combine(_temp.FullName, "cookies.txt");
+        await File.WriteAllTextAsync(
+            cookies,
+            "# Netscape HTTP Cookie File",
+            TestContext.Current.CancellationToken
+        );
+        return cookies;
     }
 
     private static YtDlpRunner Runner(YtDlpOptions settings)
