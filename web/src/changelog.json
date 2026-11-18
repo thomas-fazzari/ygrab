@@ -1,5 +1,23 @@
 [
   {
+    "version": "0.1.1",
+    "date": "2026-11-18",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "delete the cookies copy on a failed start",
+        "author": "thomas-fazzari",
+        "sha": "47ee477709582c985f6330db7aa77067dd251c15"
+      },
+      {
+        "type": "fix",
+        "text": "keep the newest job when saves race",
+        "author": "thomas-fazzari",
+        "sha": "2c2c221e562a3745b62148d7b1ed41a5f3ef2057"
+      }
+    ]
+  },
+  {
     "version": "0.1.0",
     "date": "2026-11-17",
     "changes": [
