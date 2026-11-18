@@ -3,7 +3,7 @@
 
 namespace YGrab.Domain;
 
-public sealed record VideoId : IStringValue<VideoId>
+public sealed record VideoId
 {
     private VideoId(string value) => Value = value;
 

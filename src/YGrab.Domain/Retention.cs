@@ -36,14 +36,7 @@ public sealed record Retention(TimeSpan Audio, TimeSpan Video, TimeSpan History)
     {
         ArgumentNullException.ThrowIfNull(job);
 
-        return
-            job.State
-                is not (
-                    JobState.Ready
-                    or JobState.Incomplete
-                    or JobState.Failed
-                    or JobState.Expired
-                )
+        return job.State is JobState.Skipped or not JobState.Finished
             ? null
             : job.FinishedAt + (job.Request is JobRequest.Video ? Video : Audio);
     }

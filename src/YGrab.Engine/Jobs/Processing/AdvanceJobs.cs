@@ -140,22 +140,24 @@ public static partial class AdvanceJobs
                 : job;
             return current is null
                 ? new Stepped()
-                : current.State switch
+                : current.NextStep() switch
                 {
-                    JobState.Resolving
-                        when current.Request is JobRequest.Audio { Link: var link } =>
-                        await ResolveAsync(current, link, cancellationToken),
-                    JobState.Downloading when current.PendingVideo is { } video =>
-                        await DownloadVideoAsync(current, video, cancellationToken),
-                    JobState.Downloading when current.NextTrack is { } track => await DownloadAsync(
+                    JobStep.Resolve step => await ResolveAsync(
                         current,
-                        track,
+                        step.Link,
                         cancellationToken
                     ),
-                    JobState.Downloading => await PackageAsync(current, cancellationToken),
-                    _ => throw new InvalidOperationException(
-                        $"Job {current.Id} cannot advance in state {current.State.GetType().Name}."
+                    JobStep.DownloadTrack step => await DownloadAsync(
+                        current,
+                        step.Track,
+                        cancellationToken
                     ),
+                    JobStep.DownloadVideo step => await DownloadVideoAsync(
+                        current,
+                        step.Video,
+                        cancellationToken
+                    ),
+                    JobStep.Package => await PackageAsync(current, cancellationToken),
                 };
         }
 

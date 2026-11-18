@@ -10,17 +10,6 @@ namespace YGrab.Cli.Jobs;
 
 internal static class JobView
 {
-    public static bool IsFinished(JobDto job) =>
-        job.State
-            is JobStateCode.Ready
-                or JobStateCode.Incomplete
-                or JobStateCode.Failed
-                or JobStateCode.Skipped
-                or JobStateCode.Expired;
-
-    public static bool HasFile(JobDto job) =>
-        job.State is JobStateCode.Ready or JobStateCode.Incomplete;
-
     public static string Label(JobDto job) => job.Title ?? job.Url.ToString();
 
     public static string StateMarkup(JobStateCode state) =>

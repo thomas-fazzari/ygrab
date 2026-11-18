@@ -130,7 +130,7 @@ internal sealed class AddCommand : ApiCommand
             }
 
             exit = Math.Max(exit, JobView.Conclude(Reporter, job));
-            if (JobView.HasFile(job))
+            if (job.FileName is not null)
             {
                 exit = Math.Max(
                     exit,
