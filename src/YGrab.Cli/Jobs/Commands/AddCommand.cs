@@ -98,54 +98,41 @@ internal sealed class AddCommand : ApiCommand
             }
         }
 
-        return wait && started.Count > 0
-            ? Math.Max(exit, await FollowAsync(api, started, cancellationToken))
-            : exit;
+        if (!wait || started.Count == 0)
+        {
+            return exit;
+        }
+
+        var followed = await FollowProgress.UntilFinishedAsync(
+            Reporter,
+            api,
+            started,
+            job => ConcludeAsync(api, job, cancellationToken),
+            cancellationToken
+        );
+        return Math.Max(exit, followed);
     }
 
-    private async Task<int> FollowAsync(
+    private async Task<int> ConcludeAsync(
         ApiClient api,
-        List<Guid> started,
+        JobDto job,
         CancellationToken cancellationToken
     )
     {
-        var followed = await FollowProgress.RunAsync(
-            Reporter.Output,
+        var exit = JobView.Conclude(Reporter, job);
+        if (job.FileName is null)
+        {
+            return exit;
+        }
+
+        var saved = await FileDownloader.SaveAsync(
+            Reporter,
             api,
-            started.ToHashSet(),
+            job,
+            output: null,
             cancellationToken
         );
-        if (!followed.TryGetValue(out var finished, out var failure))
-        {
-            return Reporter.Report(failure);
-        }
-
-        var exit = ExitCodes.Ok;
-        foreach (var id in started.Distinct())
-        {
-            if (!finished.TryGetValue(id, out var job))
-            {
-                exit = Math.Max(exit, Reporter.Fail($"{JobIds.Short(id)} was removed"));
-                continue;
-            }
-
-            exit = Math.Max(exit, JobView.Conclude(Reporter, job));
-            if (job.FileName is not null)
-            {
-                exit = Math.Max(
-                    exit,
-                    await FileDownloader.SaveAsync(
-                        Reporter,
-                        api,
-                        job,
-                        output: null,
-                        cancellationToken
-                    )
-                );
-            }
-        }
-
-        return exit;
+        return Math.Max(exit, saved);
     }
 
     private static async Task<List<string>> ReadLinksAsync(

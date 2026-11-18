@@ -36,20 +36,13 @@ internal sealed class WatchCommand : ApiCommand
             return reporter.Report(failure);
         }
 
-        var followed = await FollowProgress.RunAsync(
-            reporter.Output,
+        return await FollowProgress.UntilFinishedAsync(
+            reporter,
             api,
-            new HashSet<Guid> { job.Id },
+            [job.Id],
+            last => Task.FromResult(JobView.Conclude(reporter, last)),
             cancellationToken
         );
-        if (!followed.TryGetValue(out var finished, out failure))
-        {
-            return reporter.Report(failure);
-        }
-
-        return finished.TryGetValue(job.Id, out var last)
-            ? JobView.Conclude(reporter, last)
-            : reporter.Fail($"{JobIds.Short(job.Id)} was removed");
     }
 
     private async Task<int> WatchAllAsync(ApiClient api, CancellationToken cancellationToken)
