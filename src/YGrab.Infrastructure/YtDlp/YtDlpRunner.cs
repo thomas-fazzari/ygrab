@@ -16,8 +16,8 @@ namespace YGrab.Infrastructure.YtDlp;
 /// </para>
 /// <para>
 /// It empties the work folder before the run. yt-dlp writes its cookie jar back when it exits, so
-/// it gets a copy of the cookies file in the work folder. The copy is deleted once the process has
-/// exited, since it holds a signed-in YouTube session.
+/// it gets a copy of the cookies file in the work folder. The copy is deleted after each run, even
+/// one whose process does not start, since it holds a signed-in YouTube session.
 /// </para>
 /// <para>
 /// The process is killed when the run throws or the timeout ends.
@@ -67,6 +67,32 @@ internal sealed partial class YtDlpRunner(
 
         Directory.CreateDirectory(work);
 
+        try
+        {
+            return await RunProcessAsync(
+                work,
+                videoId,
+                timeout,
+                arguments,
+                onLine,
+                cancellationToken
+            );
+        }
+        finally
+        {
+            File.Delete(Path.Combine(work, CookiesCopyName));
+        }
+    }
+
+    private async ValueTask<RemoteFailure?> RunProcessAsync(
+        string work,
+        VideoId videoId,
+        TimeSpan timeout,
+        IReadOnlyList<string> arguments,
+        Action<string> onLine,
+        CancellationToken cancellationToken
+    )
+    {
         using var timeoutSource = new CancellationTokenSource(timeout, timeProvider);
         using var linked = CancellationTokenSource.CreateLinkedTokenSource(
             cancellationToken,
@@ -100,10 +126,6 @@ internal sealed partial class YtDlpRunner(
         {
             Stop(process);
             throw;
-        }
-        finally
-        {
-            File.Delete(Path.Combine(work, CookiesCopyName));
         }
 
         if (process.ExitCode == 0)
