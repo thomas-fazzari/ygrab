@@ -15,6 +15,11 @@ namespace YGrab.Infrastructure.YtDlp;
 /// them to the arguments of the caller.
 /// </para>
 /// <para>
+/// yt-dlp names the file after the video id in the work folder, and prints its path after the
+/// line tag <see cref="FileTag"/>. The caller moves it out, then calls
+/// <see cref="DeleteWork"/>.
+/// </para>
+/// <para>
 /// It empties the work folder before the run. yt-dlp writes its cookie jar back when it exits, so
 /// it gets a copy of the cookies file in the work folder. The copy is deleted after each run, even
 /// one whose process does not start, since it holds a signed-in YouTube session.
@@ -33,6 +38,9 @@ internal sealed partial class YtDlpRunner(
     ILogger<YtDlpRunner> logger
 )
 {
+    internal const string FileTag = "file";
+    internal const string NoFileMessage = "YouTube sent no file.";
+
     private const string CookiesCopyName = "cookies.txt";
     private const string DiskFullMessage = "No space left on device";
 
@@ -82,6 +90,33 @@ internal sealed partial class YtDlpRunner(
         {
             File.Delete(Path.Combine(work, CookiesCopyName));
         }
+    }
+
+    /// <remarks>
+    /// The next run empties the folder anyway, so a failed delete is only logged.
+    /// </remarks>
+    public void DeleteWork(string work)
+    {
+        try
+        {
+            if (Directory.Exists(work))
+            {
+                Directory.Delete(work, recursive: true);
+            }
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            LogWorkNotDeleted(work, exception);
+        }
+    }
+
+    /// <summary>
+    /// Splits an output line into the tag that a print template starts with and the rest.
+    /// </summary>
+    internal static (string Tag, string Value) Split(string line)
+    {
+        var space = line.IndexOf(' ', StringComparison.Ordinal);
+        return space < 0 ? (line, string.Empty) : (line[..space], line[(space + 1)..]);
     }
 
     private async ValueTask<RemoteFailure?> RunProcessAsync(
@@ -180,6 +215,10 @@ internal sealed partial class YtDlpRunner(
             $"extractor:{RetrySleep}",
             "--retry-sleep",
             $"fragment:{RetrySleep}",
+            "--output",
+            Path.Combine(directory, $"{videoId.Value}.%(ext)s"),
+            "--print",
+            $"after_move:{FileTag} %(filepath)s",
         ];
         foreach (var argument in common.Concat(arguments))
         {
@@ -197,15 +236,6 @@ internal sealed partial class YtDlpRunner(
         info.ArgumentList.Add("--");
         info.ArgumentList.Add(videoId.Value);
         return info;
-    }
-
-    /// <summary>
-    /// Splits an output line into the tag that a print template starts with and the rest.
-    /// </summary>
-    internal static (string Tag, string Value) Split(string line)
-    {
-        var space = line.IndexOf(' ', StringComparison.Ordinal);
-        return space < 0 ? (line, string.Empty) : (line[..space], line[(space + 1)..]);
     }
 
     // Waits so that no killed yt-dlp or ffmpeg still writes into the work folder
@@ -238,4 +268,7 @@ internal sealed partial class YtDlpRunner(
         Message = "yt-dlp failed on {VideoId} with exit code {ExitCode}: {Failure}"
     )]
     private partial void LogRunFailed(string videoId, int exitCode, RemoteFailure failure);
+
+    [LoggerMessage(Level = LogLevel.Warning, Message = "Could not delete the work folder {Work}")]
+    private partial void LogWorkNotDeleted(string work, Exception exception);
 }
