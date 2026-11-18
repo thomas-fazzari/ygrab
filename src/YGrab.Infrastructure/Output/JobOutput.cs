@@ -109,10 +109,7 @@ internal sealed class JobOutput(IOptions<StorageOptions> storage) : IJobOutput
         var info = job.KeptVideo
             ?? throw new InvalidOperationException($"Job {job.Id} has no kept video to package.");
         var output = Directory.CreateDirectory(storage.Value.OutputDirectory(job.Id)).FullName;
-        var tracks = storage.Value.TracksDirectory(job.Id);
-        var source = Directory.Exists(tracks)
-            ? Directory.EnumerateFiles(tracks, $"{request.VideoId.Value}.*").FirstOrDefault()
-            : null;
+        var source = storage.Value.FindTrackFile(job.Id, request.VideoId);
         if (source is null)
         {
             // An earlier run moved the file before it crashed
@@ -189,7 +186,6 @@ internal sealed class JobOutput(IOptions<StorageOptions> storage) : IJobOutput
     }
 
     private string TrackFile(Guid jobId, ReleaseTrack track) =>
-        Directory
-            .EnumerateFiles(storage.Value.TracksDirectory(jobId), $"{track.VideoId.Value}.*")
-            .First();
+        storage.Value.FindTrackFile(jobId, track.VideoId)
+        ?? throw new FileNotFoundException($"Job {jobId} has no file for track {track.Number}.");
 }

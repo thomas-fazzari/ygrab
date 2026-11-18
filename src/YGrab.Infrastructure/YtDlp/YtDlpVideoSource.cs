@@ -6,6 +6,7 @@ using System.Text.Json.Serialization;
 using YGrab.Domain;
 using YGrab.Engine.Jobs;
 using YGrab.Infrastructure.Configuration;
+using YGrab.Infrastructure.Output;
 
 namespace YGrab.Infrastructure.YtDlp;
 
@@ -18,8 +19,8 @@ namespace YGrab.Infrastructure.YtDlp;
 /// it. The container is MP4 when the codecs allow it, otherwise MKV.
 /// </para>
 /// <para>
-/// <see cref="VideoQuality.Audio"/> keeps the best audio stream as it is, as
-/// <see cref="YtDlpAudioSource"/> does.
+/// <see cref="VideoQuality.Audio"/> keeps the best audio stream as it is, with the format of
+/// <see cref="YtDlpAudioSource"/>.
 /// </para>
 /// <para>
 /// yt-dlp embeds the metadata, the thumbnail and the chapters, and prints the title and the
@@ -27,19 +28,16 @@ namespace YGrab.Infrastructure.YtDlp;
 /// </para>
 /// <para>
 /// yt-dlp writes into the work folder of the job, which is deleted after each run. The tracks
-/// folder gets <see cref="InfoFileName"/> first and the video file after it, so a video file
-/// there always has its info.
+/// folder gets <see cref="InfoFileName"/> first and the video file after it, through
+/// <see cref="TrackFiles"/>, so a video file there always has its info.
 /// </para>
 /// <para>
 /// A live stream that is still running ends with exit code 0 and no file, and gives an
 /// unavailable failure.
 /// </para>
 /// </remarks>
-internal sealed partial class YtDlpVideoSource(
-    YtDlpRunner runner,
-    IOptions<StorageOptions> storage,
-    ILogger<YtDlpVideoSource> logger
-) : IVideoSource
+internal sealed class YtDlpVideoSource(YtDlpRunner runner, IOptions<StorageOptions> storage)
+    : IVideoSource
 {
     internal const string LiveMessage = "The video is live now. Grab it once the stream ends.";
     internal const string InfoFileName = "video.json";
@@ -48,7 +46,6 @@ internal sealed partial class YtDlpVideoSource(
 
     // The drc formats have their dynamic range compressed
     private const string Format = "bv*+ba[format_id!*=drc]/bv*+ba/b";
-    private const string AudioFormat = "ba[format_id!*=drc]/ba";
     private const string MergeFormats = "mp4/mkv";
     private const string RemuxFormats = "mp4>mp4/mkv";
     private const string ThumbnailFormat = "jpg";
@@ -62,31 +59,21 @@ internal sealed partial class YtDlpVideoSource(
     private const string SortP2160 = "res:2160,fps,ext";
     private const string SortBest = "res,fps,ext";
 
-    private const string FileTag = "file";
     private const string InfoTag = "info";
     private const string LiveTag = "live";
     private const string LiveTrue = "True";
-    private const string NoFileMessage = "YouTube sent no file.";
-
-    private static readonly string[] _audioFormatArguments =
-    [
-        "--format",
-        AudioFormat,
-        "--extract-audio",
-    ];
 
     public VideoInfo? FindKept(Guid jobId, VideoId videoId)
     {
         ArgumentNullException.ThrowIfNull(videoId);
 
-        var directory = storage.Value.TracksDirectory(jobId);
-        var infoPath = Path.Combine(directory, InfoFileName);
+        var infoPath = Path.Combine(storage.Value.TracksDirectory(jobId), InfoFileName);
         if (!File.Exists(infoPath))
         {
             return null;
         }
 
-        return !Directory.EnumerateFiles(directory, $"{videoId.Value}.*").Any()
+        return storage.Value.FindTrackFile(jobId, videoId) is null
             ? null
             : ParseInfo(File.ReadAllText(infoPath), videoId);
     }
@@ -108,7 +95,7 @@ internal sealed partial class YtDlpVideoSource(
         [
             "--match-filters",
             LiveFilter,
-            .. audioOnly ? _audioFormatArguments : VideoFormatArguments(quality),
+            .. audioOnly ? YtDlpAudioSource.FormatArguments : VideoFormatArguments(quality),
             "--embed-metadata",
             "--embed-chapters",
             "--embed-thumbnail",
@@ -116,16 +103,12 @@ internal sealed partial class YtDlpVideoSource(
             ThumbnailFormat,
             "--progress-delta",
             ProgressDelta,
-            "--output",
-            Path.Combine(work, $"{videoId.Value}.%(ext)s"),
             "--progress-template",
             audioOnly ? YtDlpProgress.AudioTemplate : YtDlpProgress.VideoTemplate,
             "--print",
             $"pre_process:{LiveTag} %(is_live)s",
             "--print",
             $"after_move:{InfoTag} %(.{{title,channel}})j",
-            "--print",
-            $"after_move:{FileTag} %(filepath)s",
         ];
         string? path = null;
         string? info = null;
@@ -141,7 +124,7 @@ internal sealed partial class YtDlpVideoSource(
                 {
                     switch (YtDlpRunner.Split(line))
                     {
-                        case (FileTag, var file):
+                        case (YtDlpRunner.FileTag, var file):
                             path = file;
                             break;
                         case (InfoTag, var json):
@@ -166,7 +149,7 @@ internal sealed partial class YtDlpVideoSource(
             {
                 return live
                     ? new RemoteFailure.Unavailable(LiveMessage)
-                    : new RemoteFailure.Transient(NoFileMessage);
+                    : new RemoteFailure.Transient(YtDlpRunner.NoFileMessage);
             }
 
             var video = info is null ? Untitled(videoId) : ParseInfo(info, videoId);
@@ -175,7 +158,7 @@ internal sealed partial class YtDlpVideoSource(
         }
         finally
         {
-            DeleteWork(work);
+            runner.DeleteWork(work);
         }
     }
 
@@ -224,27 +207,7 @@ internal sealed partial class YtDlpVideoSource(
             ),
             cancellationToken
         );
-        File.Move(
-            path,
-            Path.Combine(tracks.FullName, videoId.Value + Path.GetExtension(path)),
-            overwrite: true
-        );
-    }
-
-    // The runner empties the folder before the next run, so a failed delete must not hide the result
-    private void DeleteWork(string work)
-    {
-        try
-        {
-            if (Directory.Exists(work))
-            {
-                Directory.Delete(work, recursive: true);
-            }
-        }
-        catch (IOException exception)
-        {
-            LogWorkNotDeleted(work, exception);
-        }
+        storage.Value.KeepTrackFile(jobId, videoId, path);
     }
 
     private static VideoInfo Untitled(VideoId videoId) => new(videoId.Value, Channel: null);
@@ -263,9 +226,6 @@ internal sealed partial class YtDlpVideoSource(
             return Untitled(videoId);
         }
     }
-
-    [LoggerMessage(Level = LogLevel.Warning, Message = "Could not delete the work folder {Work}")]
-    private partial void LogWorkNotDeleted(string work, Exception exception);
 }
 
 internal sealed record VideoDocument(string Title, string? Channel);
