@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: 2026 Thomas Fazzari
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
+using System.Collections.Immutable;
 using System.Net.ServerSentEvents;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -13,16 +14,14 @@ namespace YGrab.Cli.Jobs;
 
 internal closed record JobUpdate
 {
-    public sealed record Connected : JobUpdate;
+    /// <summary>
+    /// The jobs that the host lists when the stream connects.
+    /// </summary>
+    public sealed record Snapshot(ImmutableArray<JobDto> Jobs) : JobUpdate;
 
     public sealed record Changed(JobDto Job) : JobUpdate;
 
     public sealed record Removed(Guid Id) : JobUpdate;
-
-    /// <summary>
-    /// The end of the snapshot that follows <see cref="Connected"/>.
-    /// </summary>
-    public sealed record Synced : JobUpdate;
 
     public sealed record Lost(ApiFailure Failure) : JobUpdate;
 }
@@ -62,7 +61,6 @@ internal static class JobEvents
             }
 
             failures = 0;
-            yield return new JobUpdate.Connected();
             using (response)
             {
                 await using var body = await response.Content.ReadAsStreamAsync(cancellationToken);
@@ -72,7 +70,7 @@ internal static class JobEvents
                     .GetAsyncEnumerator(cancellationToken);
                 while (await TryMoveNextAsync(events))
                 {
-                    foreach (var update in ToUpdates(events.Current))
+                    if (ToUpdate(events.Current) is { } update)
                     {
                         yield return update;
                     }
@@ -95,32 +93,18 @@ internal static class JobEvents
         }
     }
 
-    private static IEnumerable<JobUpdate> ToUpdates(SseItem<string> item)
-    {
-        switch (item.EventType)
+    private static JobUpdate? ToUpdate(SseItem<string> item) =>
+        item.EventType switch
         {
-            case EventNames.Snapshot:
-                var snapshot = JsonSerializer.Deserialize(
-                    item.Data,
-                    ApiJsonContext.Default.SnapshotDto
-                )!;
-                foreach (var job in snapshot.Jobs)
-                {
-                    yield return new JobUpdate.Changed(job);
-                }
-
-                yield return new JobUpdate.Synced();
-                break;
-            case EventNames.Job:
-                yield return new JobUpdate.Changed(
-                    JsonSerializer.Deserialize(item.Data, ApiJsonContext.Default.JobDto)!
-                );
-                break;
-            case EventNames.JobRemoved:
-                yield return new JobUpdate.Removed(
-                    JsonSerializer.Deserialize(item.Data, ApiJsonContext.Default.JobRemovedDto)!.Id
-                );
-                break;
-        }
-    }
+            EventNames.Snapshot => new JobUpdate.Snapshot(
+                JsonSerializer.Deserialize(item.Data, ApiJsonContext.Default.SnapshotDto)!.Jobs
+            ),
+            EventNames.Job => new JobUpdate.Changed(
+                JsonSerializer.Deserialize(item.Data, ApiJsonContext.Default.JobDto)!
+            ),
+            EventNames.JobRemoved => new JobUpdate.Removed(
+                JsonSerializer.Deserialize(item.Data, ApiJsonContext.Default.JobRemovedDto)!.Id
+            ),
+            _ => null,
+        };
 }

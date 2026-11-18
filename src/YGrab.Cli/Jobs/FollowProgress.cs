@@ -19,6 +19,38 @@ internal static class FollowProgress
 {
     private const int FullPercent = 100;
 
+    /// <summary>
+    /// Follows the jobs until each one is finished or gone, then concludes each finished one.
+    /// </summary>
+    /// <returns>The highest exit code of the stream, of a removed job and of <paramref name="conclude"/>.</returns>
+    public static async Task<int> UntilFinishedAsync(
+        Reporter reporter,
+        ApiClient api,
+        IReadOnlyList<Guid> ids,
+        Func<JobDto, Task<int>> conclude,
+        CancellationToken cancellationToken
+    )
+    {
+        var followed = await RunAsync(reporter.Output, api, ids.ToHashSet(), cancellationToken);
+        if (!followed.TryGetValue(out var finished, out var failure))
+        {
+            return reporter.Report(failure);
+        }
+
+        var exit = ExitCodes.Ok;
+        foreach (var id in ids.Distinct())
+        {
+            exit = Math.Max(
+                exit,
+                finished.TryGetValue(id, out var job)
+                    ? await conclude(job)
+                    : reporter.Fail($"{JobIds.Short(id)} was removed")
+            );
+        }
+
+        return exit;
+    }
+
     public static async Task<ApiResult<ImmutableDictionary<Guid, JobDto>>> RunAsync(
         IAnsiConsole console,
         ApiClient api,
@@ -39,29 +71,30 @@ internal static class FollowProgress
             {
                 var bars = new Dictionary<Guid, ProgressTask>();
                 var gone = new HashSet<Guid>();
-                var inSnapshot = new HashSet<Guid>();
                 await foreach (var update in JobEvents.SubscribeAsync(api, cancellationToken))
                 {
                     switch (update)
                     {
-                        case JobUpdate.Connected:
-                            inSnapshot.Clear();
+                        case JobUpdate.Snapshot(var jobs):
+                            foreach (var job in jobs)
+                            {
+                                Show(context, bars, finished, watched, job);
+                            }
+
+                            var listed = jobs.Select(job => job.Id).ToHashSet();
+                            gone.UnionWith(
+                                watched?.Where(id =>
+                                    !listed.Contains(id) && !finished.ContainsKey(id)
+                                )
+                                    ?? []
+                            );
                             break;
                         case JobUpdate.Changed(var job):
-                            inSnapshot.Add(job.Id);
                             Show(context, bars, finished, watched, job);
                             break;
                         case JobUpdate.Removed(var id):
                             gone.Add(id);
                             Stop(bars, id);
-                            break;
-                        case JobUpdate.Synced:
-                            gone.UnionWith(
-                                watched?.Where(id =>
-                                    !inSnapshot.Contains(id) && !finished.ContainsKey(id)
-                                )
-                                    ?? []
-                            );
                             break;
                         case JobUpdate.Lost(var failure):
                             lost = failure;
