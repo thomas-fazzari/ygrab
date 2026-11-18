@@ -34,7 +34,7 @@ internal sealed class JobRig
             Time,
             NullLogger<ExpireJobs.Handler>.Instance
         );
-        Retry = new RetryJob.Handler(Jobs, Audio, Videos, Store, signal);
+        Retry = new RetryJob.Handler(Jobs, Audio, Videos, signal);
         Advance = new AdvanceJobs.Handler(
             Jobs,
             Cooldown,

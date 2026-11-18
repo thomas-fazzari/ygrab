@@ -33,7 +33,6 @@ public static class RetryJob
         JobRegistry jobs,
         IAudioSource audio,
         IVideoSource videos,
-        IJobStore store,
         JobSignal signal
     ) : ICommandHandler<Command, Outcome>
     {
@@ -65,11 +64,15 @@ public static class RetryJob
 
             var gone = Gone(job);
             var retried = false;
-            var updated = jobs.Update(job.Id, current =>
-            {
-                retried = current.CanRetry;
-                return retried ? current.Retry(gone) : current;
-            });
+            var updated = await jobs.UpdateAsync(
+                job.Id,
+                current =>
+                {
+                    retried = current.CanRetry;
+                    return retried ? current.Retry(gone) : current;
+                },
+                cancellationToken
+            );
             if (updated is null)
             {
                 return new NotFound();
@@ -80,7 +83,6 @@ public static class RetryJob
                 return new NotRetryable();
             }
 
-            await store.SaveAsync(updated, cancellationToken);
             signal.Ring();
             return new Retried();
         }

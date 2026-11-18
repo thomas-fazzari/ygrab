@@ -110,7 +110,7 @@ public sealed class SqliteJobStoreTests : IAsyncLifetime
     {
         var job = Samples.Queued(Samples.AlbumLink());
         await _store.InsertAsync(job, TestContext.Current.CancellationToken);
-        await _store.SaveAsync(job.Resume(_now), TestContext.Current.CancellationToken);
+        await _store.SaveAsync(() => job.Resume(_now), TestContext.Current.CancellationToken);
 
         var snapshot = await _store.LoadAsync(TestContext.Current.CancellationToken);
 
@@ -125,7 +125,7 @@ public sealed class SqliteJobStoreTests : IAsyncLifetime
         await _store.InsertAsync(job, TestContext.Current.CancellationToken);
         await _store.DeleteAsync(job.Id, TestContext.Current.CancellationToken);
 
-        await _store.SaveAsync(job.Resume(_now), TestContext.Current.CancellationToken);
+        await _store.SaveAsync(() => job.Resume(_now), TestContext.Current.CancellationToken);
 
         var snapshot = await _store.LoadAsync(TestContext.Current.CancellationToken);
         snapshot.Jobs.Should().BeEmpty();

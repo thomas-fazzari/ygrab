@@ -87,10 +87,7 @@ public static partial class ExpireJobs
 
             // The folder goes first, so a failed delete leaves the job to the next sweep
             output.Delete(id);
-            if (job.State is not JobState.Failed)
-            {
-                await jobs.UpdateAsync(id, current => current.Expire(), cancellationToken);
-            }
+            await jobs.UpdateAsync(id, current => current.Expire(), cancellationToken);
         }
 
         private static bool IsDue(Job job, Retention retention, DateTimeOffset now) =>
