@@ -11,6 +11,12 @@ Logging:
     Microsoft.AspNetCore: Warning
     System.Net.Http.HttpClient: Warning
     Polly: Warning
+  # The log stream of the web client
+  Diagnostics:
+    LogLevel:
+      YGrab: Debug
+      # ASP.NET Core logs each request without a bearer token in this category, at debug level
+      YGrab.Host.Auth.BearerHandler: Information
 
 # A change needs a restart
 Storage:

@@ -20,8 +20,11 @@ internal static class DiagnosticsEndpoints
     extension(IServiceCollection services)
     {
         /// <summary>
-        /// Keeps the log lines of the server for the log stream (YGrab's debug lines included).
+        /// Keeps the log lines of the server for the log stream.
         /// </summary>
+        /// <remarks>
+        /// The <c>Logging:Diagnostics:LogLevel</c> section sets the levels it keeps.
+        /// </remarks>
         public IServiceCollection AddYGrabDiagnostics()
         {
             services.AddSingleton<LogBuffer>();
@@ -29,9 +32,7 @@ internal static class DiagnosticsEndpoints
                 provider.GetRequiredService<LogBuffer>()
             );
             services.AddLogging(logging =>
-                logging
-                    .AddFilter<LogBuffer>(nameof(YGrab), LogLevel.Debug)
-                    .AddFilter<LogBuffer>(_tokenCategory, LogLevel.None)
+                logging.AddFilter<LogBuffer>(_tokenCategory, LogLevel.None)
             );
             return services;
         }
