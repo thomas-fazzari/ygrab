@@ -29,9 +29,7 @@ public sealed class ChangeFeed
         foreach (var (subscriber, _) in _subscribers)
         {
             if (!subscriber.TryWrite(change))
-            {
                 subscriber.Dispose();
-            }
         }
     }
 

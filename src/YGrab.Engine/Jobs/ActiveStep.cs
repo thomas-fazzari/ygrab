@@ -30,9 +30,7 @@ internal sealed class ActiveStep
     public async ValueTask CancelAsync(Guid id)
     {
         if (Volatile.Read(ref _current) is { } current && current.Id == id)
-        {
             await current.CancelAsync();
-        }
     }
 
     internal sealed class Registration : IDisposable

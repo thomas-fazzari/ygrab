@@ -24,9 +24,7 @@ internal sealed class FakeAdvanceJobs(TimeProvider time, AdvanceJobs.Outcome fir
     {
         var call = Interlocked.Increment(ref _calls);
         if (call == 1)
-        {
             return ValueTask.FromResult(first);
-        }
 
         SecondCall.TrySetResult(time.GetUtcNow());
         return ValueTask.FromResult<AdvanceJobs.Outcome>(new AdvanceJobs.Idle());

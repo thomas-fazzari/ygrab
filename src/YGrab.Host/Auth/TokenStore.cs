@@ -35,9 +35,7 @@ internal sealed partial class TokenStore(
     public void Initialize()
     {
         if (options.CurrentValue.Token is null)
-        {
             Volatile.Write(ref _generated, LoadOrCreate());
-        }
     }
 
     public bool Matches(string? candidate) =>
@@ -67,9 +65,7 @@ internal sealed partial class TokenStore(
             ? File.ReadAllText(storage.TokenFile).Trim()
             : null;
         if (!string.IsNullOrWhiteSpace(existing))
-        {
             return existing;
-        }
 
         var token = Base64Url.EncodeToString(RandomNumberGenerator.GetBytes(GeneratedTokenBytes));
         Directory.CreateDirectory(storage.DataDirectory);
@@ -80,9 +76,7 @@ internal sealed partial class TokenStore(
             Share = FileShare.None,
         };
         if (!OperatingSystem.IsWindows())
-        {
             fileOptions.UnixCreateMode = UnixFileMode.UserRead | UnixFileMode.UserWrite;
-        }
 
         using var stream = new FileStream(storage.TokenFile, fileOptions);
         stream.Write(Encoding.UTF8.GetBytes(token + Environment.NewLine));

@@ -40,9 +40,7 @@ public static class RemoveJob
             ArgumentNullException.ThrowIfNull(command);
 
             if (jobs.Remove(command.Id) is null)
-            {
                 return new NotFound();
-            }
 
             signal.Ring();
             await activeStep.CancelAsync(command.Id);

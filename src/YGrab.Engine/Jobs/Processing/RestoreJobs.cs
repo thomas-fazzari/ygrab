@@ -34,9 +34,7 @@ public static class RestoreJobs
             {
                 var requeued = job.Requeue();
                 if (requeued != job)
-                {
                     await store.SaveAsync(() => requeued, cancellationToken);
-                }
 
                 restored.Add(requeued);
             }

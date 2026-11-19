@@ -13,8 +13,6 @@ internal sealed class TempDirectory : IDisposable
     public void Dispose()
     {
         if (Directory.Exists(FullName))
-        {
             Directory.Delete(FullName, recursive: true);
-        }
     }
 }

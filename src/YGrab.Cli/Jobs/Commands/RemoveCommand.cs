@@ -20,9 +20,7 @@ internal sealed class RemoveCommand(CliSession session)
     {
         var removed = await api.RemoveJobAsync(job.Id, cancellationToken);
         if (!removed.TryGetValue(out _, out var failure))
-        {
             return Reporter.Report(failure);
-        }
 
         Reporter.Output.WriteLine($"{JobIds.Short(job.Id)} removed");
         return ExitCodes.Ok;

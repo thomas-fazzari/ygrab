@@ -28,14 +28,10 @@ internal sealed class BearerHandler(
     protected override Task<AuthenticateResult> HandleAuthenticateAsync()
     {
         if (HeaderOf(Request) is not { } header)
-        {
             return Task.FromResult(AuthenticateResult.NoResult());
-        }
 
         if (!limiter.CanTry(Context))
-        {
             return Task.FromResult(AuthenticateResult.Fail("Too many wrong tokens."));
-        }
 
         if (!tokens.Matches(header.Parameter))
         {

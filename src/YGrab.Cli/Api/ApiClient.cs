@@ -95,9 +95,7 @@ internal sealed class ApiClient(HttpClient http, Uri baseUrl, string token)
     {
         var sent = await SendAsync(method, path, content: null, accept: null, cancellationToken);
         if (!sent.TryGetValue(out var response, out var failure))
-        {
             return ApiResult<None>.Fail(failure);
-        }
 
         response.Dispose();
         return ApiResult<None>.Ok(default);
@@ -110,9 +108,7 @@ internal sealed class ApiClient(HttpClient http, Uri baseUrl, string token)
     )
     {
         if (!sent.TryGetValue(out var response, out var failure))
-        {
             return ApiResult<T>.Fail(failure);
-        }
 
         using (response)
         {
@@ -140,9 +136,7 @@ internal sealed class ApiClient(HttpClient http, Uri baseUrl, string token)
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
         // JSON stays acceptable, so that an error of a file or stream request has its body
         if (accept is not null)
-        {
             request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(accept));
-        }
 
         request.Headers.Accept.Add(
             new MediaTypeWithQualityHeaderValue(MediaTypeNames.Application.Json)
@@ -164,9 +158,7 @@ internal sealed class ApiClient(HttpClient http, Uri baseUrl, string token)
         }
 
         if (response.IsSuccessStatusCode)
-        {
             return ApiResult<HttpResponseMessage>.Ok(response);
-        }
 
         using (response)
         {
@@ -182,9 +174,7 @@ internal sealed class ApiClient(HttpClient http, Uri baseUrl, string token)
     )
     {
         if (response.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden)
-        {
             return new ApiFailure.BadToken();
-        }
 
         try
         {
@@ -204,9 +194,7 @@ internal sealed class ApiClient(HttpClient http, Uri baseUrl, string token)
     private static string Describe(HttpRequestException exception)
     {
         if (exception.InnerException is not { } inner)
-        {
             return exception.Message;
-        }
 
         return exception.Message.Contains(inner.Message, StringComparison.Ordinal)
             ? exception.Message

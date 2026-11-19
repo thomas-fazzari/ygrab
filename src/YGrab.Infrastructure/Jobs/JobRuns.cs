@@ -60,9 +60,7 @@ internal sealed partial class JobRuns(
         await Task.Delay(Remaining(wait.NotBefore), timeProvider, cancellationToken);
         var rest = Remaining(wait.At);
         if (rest == TimeSpan.Zero)
-        {
             return;
-        }
 
         using var timeout = new CancellationTokenSource(rest, timeProvider);
         using var linked = CancellationTokenSource.CreateLinkedTokenSource(

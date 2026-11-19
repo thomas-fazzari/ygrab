@@ -67,9 +67,7 @@ internal sealed class LogBuffer(TimeProvider timeProvider) : ILoggerProvider
         lock (_lock)
         {
             if (_entries.Count == Capacity)
-            {
                 _entries.Dequeue();
-            }
 
             _entries.Enqueue(entry);
             foreach (var subscriber in _subscribers)
@@ -131,9 +129,7 @@ internal sealed class LogBuffer(TimeProvider timeProvider) : ILoggerProvider
         internal void Write(LogEntryDto entry)
         {
             if (!_channel.Writer.TryWrite(entry))
-            {
                 _channel.Writer.TryComplete();
-            }
         }
     }
 
@@ -153,15 +149,11 @@ internal sealed class LogBuffer(TimeProvider timeProvider) : ILoggerProvider
         )
         {
             if (!IsEnabled(logLevel))
-            {
                 return;
-            }
 
             var message = formatter(state, exception);
             if (exception is not null)
-            {
                 message = $"{message}\n{exception}";
-            }
 
             buffer.Add(logLevel, source, Truncate(message));
         }

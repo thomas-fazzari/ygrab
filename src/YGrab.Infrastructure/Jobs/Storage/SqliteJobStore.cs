@@ -91,9 +91,7 @@ internal sealed class SqliteJobStore(SqliteDatabase database, SqliteWriter write
             connection =>
             {
                 if (current() is { } job)
-                {
                     connection.Execute(UpdateJobSql, JobRowMapper.ToRow(job));
-                }
             },
             cancellationToken
         );

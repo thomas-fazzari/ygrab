@@ -134,9 +134,7 @@ public static class TitleText
             var length = 1 + AlbumVersionNote.Length;
             var end = fromOpener[length..].IndexOfAny(_closers);
             if (end < 0)
-            {
                 return fromOpener.Length;
-            }
 
             length += end + 1;
             return length < fromOpener.Length && fromOpener[length] == ClosingParenthesis
@@ -158,9 +156,7 @@ public static class TitleText
         foreach (var prefix in _creditPrefixes)
         {
             if (inner.StartsWith(prefix, StringComparison.Ordinal))
-            {
                 return true;
-            }
         }
 
         return false;
@@ -187,9 +183,7 @@ public static class TitleText
             var segment = text.AsSpan(from);
             var next = segment.IndexOf(Hyphen);
             if ((next < 0 ? segment : segment[..next]).ContainsAny(_editionWords))
-            {
                 return text[..dash].TrimEnd();
-            }
         }
 
         return text;
@@ -208,9 +202,7 @@ public static class TitleText
             }
 
             if (separated && result.Length > 0)
-            {
                 result.Append(' ');
-            }
 
             separated = false;
             result.Append(rune);

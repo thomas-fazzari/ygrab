@@ -112,9 +112,7 @@ public sealed partial class SqliteWriter(
     private void Process(SqliteConnection connection, WorkItem item)
     {
         if (item.TryCancel())
-        {
             return;
-        }
 
         SqliteTransaction? transaction = null;
         Exception? failure = null;
@@ -138,9 +136,7 @@ public sealed partial class SqliteWriter(
         finally
         {
             if (failure is not null)
-            {
                 item.Fail(failure);
-            }
         }
     }
 
@@ -166,9 +162,7 @@ public sealed partial class SqliteWriter(
         public bool TryCancel()
         {
             if (!cancellationToken.IsCancellationRequested)
-            {
                 return false;
-            }
 
             Completion.TrySetCanceled(cancellationToken);
             return true;

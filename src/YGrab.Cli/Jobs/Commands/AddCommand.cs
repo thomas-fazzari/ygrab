@@ -70,9 +70,7 @@ internal sealed class AddCommand : ApiCommand
                 Force: parse.GetValue(_force)
             );
             if (parse.GetValue(_quality) is { } quality)
-            {
                 request = request with { Quality = quality };
-            }
 
             var result = await api.StartJobAsync(request, cancellationToken);
             if (result.TryGetValue(out var job, out var failure))
@@ -93,15 +91,11 @@ internal sealed class AddCommand : ApiCommand
 
             exit = Math.Max(exit, Reporter.Report(failure));
             if (exit == ExitCodes.Unreachable)
-            {
                 return exit;
-            }
         }
 
         if (!wait || started.Count == 0)
-        {
             return exit;
-        }
 
         var followed = await FollowProgress.UntilFinishedAsync(
             Reporter,
@@ -121,9 +115,7 @@ internal sealed class AddCommand : ApiCommand
     {
         var exit = JobView.Conclude(Reporter, job);
         if (job.FileName is null)
-        {
             return exit;
-        }
 
         var saved = await FileDownloader.SaveAsync(
             Reporter,
@@ -152,9 +144,7 @@ internal sealed class AddCommand : ApiCommand
             while (await Console.In.ReadLineAsync(cancellationToken) is { } line)
             {
                 if (!string.IsNullOrWhiteSpace(line))
-                {
                     links.Add(line.Trim());
-                }
             }
         }
 
@@ -165,9 +155,7 @@ internal sealed class AddCommand : ApiCommand
     {
         var name = result.Tokens[0].Value;
         if (Qualities.Parse(name) is { } quality)
-        {
             return quality;
-        }
 
         result.AddError(
             $"Unknown quality {name}. Use one of {string.Join(", ", Qualities.Names)}."

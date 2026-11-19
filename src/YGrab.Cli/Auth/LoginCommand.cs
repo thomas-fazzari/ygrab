@@ -34,18 +34,14 @@ internal sealed class LoginCommand : Command
         var url = parse.GetRequiredValue(_url);
         var token = await ReadTokenAsync(cancellationToken);
         if (string.IsNullOrWhiteSpace(token))
-        {
             return _session.Reporter.Usage("The token is empty.");
-        }
 
         var checkedToken = await new ApiClient(_session.Http, url, token).ListJobsAsync(
             CheckLimit,
             cancellationToken
         );
         if (!checkedToken.TryGetValue(out _, out var failure))
-        {
             return _session.Reporter.Report(failure);
-        }
 
         CliConfigStore.Save(new CliConfig(url.AbsoluteUri, token));
         _session.Reporter.Output.WriteLine(
@@ -57,9 +53,7 @@ internal sealed class LoginCommand : Command
     private static Uri? ParseUrl(ArgumentResult result)
     {
         if (CliSession.TryParseUrl(result.Tokens[0].Value, out var url))
-        {
             return url;
-        }
 
         result.AddError("The url is not an absolute http or https address.");
         return null;

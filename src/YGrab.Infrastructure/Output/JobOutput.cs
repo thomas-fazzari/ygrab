@@ -72,9 +72,7 @@ internal sealed class JobOutput(IOptions<StorageOptions> storage) : IJobOutput
     {
         var directory = storage.Value.JobDirectory(jobId);
         if (Directory.Exists(directory))
-        {
             Directory.Delete(directory, recursive: true);
-        }
     }
 
     private async ValueTask<string> PackageAudioAsync(

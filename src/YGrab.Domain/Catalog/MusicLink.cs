@@ -26,19 +26,13 @@ public closed record MusicLink
     private static MusicLink? Find(Uri uri)
     {
         if (!YouTubeHosts.IsHttp(uri))
-        {
             return null;
-        }
 
         if (YouTubeHosts.IsShort(uri))
-        {
             return Track(uri.AbsolutePath.Trim('/'));
-        }
 
         if (!YouTubeHosts.IsWeb(uri))
-        {
             return null;
-        }
 
         var query = HttpUtility.ParseQueryString(uri.Query);
         return uri.AbsolutePath switch

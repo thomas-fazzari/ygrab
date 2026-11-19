@@ -27,9 +27,7 @@ internal static class JobView
         }
 
         if (job.Tracks.FirstOrDefault(track => track.Number == job.CurrentTrack) is { } current)
-        {
             parts.Add(Markup.Escape(current.Title));
-        }
 
         parts.Add($"({WireNames.Of(job.State)})");
         return string.Join(' ', parts);

@@ -40,19 +40,13 @@ public static class VideoLink
     private static VideoId? Find(Uri uri)
     {
         if (!YouTubeHosts.IsHttp(uri))
-        {
             return null;
-        }
 
         if (YouTubeHosts.IsShort(uri))
-        {
             return Id(uri.AbsolutePath.Trim('/'));
-        }
 
         if (!YouTubeHosts.IsWeb(uri))
-        {
             return null;
-        }
 
         var path = uri.AbsolutePath;
         return path switch

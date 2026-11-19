@@ -114,9 +114,7 @@ internal static class ReleaseNaming
         {
             bytes += rune.Utf8SequenceLength;
             if (bytes > MaxBytes)
-            {
                 break;
-            }
 
             length += rune.Utf16SequenceLength;
         }

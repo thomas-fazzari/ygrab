@@ -71,9 +71,7 @@ internal static class JobEvents
                 while (await TryMoveNextAsync(events))
                 {
                     if (ToUpdate(events.Current) is { } update)
-                    {
                         yield return update;
-                    }
                 }
             }
 

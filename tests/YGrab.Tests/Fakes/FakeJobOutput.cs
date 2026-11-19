@@ -33,9 +33,7 @@ internal sealed class FakeJobOutput : IJobOutput
     public void Delete(Guid jobId)
     {
         if (FailingDeletes.Contains(jobId))
-        {
             throw new IOException("The folder is locked.");
-        }
 
         Deleted.Add(jobId);
     }

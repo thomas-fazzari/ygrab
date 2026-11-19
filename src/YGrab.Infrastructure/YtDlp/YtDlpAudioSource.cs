@@ -80,14 +80,10 @@ internal sealed class YtDlpAudioSource(YtDlpRunner runner, IOptions<StorageOptio
                 cancellationToken
             );
             if (failure is not null)
-            {
                 return failure;
-            }
 
             if (path is null)
-            {
                 return new RemoteFailure.Transient(YtDlpRunner.NoFileMessage);
-            }
 
             storage.Value.KeepTrackFile(jobId, videoId, path);
             return new Downloaded();

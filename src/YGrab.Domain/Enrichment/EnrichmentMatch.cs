@@ -78,14 +78,10 @@ public static class EnrichmentMatch
     public static MatchResult Match(Release release, CandidateRelease candidate)
     {
         if (CompareAlbum(release, candidate) is { } album)
-        {
             return album;
-        }
 
         if (candidate.Tracks.IsDefaultOrEmpty || candidate.Tracks.Length != candidate.TrackCount)
-        {
             return new Mismatch("the track list differs from the track count");
-        }
 
         foreach (var track in release.Tracks)
         {
@@ -140,9 +136,7 @@ public static class EnrichmentMatch
         }
 
         if (track.Explicit != candidate.Explicit)
-        {
             return "explicit flag";
-        }
 
         return
             track.Seconds > 0

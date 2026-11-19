@@ -34,9 +34,7 @@ internal static class JobIds
     {
         var suffix = text.Replace("-", string.Empty, StringComparison.Ordinal).ToLowerInvariant();
         if (suffix.Length == 0 || !suffix.All(char.IsAsciiHexDigit))
-        {
             return ApiResult<JobDto>.Fail(new ApiFailure.Unresolved($"'{text}' is not a job id."));
-        }
 
         var matches = jobs.Where(job => Hex(job.Id).EndsWith(suffix, StringComparison.Ordinal))
             .ToList();

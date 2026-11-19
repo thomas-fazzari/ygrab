@@ -31,9 +31,7 @@ internal static class FileDownloader
     {
         var opened = await api.OpenFileAsync(job.Id, cancellationToken);
         if (!opened.TryGetValue(out var response, out var failure))
-        {
             return reporter.Report(failure);
-        }
 
         using (response)
         {
@@ -129,18 +127,14 @@ internal static class FileDownloader
     private static string Target(string? output, string name)
     {
         if (string.IsNullOrWhiteSpace(output))
-        {
             return Path.GetFullPath(name);
-        }
 
         var isFolder =
             Directory.Exists(output)
             || output.EndsWith(Path.DirectorySeparatorChar)
             || output.EndsWith(Path.AltDirectorySeparatorChar);
         if (!isFolder)
-        {
             return Path.GetFullPath(output);
-        }
 
         Directory.CreateDirectory(output);
         return Path.GetFullPath(Path.Combine(output, name));

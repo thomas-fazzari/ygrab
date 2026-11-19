@@ -86,9 +86,7 @@ internal sealed class JobRegistry(ChangeFeed feed, IJobStore store)
     {
         var (updated, changed) = Apply(id, change);
         if (changed)
-        {
             await store.SaveAsync(() => Get(id), cancellationToken);
-        }
 
         return updated;
     }
@@ -102,9 +100,7 @@ internal sealed class JobRegistry(ChangeFeed feed, IJobStore store)
         lock (_lock)
         {
             if (!_jobs.TryGetValue(id, out var job))
-            {
                 return null;
-            }
 
             _jobs = _jobs.Remove(id);
             feed.Publish(new JobRemoved(id));
@@ -117,15 +113,11 @@ internal sealed class JobRegistry(ChangeFeed feed, IJobStore store)
         lock (_lock)
         {
             if (!_jobs.TryGetValue(id, out var job))
-            {
                 return (null, false);
-            }
 
             var updated = change(job);
             if (updated == job)
-            {
                 return (job, false);
-            }
 
             _jobs = _jobs.SetItem(id, updated);
             feed.Publish(new JobChanged(updated));
