@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.Time.Testing;
 using YGrab.Engine.Jobs;
 using YGrab.Infrastructure.Jobs;
 using YGrab.Tests.Fakes;
@@ -18,7 +17,7 @@ public sealed class JobRunsTests
     public async Task A_ring_ends_the_wait_for_a_retry_once_the_pause_is_over()
     {
         var cancellation = TestContext.Current.CancellationToken;
-        var time = new FakeTimeProvider(TestTime.Start);
+        var time = new TimerWatchingTimeProvider(TestTime.Start);
         var signal = new JobSignal();
         var advance = new FakeAdvanceJobs(
             time,
@@ -27,7 +26,7 @@ public sealed class JobRunsTests
         using var runs = new JobRuns(advance, signal, time, NullLogger<JobRuns>.Instance);
         signal.Ring();
         await runs.StartAsync(cancellation);
-        await advance.FirstCall.Task.WaitAsync(cancellation);
+        await time.FirstTimer.Task.WaitAsync(cancellation);
 
         time.Advance(_pause);
         var woken = await advance.SecondCall.Task.WaitAsync(cancellation);

@@ -14,9 +14,6 @@ internal sealed class FakeAdvanceJobs(TimeProvider time, AdvanceJobs.Outcome fir
 {
     private int _calls;
 
-    public TaskCompletionSource<DateTimeOffset> FirstCall { get; } =
-        new(TaskCreationOptions.RunContinuationsAsynchronously);
-
     public TaskCompletionSource<DateTimeOffset> SecondCall { get; } =
         new(TaskCreationOptions.RunContinuationsAsynchronously);
 
@@ -26,7 +23,12 @@ internal sealed class FakeAdvanceJobs(TimeProvider time, AdvanceJobs.Outcome fir
     )
     {
         var call = Interlocked.Increment(ref _calls);
-        (call == 1 ? FirstCall : SecondCall).TrySetResult(time.GetUtcNow());
-        return ValueTask.FromResult(call == 1 ? first : new AdvanceJobs.Idle());
+        if (call == 1)
+        {
+            return ValueTask.FromResult(first);
+        }
+
+        SecondCall.TrySetResult(time.GetUtcNow());
+        return ValueTask.FromResult<AdvanceJobs.Outcome>(new AdvanceJobs.Idle());
     }
 }
