@@ -9,12 +9,8 @@ internal static class ResultExtensions
 {
     extension<T>(Result<T> result)
     {
-        public T ShouldSucceed()
-        {
-            result.TryGetValue(out T? value).Should().BeTrue();
-            return value!;
-        }
+        public T ShouldSucceed() => result.Value.Should().BeAssignableTo<T>().Subject;
 
-        public void ShouldFail() => result.TryGetValue(out ValidationError? _).Should().BeTrue();
+        public void ShouldFail() => result.Value.Should().BeOfType<ValidationError>();
     }
 }

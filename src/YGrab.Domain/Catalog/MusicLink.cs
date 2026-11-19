@@ -53,17 +53,15 @@ public closed record MusicLink
     }
 
     private static TrackLink? Track(string? id) =>
-        id is not null && VideoId.Create(id).TryGetValue(out VideoId? videoId)
-            ? new TrackLink(videoId)
-            : null;
+        id is not null && VideoId.Create(id) is VideoId videoId ? new TrackLink(videoId) : null;
 
     private static AlbumPlaylistLink? AlbumPlaylist(string? id) =>
-        id is not null && PlaylistId.Create(id).TryGetValue(out PlaylistId? playlistId)
+        id is not null && PlaylistId.Create(id) is PlaylistId playlistId
             ? new AlbumPlaylistLink(playlistId)
             : null;
 
     private static AlbumLink? Album(string id) =>
-        BrowseId.Create(id).TryGetValue(out BrowseId? browseId) ? new AlbumLink(browseId) : null;
+        BrowseId.Create(id) is BrowseId browseId ? new AlbumLink(browseId) : null;
 }
 
 /// <summary>

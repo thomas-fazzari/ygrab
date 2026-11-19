@@ -106,6 +106,8 @@ dotnet_diagnostic.CA1034.severity = none
 dotnet_diagnostic.CA1708.severity = none
 # Flags the struct that the compiler generates for each C# 15 union
 dotnet_diagnostic.CA1815.severity = none
+# Reports "always true" for a type pattern on a C# 15 union (e.g. `result is T value`)
+dotnet_diagnostic.CA1508.severity = none
 
 # Roslynator
 # The category setting only applies to rules enabled by default. Rules disabled by default are listed.
