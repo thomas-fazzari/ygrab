@@ -69,5 +69,5 @@ public static class VideoLink
     }
 
     private static VideoId? Id(string? id) =>
-        id is not null && VideoId.Create(id).TryGetValue(out VideoId? videoId) ? videoId : null;
+        id is not null && VideoId.Create(id) is VideoId videoId ? videoId : null;
 }

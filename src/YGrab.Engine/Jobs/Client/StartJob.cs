@@ -85,12 +85,10 @@ public static class StartJob
         private static JobRequest? ToRequest(Command command, Uri url) =>
             command.Mode switch
             {
-                JobMode.Video => VideoLink.Parse(url).TryGetValue(out VideoId? videoId)
+                JobMode.Video => VideoLink.Parse(url) is VideoId videoId
                     ? new JobRequest.Video(videoId, command.Quality)
                     : null,
-                _ => MusicLink.Parse(url).TryGetValue(out MusicLink? link)
-                    ? new JobRequest.Audio(link)
-                    : null,
+                _ => MusicLink.Parse(url) is MusicLink link ? new JobRequest.Audio(link) : null,
             };
 
         private static string InvalidMessage(JobMode mode) =>

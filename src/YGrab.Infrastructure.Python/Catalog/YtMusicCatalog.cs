@@ -90,7 +90,7 @@ internal sealed partial class YtMusicCatalog(
             return new RemoteFailure.Unavailable(missing);
         }
 
-        return BrowseId.Create(browseId).TryGetValue(out BrowseId? parsed)
+        return BrowseId.Create(browseId) is BrowseId parsed
             ? Read(module, parsed, audioVideoId)
             : new RemoteFailure.Unavailable(
                 $"YouTube Music sent an album id that YGrab cannot read ({browseId})."
@@ -112,7 +112,7 @@ internal sealed partial class YtMusicCatalog(
         var tracks = ImmutableArray.CreateBuilder<ReleaseTrack>(album.Tracks.Count);
         foreach (var track in album.Tracks)
         {
-            if (!VideoId.Create(track.VideoId).TryGetValue(out VideoId? id))
+            if (VideoId.Create(track.VideoId) is not VideoId id)
             {
                 return new RemoteFailure.Unavailable(
                     $"YouTube Music returned the invalid video id {track.VideoId}."
