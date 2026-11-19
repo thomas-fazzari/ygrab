@@ -10,7 +10,7 @@ internal static class StoredResultExtensions
     extension<T>(Result<T> result)
     {
         public T GetStoredValue() =>
-            result.TryGetValue(out T? value)
+            result is T value
                 ? value
                 : throw new InvalidOperationException("A stored value fails its validation.");
     }
