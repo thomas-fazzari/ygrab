@@ -20,9 +20,7 @@ internal sealed class RetryCommand(CliSession session)
     {
         var retried = await api.RetryJobAsync(job.Id, cancellationToken);
         if (!retried.TryGetValue(out _, out var failure))
-        {
             return Reporter.Report(failure);
-        }
 
         Reporter.Output.WriteLine($"{JobIds.Short(job.Id)} queued again");
         return ExitCodes.Ok;

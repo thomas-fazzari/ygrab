@@ -11,9 +11,7 @@ internal sealed class AuthStartup(TokenStore tokens, IOptions<AuthOptions> optio
     public Task StartAsync(CancellationToken cancellationToken)
     {
         if (!options.Value.Disabled)
-        {
             tokens.Initialize();
-        }
 
         return Task.CompletedTask;
     }

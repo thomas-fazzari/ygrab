@@ -58,9 +58,7 @@ internal sealed class Reporter(IAnsiConsole output, IAnsiConsole error)
         }
 
         if (problem.Errors is { Count: > 0 } errors)
-        {
             return string.Join(' ', errors.Values.SelectMany(messages => messages));
-        }
 
         return problem.Detail
             ?? problem.Title

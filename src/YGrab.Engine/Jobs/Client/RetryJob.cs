@@ -44,14 +44,10 @@ public static class RetryJob
             ArgumentNullException.ThrowIfNull(command);
 
             if (jobs.Get(command.Id) is not { } job)
-            {
                 return new NotFound();
-            }
 
             if (!job.CanRetry)
-            {
                 return new NotRetryable();
-            }
 
             if (
                 !job.Force
@@ -74,14 +70,10 @@ public static class RetryJob
                 cancellationToken
             );
             if (updated is null)
-            {
                 return new NotFound();
-            }
 
             if (!retried)
-            {
                 return new NotRetryable();
-            }
 
             signal.Ring();
             return new Retried();

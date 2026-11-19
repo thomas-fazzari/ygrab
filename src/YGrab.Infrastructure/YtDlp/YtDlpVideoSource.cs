@@ -69,9 +69,7 @@ internal sealed class YtDlpVideoSource(YtDlpRunner runner, IOptions<StorageOptio
 
         var infoPath = Path.Combine(storage.Value.TracksDirectory(jobId), InfoFileName);
         if (!File.Exists(infoPath))
-        {
             return null;
-        }
 
         return storage.Value.FindTrackFile(jobId, videoId) is null
             ? null
@@ -141,9 +139,7 @@ internal sealed class YtDlpVideoSource(YtDlpRunner runner, IOptions<StorageOptio
                 cancellationToken
             );
             if (failure is not null)
-            {
                 return failure;
-            }
 
             if (path is null)
             {

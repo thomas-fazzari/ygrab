@@ -33,9 +33,7 @@ internal static class FollowProgress
     {
         var followed = await RunAsync(reporter.Output, api, ids.ToHashSet(), cancellationToken);
         if (!followed.TryGetValue(out var finished, out var failure))
-        {
             return reporter.Report(failure);
-        }
 
         var exit = ExitCodes.Ok;
         foreach (var id in ids.Distinct())
@@ -102,9 +100,7 @@ internal static class FollowProgress
                     }
 
                     if (watched?.All(id => finished.ContainsKey(id) || gone.Contains(id)) == true)
-                    {
                         return;
-                    }
                 }
             });
 
@@ -122,16 +118,12 @@ internal static class FollowProgress
     )
     {
         if (watched?.Contains(job.Id) == false)
-        {
             return;
-        }
 
         if (!bars.TryGetValue(job.Id, out var bar))
         {
             if (watched is null && job.FinishedAt is not null)
-            {
                 return;
-            }
 
             bar = context.AddTask(JobView.Progress(job), maxValue: FullPercent);
             bars[job.Id] = bar;
@@ -149,8 +141,6 @@ internal static class FollowProgress
     private static void Stop(Dictionary<Guid, ProgressTask> bars, Guid id)
     {
         if (bars.TryGetValue(id, out var bar))
-        {
             bar.StopTask();
-        }
     }
 }

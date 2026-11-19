@@ -101,9 +101,7 @@ internal static class Samples
         {
             current = current.Fail(Transient, now);
             if (current.State is JobState.Waiting waiting)
-            {
                 current = current.Resume(waiting.RetryAt);
-            }
         }
 
         return current;

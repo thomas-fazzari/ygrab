@@ -76,9 +76,7 @@ internal sealed partial class DeezerEnricher(
     )
     {
         if (release.Artists.IsDefaultOrEmpty)
-        {
             return new NotEnriched(EnrichmentFailure.NoMatch);
-        }
 
         var client = clients.CreateClient(ClientName);
         var artist = release.Artists[0];
@@ -94,9 +92,7 @@ internal sealed partial class DeezerEnricher(
                 cancellationToken
             );
             if (found.Error is { } error)
-            {
                 return Refused(error);
-            }
 
             hits.AddRange(Items(found.Data));
         }
@@ -104,9 +100,7 @@ internal sealed partial class DeezerEnricher(
         foreach (var hit in hits.DistinctBy(hit => hit.Id))
         {
             if (await MatchAsync(client, release, hit, cancellationToken) is { } outcome)
-            {
                 return outcome;
-            }
         }
 
         return new NotEnriched(EnrichmentFailure.NoMatch);
@@ -138,9 +132,7 @@ internal sealed partial class DeezerEnricher(
             cancellationToken
         );
         if (listed.Error is { } listError)
-        {
             return Refused(listError);
-        }
 
         var tracks = Items(listed.Data).Select(ToCandidate).ToImmutableArray();
         var candidate = new CandidateRelease(hit.Title, artist, tracks.Length, tracks);
@@ -154,9 +146,7 @@ internal sealed partial class DeezerEnricher(
                     cancellationToken
                 );
                 if (album.Error is { } albumError)
-                {
                     return Refused(albumError);
-                }
 
                 return matched with
                 {

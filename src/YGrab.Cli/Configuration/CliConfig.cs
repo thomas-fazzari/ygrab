@@ -42,16 +42,12 @@ internal static class CliConfigStore
             Share = FileShare.None,
         };
         if (!OperatingSystem.IsWindows())
-        {
             options.UnixCreateMode = UnixFileMode.UserRead | UnixFileMode.UserWrite;
-        }
 
         using var stream = new FileStream(FilePath, options);
         JsonSerializer.Serialize(stream, config, CliJsonContext.Default.CliConfig);
         if (!OperatingSystem.IsWindows())
-        {
             File.SetUnixFileMode(FilePath, UnixFileMode.UserRead | UnixFileMode.UserWrite);
-        }
     }
 
     private static string? Variable(string name)
@@ -63,9 +59,7 @@ internal static class CliConfigStore
     private static CliConfig Load()
     {
         if (!File.Exists(FilePath))
-        {
             return new CliConfig();
-        }
 
         using var stream = File.OpenRead(FilePath);
         return JsonSerializer.Deserialize(stream, CliJsonContext.Default.CliConfig)

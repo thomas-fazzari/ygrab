@@ -50,9 +50,7 @@ internal sealed class CliSession(HttpClient http, Reporter reporter)
     {
         url = null;
         if (!Uri.TryCreate(text, UriKind.Absolute, out var parsed) || !IsHttp(parsed))
-        {
             return false;
-        }
 
         url = parsed.AbsolutePath.EndsWith('/')
             ? parsed

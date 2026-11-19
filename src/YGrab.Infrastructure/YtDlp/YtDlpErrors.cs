@@ -52,16 +52,12 @@ internal static class YtDlpErrors
     internal static RemoteFailure Classify(string? lastErrorLine)
     {
         if (string.IsNullOrWhiteSpace(lastErrorLine))
-        {
             return new RemoteFailure.Transient(NoErrorLine);
-        }
 
         var line = lastErrorLine.AsSpan();
         var reason = ReasonOf(lastErrorLine);
         if (line.ContainsAny(_rateLimited))
-        {
             return new RemoteFailure.RateLimited(reason);
-        }
 
         return line.ContainsAny(_unavailable)
             ? new RemoteFailure.Unavailable(reason)
@@ -75,9 +71,7 @@ internal static class YtDlpErrors
             ? line.IndexOf(']', StringComparison.Ordinal)
             : -1;
         if (extractorEnd < 0)
-        {
             return line;
-        }
 
         var idEnd = line.IndexOf(IdEnd, extractorEnd, StringComparison.Ordinal);
         return idEnd < 0 ? line : line[(idEnd + IdEnd.Length)..];

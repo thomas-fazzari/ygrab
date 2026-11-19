@@ -69,9 +69,7 @@ public sealed record JobRelease
         for (var index = 0; index < Tracks.Length; index++)
         {
             if (Tracks[index].State is TrackState.Pending)
-            {
                 return index;
-            }
         }
 
         return -1;
@@ -104,9 +102,7 @@ public sealed record JobRelease
     internal int PercentAt(double fraction)
     {
         if (Tracks.IsEmpty)
-        {
             return 0;
-        }
 
         var finished = Tracks.Count(track => track.State is not TrackState.Pending);
         return (int)

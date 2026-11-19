@@ -221,9 +221,7 @@ public sealed record Job
         ArgumentNullException.ThrowIfNull(resolved);
 
         if (!Counts || Request is not JobRequest.Audio || resolved.Request is not JobRequest.Audio)
-        {
             return false;
-        }
 
         return Link is TrackLink
             ? resolved.Link is TrackLink && HeldTrackId is { } held && held == resolved.HeldTrackId
@@ -454,9 +452,7 @@ public sealed record Job
         ArgumentNullException.ThrowIfNull(gone);
 
         if (!CanRetry)
-        {
             throw Wrong(nameof(Retry));
-        }
 
         var resolved = Resolved?.Retry(gone);
         var kept =
@@ -502,14 +498,10 @@ public sealed record Job
     private Job GiveUp(string reason, DateTimeOffset now, bool refused)
     {
         if (State is JobState.Resolving || Request is JobRequest.Video)
-        {
             return Failed(reason, now);
-        }
 
         if (Resolved is not { } resolved || resolved.NextIndex() is not (>= 0 and var index))
-        {
             throw Wrong(nameof(Fail));
-        }
 
         var tracked = resolved.Mark(
             index,

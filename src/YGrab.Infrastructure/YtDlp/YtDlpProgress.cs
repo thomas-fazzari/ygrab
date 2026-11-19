@@ -46,17 +46,13 @@ internal static class YtDlpProgress
     {
         fraction = 0;
         if (!line.StartsWith(Prefix, StringComparison.Ordinal))
-        {
             return false;
-        }
 
         // "progress <video codec> <downloaded bytes> <total bytes>"
         var values = line.AsSpan(Prefix.Length);
         var space = values.IndexOf(' ');
         if (space < 0 || !TryParseBytes(values[(space + 1)..], out var stream))
-        {
             return false;
-        }
 
         fraction =
             values[..space] is NoVideoCodec

@@ -51,9 +51,7 @@ internal sealed partial class WrongTokenLimiter(ILogger<WrongTokenLimiter> logge
         var client = ClientOf(context);
         _limiter.AttemptAcquire(client).Dispose();
         if (_limiter.GetStatistics(client)?.CurrentAvailablePermits is 0)
-        {
             LogLockedOut(client, Window);
-        }
     }
 
     public void Dispose() => _limiter.Dispose();
@@ -61,19 +59,13 @@ internal sealed partial class WrongTokenLimiter(ILogger<WrongTokenLimiter> logge
     private static string ClientOf(HttpContext context)
     {
         if (context.Connection.RemoteIpAddress is not { } address)
-        {
             return string.Empty;
-        }
 
         if (address.IsIPv4MappedToIPv6)
-        {
             return address.MapToIPv4().ToString();
-        }
 
         if (address.AddressFamily is not AddressFamily.InterNetworkV6)
-        {
             return address.ToString();
-        }
 
         var bytes = address.GetAddressBytes();
         bytes.AsSpan(Ipv6NetworkBytes).Clear();

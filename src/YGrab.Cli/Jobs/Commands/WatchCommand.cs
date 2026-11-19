@@ -26,15 +26,11 @@ internal sealed class WatchCommand : ApiCommand
     {
         var reporter = Reporter;
         if (parse.GetValue(_id) is not { } text)
-        {
             return await WatchAllAsync(api, cancellationToken);
-        }
 
         var found = await JobIds.FindAsync(api, text, cancellationToken);
         if (!found.TryGetValue(out var job, out var failure))
-        {
             return reporter.Report(failure);
-        }
 
         return await FollowProgress.UntilFinishedAsync(
             reporter,

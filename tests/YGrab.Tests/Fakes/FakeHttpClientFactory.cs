@@ -44,9 +44,7 @@ internal sealed class FakeHttpClientFactory : IHttpClientFactory, IDisposable
             var path = request.RequestUri!.AbsolutePath;
             owner.Paths.Add(path);
             if (owner.Failure is { } failure)
-            {
                 throw failure;
-            }
 
             if (owner.Hangs)
             {

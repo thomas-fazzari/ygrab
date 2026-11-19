@@ -86,9 +86,7 @@ internal sealed partial class YtMusicCatalog(
     )
     {
         if (browseId is null)
-        {
             return new RemoteFailure.Unavailable(missing);
-        }
 
         return BrowseId.Create(browseId) is BrowseId parsed
             ? Read(module, parsed, audioVideoId)

@@ -53,14 +53,10 @@ public static class StartJob
             ArgumentNullException.ThrowIfNull(command);
 
             if (!Enum.IsDefined(command.Mode))
-            {
                 return new Invalid(nameof(Command.Mode), UnknownModeMessage);
-            }
 
             if (command.Mode is JobMode.Video && !Enum.IsDefined(command.Quality))
-            {
                 return new Invalid(nameof(Command.Quality), UnknownQualityMessage);
-            }
 
             if (
                 !Uri.TryCreate(command.Link.Trim(), UriKind.Absolute, out var url)
@@ -71,9 +67,7 @@ public static class StartJob
             }
 
             if (!command.Force && jobs.Find(job => job.Covers(request)) is { } previous)
-            {
                 return new AlreadyGrabbed(previous);
-            }
 
             var now = timeProvider.GetUtcNow();
             var job = Job.Create(Guid.CreateVersion7(now), url, request, command.Force, now);

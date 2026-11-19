@@ -69,9 +69,7 @@ internal sealed partial class YtDlpRunner(
         ArgumentNullException.ThrowIfNull(onLine);
 
         if (Directory.Exists(work))
-        {
             Directory.Delete(work, recursive: true);
-        }
 
         Directory.CreateDirectory(work);
 
@@ -100,9 +98,7 @@ internal sealed partial class YtDlpRunner(
         try
         {
             if (Directory.Exists(work))
-            {
                 Directory.Delete(work, recursive: true);
-            }
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {
@@ -164,15 +160,11 @@ internal sealed partial class YtDlpRunner(
         }
 
         if (process.ExitCode == 0)
-        {
             return null;
-        }
 
         var lastError = await error;
         if (lastError?.Contains(DiskFullMessage, StringComparison.Ordinal) == true)
-        {
             throw new IOException(lastError);
-        }
 
         var failure = YtDlpErrors.Classify(lastError);
         LogRunFailed(videoId.Value, process.ExitCode, failure);
@@ -255,9 +247,7 @@ internal sealed partial class YtDlpRunner(
         while (await reader.ReadLineAsync(CancellationToken.None) is { } line)
         {
             if (line.StartsWith(errorPrefix, StringComparison.Ordinal))
-            {
                 error = line[errorPrefix.Length..];
-            }
         }
 
         return error;

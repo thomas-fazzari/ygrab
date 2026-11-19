@@ -70,9 +70,7 @@ public static partial class ExpireJobs
         )
         {
             if (jobs.Get(id) is not { } job)
-            {
                 return;
-            }
 
             if (retention.RemovedAt(job) < now)
             {
@@ -81,9 +79,7 @@ public static partial class ExpireJobs
             }
 
             if (!IsDue(job, retention, now))
-            {
                 return;
-            }
 
             // The folder goes first, so a failed delete leaves the job to the next sweep
             output.Delete(id);

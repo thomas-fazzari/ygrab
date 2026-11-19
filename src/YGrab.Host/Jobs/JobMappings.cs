@@ -75,9 +75,7 @@ internal static class JobMappings
     private static ImmutableArray<string> ArtistsOf(Job job)
     {
         if (job.Release is { } release)
-        {
             return release.Artists;
-        }
 
         return job.KeptVideo?.Channel is { } channel ? [channel] : [];
     }

@@ -19,9 +19,7 @@ internal sealed class ListCommand(CliSession session)
     {
         var listed = await api.ListJobsAsync(limit: null, cancellationToken);
         if (!listed.TryGetValue(out var jobs, out var failure))
-        {
             return Reporter.Report(failure);
-        }
 
         var table = new Table().AddColumns("Id", "State", "Progress", "Job");
         foreach (var job in jobs)

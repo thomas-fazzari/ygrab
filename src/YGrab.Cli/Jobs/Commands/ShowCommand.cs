@@ -22,25 +22,17 @@ internal sealed class ShowCommand(CliSession session)
         output.WriteLine($"{JobIds.Short(job.Id)} {JobView.Label(job)}");
         output.MarkupLine($"State: {JobView.StateMarkup(job.State)}");
         if (job.Reason is not null)
-        {
             output.WriteLine($"Reason: {job.Reason}");
-        }
 
         if (job.Artists.Length > 0)
-        {
             output.WriteLine($"Artists: {string.Join(", ", job.Artists)}");
-        }
 
         output.WriteLine($"Link: {job.Url}");
         if (job.EnrichmentFailure is { } enrichment)
-        {
             output.WriteLine($"Provider tags: missing ({WireNames.Of(enrichment)})");
-        }
 
         if (job.Tracks.Length > 0)
-        {
             output.Write(TracksTable(job));
-        }
 
         return Task.FromResult(ExitCodes.Ok);
     }
@@ -52,9 +44,7 @@ internal sealed class ShowCommand(CliSession session)
         {
             var state = WireNames.Of(track.State);
             if (track.Reason is not null)
-            {
                 state = $"{state} ({track.Reason})";
-            }
 
             table.AddRow(
                 track.Number.ToString(System.Globalization.CultureInfo.InvariantCulture),

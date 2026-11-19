@@ -59,9 +59,7 @@ internal sealed class HostFactory : WebApplicationFactory<Program>
     {
         base.Dispose(disposing);
         if (disposing)
-        {
             _data.Dispose();
-        }
     }
 
     private static Uri Relative(string path) => new(path, UriKind.Relative);

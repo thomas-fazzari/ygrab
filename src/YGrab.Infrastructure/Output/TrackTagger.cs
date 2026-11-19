@@ -115,9 +115,7 @@ internal static class TrackTagger
         }
 
         if (!track.Save())
-        {
             throw new IOException($"ATL could not write the tags of {path}.");
-        }
     }
 
     private static void WriteNumbers(
@@ -192,9 +190,7 @@ internal static class TrackTagger
         }
 
         if (source.Explicit)
-        {
             fields[AdvisoryKey] = ExplicitValue;
-        }
     }
 
     private static void WriteMp4(
@@ -212,9 +208,7 @@ internal static class TrackTagger
         if (details is not null)
         {
             if (release.Year is { } year)
-            {
                 fields[OriginalDateKey] = YearText(year);
-            }
 
             Put(fields, LabelKey, details.Label);
             Put(fields, BarcodeKey, details.Barcode);
@@ -222,9 +216,7 @@ internal static class TrackTagger
         }
 
         if (source.Explicit)
-        {
             fields[Mp4AdvisoryKey] = ExplicitValue;
-        }
     }
 
     private static void Clear(IDictionary<string, string> fields, string[] keys)
@@ -238,9 +230,7 @@ internal static class TrackTagger
     private static void Put(IDictionary<string, string> fields, string key, string? value)
     {
         if (!string.IsNullOrWhiteSpace(value))
-        {
             fields[key] = value;
-        }
     }
 
     private static string YearText(int year) => year.ToString(CultureInfo.InvariantCulture);

@@ -70,28 +70,20 @@ public static partial class AdvanceJobs
         {
             var now = timeProvider.GetUtcNow();
             if (cooldown.Current is { Until: { } until } active && active.IsActiveAt(now))
-            {
                 return new WaitUntil(until, until);
-            }
 
             var job = jobs.Active() ?? jobs.NextQueued();
             if (job is null)
-            {
                 return new Idle();
-            }
 
             if (job.State is JobState.Waiting { RetryAt: var retryAt } && retryAt > now)
-            {
                 return new WaitUntil(retryAt, now);
-            }
 
             // The step exists before the job is read again, so a removal either shows in the read
             // or cancels the step
             using var step = activeStep.Begin(job.Id, cancellationToken);
             if (jobs.Get(job.Id) is not { } registered)
-            {
                 return new Stepped();
-            }
 
             try
             {
@@ -112,9 +104,7 @@ public static partial class AdvanceJobs
                     CancellationToken.None
                 );
                 if (aborted is not null)
-                {
                     throw;
-                }
 
                 LogRemovedStepFailed(job.Id, exception);
                 return Pause(job: null);
@@ -123,9 +113,7 @@ public static partial class AdvanceJobs
             {
                 // Files can outlive the removal, since the step wrote them after the delete
                 if (jobs.Get(job.Id) is null)
-                {
                     output.Delete(job.Id);
-                }
             }
         }
 
@@ -281,9 +269,7 @@ public static partial class AdvanceJobs
                 cancellationToken
             );
             if (packaging is not { State: JobState.Packaging })
-            {
                 return new Stepped();
-            }
 
             Cover? cover = null;
             ReleaseDetails? details = null;
@@ -338,9 +324,7 @@ public static partial class AdvanceJobs
             LogStepFailed(job.Id, failed?.State.GetType().Name ?? RemovedState, failure.Reason);
 
             if (failure is not RemoteFailure.RateLimited)
-            {
                 return Pause(failed);
-            }
 
             var hit = cooldown.Current.Hit(failure.Reason, now);
             // Memory changes first and the save ignores shutdown, so no call follows a rate limit

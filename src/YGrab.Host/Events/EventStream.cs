@@ -49,9 +49,7 @@ internal static class EventStream
             if (await Task.WhenAny(items, ticks) == ticks)
             {
                 if (!await ticks)
-                {
                     yield break;
-                }
 
                 if (!changedSinceTick)
                 {
@@ -65,9 +63,7 @@ internal static class EventStream
             }
 
             if (!await items)
-            {
                 yield break;
-            }
 
             while (reader.TryRead(out var item))
             {

@@ -257,9 +257,7 @@ internal static class JobRowMapper
     private static JobRequest ToRequest(string kind, string id, string? quality)
     {
         if (kind is not VideoKind && quality is not null)
-        {
             throw new InvalidOperationException($"A {kind} job row has a quality.");
-        }
 
         return kind switch
         {
@@ -313,9 +311,7 @@ internal static class JobRowMapper
     private static VideoInfo? ToKeptVideo(string? title, string? channel)
     {
         if (title is not null)
-        {
             return new VideoInfo(title, channel);
-        }
 
         return channel is null
             ? null
@@ -362,14 +358,10 @@ internal static class JobRowMapper
     private static JobRelease? ToResolved(string? releaseJson, string? tracksJson)
     {
         if (releaseJson is null && tracksJson is null)
-        {
             return null;
-        }
 
         if (releaseJson is null || tracksJson is null)
-        {
             throw new InvalidOperationException("A job row has only one of release and tracks.");
-        }
 
         var document = JsonSerializer.Deserialize(releaseJson, StoredJson.Default.ReleaseDocument)
             ?? throw new InvalidOperationException("A job row has a null release.");

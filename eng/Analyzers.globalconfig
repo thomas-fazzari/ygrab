@@ -7,6 +7,7 @@ is_global = true
 dotnet_diagnostic.SYSLIB1045.severity = error
 
 # Code style
+csharp_prefer_braces = when_multiline
 csharp_style_namespace_declarations = file_scoped
 dotnet_diagnostic.IDE0161.severity = warning
 # Unnecessary qualification: import the namespace instead
@@ -112,7 +113,6 @@ dotnet_diagnostic.CA1508.severity = none
 # Roslynator
 # The category setting only applies to rules enabled by default. Rules disabled by default are listed.
 dotnet_analyzer_diagnostic.category-roslynator.severity = warning
-dotnet_diagnostic.RCS1007.severity = warning
 dotnet_diagnostic.RCS1018.severity = warning
 dotnet_diagnostic.RCS1174.severity = warning
 dotnet_diagnostic.RCS1005.severity = suggestion
@@ -122,6 +122,7 @@ dotnet_diagnostic.RCS1181.severity = suggestion
 dotnet_diagnostic.RCS1214.severity = suggestion
 dotnet_diagnostic.RCS1241.severity = suggestion
 dotnet_diagnostic.RCS1242.severity = suggestion
+dotnet_diagnostic.RCS1007.severity = none
 dotnet_diagnostic.RCS1093.severity = none
 # The IDE flags partial types of [LoggerMessage] when it does not see the generated part
 dotnet_diagnostic.RCS1043.severity = none
