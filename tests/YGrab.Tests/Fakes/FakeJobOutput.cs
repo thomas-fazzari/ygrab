@@ -11,9 +11,9 @@ internal sealed class FakeJobOutput : IJobOutput
     public const string FileName = "album.zip";
     public const long FileSize = 1024;
 
-    public List<Guid> Deleted { get; } = [];
+    public List<JobId> Deleted { get; } = [];
 
-    public HashSet<Guid> FailingDeletes { get; } = [];
+    public HashSet<JobId> FailingDeletes { get; } = [];
 
     public List<ReleaseDetails?> Packaged { get; } = [];
 
@@ -28,9 +28,9 @@ internal sealed class FakeJobOutput : IJobOutput
         return ValueTask.FromResult(new PackagedFile(FileName, FileSize));
     }
 
-    public string? FindFile(Guid jobId, string fileName) => $"/jobs/{jobId:N}/{fileName}";
+    public string? FindFile(JobId jobId, string fileName) => $"/jobs/{jobId.Value:N}/{fileName}";
 
-    public void Delete(Guid jobId)
+    public void Delete(JobId jobId)
     {
         if (FailingDeletes.Contains(jobId))
             throw new IOException("The folder is locked.");

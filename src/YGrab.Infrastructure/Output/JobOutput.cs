@@ -53,13 +53,13 @@ internal sealed class JobOutput(IOptions<StorageOptions> storage) : IJobOutput
         return new PackagedFile(name, new FileInfo(PathOf(job.Id, name)).Length);
     }
 
-    public string? FindFile(Guid jobId, string fileName)
+    public string? FindFile(JobId jobId, string fileName)
     {
         var path = Path.GetFullPath(PathOf(jobId, fileName));
         return File.Exists(path) ? path : null;
     }
 
-    public string PathOf(Guid jobId, string fileName)
+    public string PathOf(JobId jobId, string fileName)
     {
         var extension = Path.GetExtension(fileName);
         var baseName = string.Equals(extension, ZipExtension, StringComparison.Ordinal)
@@ -68,7 +68,7 @@ internal sealed class JobOutput(IOptions<StorageOptions> storage) : IJobOutput
         return Path.Combine(storage.Value.OutputDirectory(jobId), baseName + extension);
     }
 
-    public void Delete(Guid jobId)
+    public void Delete(JobId jobId)
     {
         var directory = storage.Value.JobDirectory(jobId);
         if (Directory.Exists(directory))
@@ -124,7 +124,7 @@ internal sealed class JobOutput(IOptions<StorageOptions> storage) : IJobOutput
     }
 
     private (string Name, Func<string, CancellationToken, ValueTask> Build) PackageSingle(
-        Guid jobId,
+        JobId jobId,
         Release release,
         ReleaseTrack track,
         Cover? cover,
@@ -141,7 +141,7 @@ internal sealed class JobOutput(IOptions<StorageOptions> storage) : IJobOutput
     }
 
     private (string Name, Func<string, CancellationToken, ValueTask> Build) PackageAlbum(
-        Guid jobId,
+        JobId jobId,
         Release release,
         List<JobTrack> done,
         Cover? cover,
@@ -183,7 +183,7 @@ internal sealed class JobOutput(IOptions<StorageOptions> storage) : IJobOutput
         });
     }
 
-    private string TrackFile(Guid jobId, ReleaseTrack track) =>
+    private string TrackFile(JobId jobId, ReleaseTrack track) =>
         storage.Value.FindTrackFile(jobId, track.VideoId)
         ?? throw new FileNotFoundException($"Job {jobId} has no file for track {track.Number}.");
 }

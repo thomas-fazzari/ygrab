@@ -167,7 +167,7 @@ internal static class TrackTagger
         Clear(fields, _opusKeys);
 
         // ATL keeps the old ISRC when it is set to null, and an empty text clears it
-        track.ISRC = found?.Isrc ?? string.Empty;
+        track.ISRC = found?.Isrc?.Value ?? string.Empty;
 
         Put(fields, ArtistsKey, Values(source.Artists));
         Put(fields, AlbumArtistsKey, Values(release.Artists));
@@ -181,7 +181,7 @@ internal static class TrackTagger
             }
 
             Put(fields, LabelKey, details.Label);
-            Put(fields, BarcodeKey, details.Barcode);
+            Put(fields, BarcodeKey, details.Barcode?.Value);
             Put(
                 fields,
                 ReleaseTypeKey,
@@ -204,14 +204,14 @@ internal static class TrackTagger
         var fields = track.AdditionalFields;
         Clear(fields, _m4aKeys);
         track.Popularity = null;
-        Put(fields, Mp4IsrcAtomKey, found?.Isrc);
+        Put(fields, Mp4IsrcAtomKey, found?.Isrc?.Value);
         if (details is not null)
         {
             if (release.Year is { } year)
                 fields[OriginalDateKey] = YearText(year);
 
             Put(fields, LabelKey, details.Label);
-            Put(fields, BarcodeKey, details.Barcode);
+            Put(fields, BarcodeKey, details.Barcode?.Value);
             Put(fields, Mp4ReleaseTypeKey, ReleaseTypeText(details.ReleaseType, CompilationType));
         }
 

@@ -42,10 +42,10 @@ internal sealed class FakeAudioSource : IAudioSource
 
     public void Release() => _release?.SetResult();
 
-    public bool IsDownloaded(Guid jobId, VideoId videoId) => false;
+    public bool IsDownloaded(JobId jobId, VideoId videoId) => false;
 
     public async ValueTask<AudioDownload> DownloadAsync(
-        Guid jobId,
+        JobId jobId,
         VideoId videoId,
         Action<double> progress,
         CancellationToken cancellationToken

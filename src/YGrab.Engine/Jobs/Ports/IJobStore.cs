@@ -29,7 +29,7 @@ public interface IJobStore
     /// </remarks>
     ValueTask SaveAsync(Func<Job?> current, CancellationToken cancellationToken);
 
-    ValueTask DeleteAsync(Guid id, CancellationToken cancellationToken);
+    ValueTask DeleteAsync(JobId id, CancellationToken cancellationToken);
 
     ValueTask SaveAsync(Cooldown cooldown, CancellationToken cancellationToken);
 }

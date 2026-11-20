@@ -40,6 +40,6 @@ public sealed class EventsTests
 
         first.EventType.Should().Be(EventNames.Snapshot);
         var snapshot = JsonSerializer.Deserialize(first.Data, ApiJsonContext.Default.SnapshotDto)!;
-        snapshot.Jobs.Should().ContainSingle().Which.Id.Should().Be(id);
+        snapshot.Jobs.Should().ContainSingle().Which.Id.Should().Be(id.Value);
     }
 }

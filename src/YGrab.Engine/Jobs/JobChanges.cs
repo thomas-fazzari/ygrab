@@ -7,6 +7,6 @@ namespace YGrab.Engine.Jobs;
 
 public sealed record JobChanged(Job Job) : Change;
 
-public sealed record JobRemoved(Guid Id) : Change;
+public sealed record JobRemoved(JobId Id) : Change;
 
 public sealed record CooldownChanged(Cooldown Cooldown) : Change;

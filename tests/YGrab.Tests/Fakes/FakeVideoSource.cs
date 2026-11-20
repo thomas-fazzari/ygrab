@@ -16,7 +16,7 @@ internal sealed class FakeVideoSource : IVideoSource
 
     public List<(VideoId VideoId, VideoQuality Quality)> Downloads { get; } = [];
 
-    public Dictionary<Guid, VideoInfo> Kept { get; } = [];
+    public Dictionary<JobId, VideoInfo> Kept { get; } = [];
 
     public void Script(params RemoteFailure?[] answers)
     {
@@ -26,10 +26,10 @@ internal sealed class FakeVideoSource : IVideoSource
         }
     }
 
-    public VideoInfo? FindKept(Guid jobId, VideoId videoId) => Kept.GetValueOrDefault(jobId);
+    public VideoInfo? FindKept(JobId jobId, VideoId videoId) => Kept.GetValueOrDefault(jobId);
 
     public ValueTask<VideoDownload> DownloadAsync(
-        Guid jobId,
+        JobId jobId,
         VideoId videoId,
         VideoQuality quality,
         Action<double> progress,

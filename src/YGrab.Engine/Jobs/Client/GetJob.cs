@@ -7,7 +7,7 @@ namespace YGrab.Engine.Jobs;
 
 public static class GetJob
 {
-    public sealed record Query(Guid Id);
+    public sealed record Query(JobId Id);
 
     public readonly union Outcome(Job, NotFound);
 

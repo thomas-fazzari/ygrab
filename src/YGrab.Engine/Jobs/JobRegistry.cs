@@ -22,9 +22,9 @@ namespace YGrab.Engine.Jobs;
 internal sealed class JobRegistry(ChangeFeed feed, IJobStore store)
 {
     private readonly Lock _lock = new();
-    private ImmutableDictionary<Guid, Job> _jobs = [];
+    private ImmutableDictionary<JobId, Job> _jobs = [];
 
-    public Job? Get(Guid id) => Volatile.Read(ref _jobs).GetValueOrDefault(id);
+    public Job? Get(JobId id) => Volatile.Read(ref _jobs).GetValueOrDefault(id);
 
     /// <returns>The newest job that matches, or null.</returns>
     public Job? Find(Func<Job, bool> predicate) =>
@@ -75,13 +75,13 @@ internal sealed class JobRegistry(ChangeFeed feed, IJobStore store)
     /// Applies <paramref name="change"/> to the job and publishes the result when it differs.
     /// </summary>
     /// <returns>The job after the change, or null when the job is gone.</returns>
-    public Job? Update(Guid id, Func<Job, Job> change) => Apply(id, change).Job;
+    public Job? Update(JobId id, Func<Job, Job> change) => Apply(id, change).Job;
 
     /// <summary>
     /// Like <see cref="Update"/>, then stores the job when it differs.
     /// </summary>
     public async ValueTask<Job?> UpdateAsync(
-        Guid id,
+        JobId id,
         Func<Job, Job> change,
         CancellationToken cancellationToken
     )
@@ -97,7 +97,7 @@ internal sealed class JobRegistry(ChangeFeed feed, IJobStore store)
     /// Removes the job and publishes <see cref="JobRemoved"/>.
     /// </summary>
     /// <returns>The removed job, or null when the job is gone.</returns>
-    public Job? Remove(Guid id)
+    public Job? Remove(JobId id)
     {
         lock (_lock)
         {
@@ -110,7 +110,7 @@ internal sealed class JobRegistry(ChangeFeed feed, IJobStore store)
         }
     }
 
-    private (Job? Job, bool Changed) Apply(Guid id, Func<Job, Job> change)
+    private (Job? Job, bool Changed) Apply(JobId id, Func<Job, Job> change)
     {
         lock (_lock)
         {

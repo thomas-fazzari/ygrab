@@ -48,8 +48,8 @@ internal static class JobsEndpoints
         return await handler.HandleAsync(command, cancellationToken) switch
         {
             StartJob.Started started => TypedResults.Created(
-                $"/api/jobs/{started.Id}",
-                new StartedJobDto(started.Id)
+                $"/api/jobs/{started.Id.Value}",
+                new StartedJobDto(started.Id.Value)
             ),
             Failure failure => failure.ToProblem(),
             null => throw Unreachable.NullUnion(),
@@ -83,7 +83,7 @@ internal static class JobsEndpoints
         IRetentionSource retention,
         CancellationToken cancellationToken
     ) =>
-        await handler.HandleAsync(new GetJob.Query(id), cancellationToken) switch
+        await handler.HandleAsync(new GetJob.Query(new JobId(id)), cancellationToken) switch
         {
             Job job => TypedResults.Ok(job.ToDto(retention.Current)),
             Failure failure => failure.ToProblem(),
@@ -96,7 +96,10 @@ internal static class JobsEndpoints
         CancellationToken cancellationToken
     )
     {
-        var outcome = await handler.HandleAsync(new GetJobFile.Query(id), cancellationToken);
+        var outcome = await handler.HandleAsync(
+            new GetJobFile.Query(new JobId(id)),
+            cancellationToken
+        );
         return outcome.Value switch
         {
             JobFile file => TypedResults.PhysicalFile(
@@ -115,7 +118,7 @@ internal static class JobsEndpoints
         ICommandHandler<RetryJob.Command, RetryJob.Outcome> handler,
         CancellationToken cancellationToken
     ) =>
-        await handler.HandleAsync(new RetryJob.Command(id), cancellationToken) switch
+        await handler.HandleAsync(new RetryJob.Command(new JobId(id)), cancellationToken) switch
         {
             RetryJob.Retried => TypedResults.Accepted(new Uri($"/api/jobs/{id}", UriKind.Relative)),
             Failure failure => failure.ToProblem(),
@@ -127,7 +130,7 @@ internal static class JobsEndpoints
         ICommandHandler<RemoveJob.Command, RemoveJob.Outcome> handler,
         CancellationToken cancellationToken
     ) =>
-        await handler.HandleAsync(new RemoveJob.Command(id), cancellationToken) switch
+        await handler.HandleAsync(new RemoveJob.Command(new JobId(id)), cancellationToken) switch
         {
             RemoveJob.Removed => TypedResults.NoContent(),
             Failure failure => failure.ToProblem(),

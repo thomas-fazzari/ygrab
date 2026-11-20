@@ -21,7 +21,7 @@ public readonly union MatchResult(ReleaseDetails, Mismatch);
 /// <item><description>It has the same main artist, whatever a leading "the".</description></item>
 /// <item><description>It has the same title once the edition notes are stripped.</description></item>
 /// <item><description>It has as many tracks as the release.</description></item>
-/// <item><description>Each available track of the release has the same title and the same explicit flag as the candidate track at its position, and a duration within <see cref="DurationToleranceSeconds"/>.</description></item>
+/// <item><description>Each available track of the release has the same title and the same explicit flag as the candidate track at its position, and a duration within <see cref="DurationTolerance"/>.</description></item>
 /// </list>
 /// <para>
 /// Both catalogs number the tracks in flat order across the discs. A track without a duration on
@@ -34,7 +34,7 @@ public readonly union MatchResult(ReleaseDetails, Mismatch);
 /// </remarks>
 public static class EnrichmentMatch
 {
-    internal const int DurationToleranceSeconds = 5;
+    internal static readonly TimeSpan DurationTolerance = TimeSpan.FromSeconds(5);
 
     /// <summary>
     /// Compares the artist, the title and the track count, without looking at the tracks.
@@ -138,11 +138,15 @@ public static class EnrichmentMatch
         if (track.Explicit != candidate.Explicit)
             return "explicit flag";
 
-        return
-            track.Seconds > 0
-            && candidate.Seconds > 0
-            && Math.Abs(track.Seconds - candidate.Seconds) <= DurationToleranceSeconds
-            ? null
-            : string.Create(CultureInfo.InvariantCulture, $"duration {candidate.Seconds}s");
+        if (candidate.Duration is not { } offered)
+            return "duration unknown";
+
+        if (track.Duration is { } known && (known - offered).Duration() <= DurationTolerance)
+            return null;
+
+        return string.Create(
+            CultureInfo.InvariantCulture,
+            $"duration {Durations.ToSeconds(offered)}s"
+        );
     }
 }

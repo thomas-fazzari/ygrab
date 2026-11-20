@@ -1,6 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Thomas Fazzari
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
+using YGrab.Domain;
+
 namespace YGrab.Engine.Jobs;
 
 /// <summary>
@@ -17,7 +19,7 @@ internal sealed class ActiveStep
     /// Registers the step of a job until the result is disposed.
     /// </summary>
     /// <param name="runnerToken">The token that ends every step, which the step token follows.</param>
-    public Registration Begin(Guid id, CancellationToken runnerToken)
+    public Registration Begin(JobId id, CancellationToken runnerToken)
     {
         var registration = new Registration(this, id, runnerToken);
         Interlocked.Exchange(ref _current, registration);
@@ -27,7 +29,7 @@ internal sealed class ActiveStep
     /// <summary>
     /// Cancels the step when it runs the job <paramref name="id"/>.
     /// </summary>
-    public async ValueTask CancelAsync(Guid id)
+    public async ValueTask CancelAsync(JobId id)
     {
         if (Volatile.Read(ref _current) is { } current && current.Id == id)
             await current.CancelAsync();
@@ -38,14 +40,14 @@ internal sealed class ActiveStep
         private readonly ActiveStep _owner;
         private readonly CancellationTokenSource _source;
 
-        internal Registration(ActiveStep owner, Guid id, CancellationToken runnerToken)
+        internal Registration(ActiveStep owner, JobId id, CancellationToken runnerToken)
         {
             _owner = owner;
             _source = CancellationTokenSource.CreateLinkedTokenSource(runnerToken);
             Id = id;
         }
 
-        public Guid Id { get; }
+        public JobId Id { get; }
 
         public CancellationToken Token => _source.Token;
 

@@ -97,12 +97,12 @@ internal sealed class JobMetrics
         );
     }
 
-    public StepRun StartStep(Guid jobId, JobStep step)
+    public StepRun StartStep(JobId jobId, JobStep step)
     {
         var kind = StepKind(step);
         var activity = YGrabTelemetry.Source.StartActivity(kind);
         activity?.SetTag(StepTag, kind);
-        activity?.SetTag(JobIdTag, jobId);
+        activity?.SetTag(JobIdTag, jobId.Value);
         return new StepRun(this, kind, activity, _timeProvider.GetTimestamp());
     }
 

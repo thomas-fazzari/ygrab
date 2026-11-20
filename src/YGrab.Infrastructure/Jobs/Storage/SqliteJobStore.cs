@@ -97,9 +97,9 @@ internal sealed class SqliteJobStore(SqliteDatabase database, SqliteWriter write
         );
     }
 
-    public async ValueTask DeleteAsync(Guid id, CancellationToken cancellationToken)
+    public async ValueTask DeleteAsync(JobId id, CancellationToken cancellationToken)
     {
-        var blob = GuidBlob.ToBlob(id);
+        var blob = GuidBlob.ToBlob(id.Value);
         await writer.WriteAsync(
             connection => connection.Execute(DeleteJobSql, new { Id = blob }),
             cancellationToken

@@ -23,7 +23,7 @@ namespace YGrab.Engine.Jobs;
 /// </remarks>
 public static class RetryJob
 {
-    public sealed record Command(Guid Id);
+    public sealed record Command(JobId Id);
 
     public sealed record Retried;
 

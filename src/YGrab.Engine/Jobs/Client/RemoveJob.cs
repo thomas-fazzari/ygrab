@@ -1,6 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Thomas Fazzari
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
+using YGrab.Domain;
+
 namespace YGrab.Engine.Jobs;
 
 /// <summary>
@@ -18,7 +20,7 @@ namespace YGrab.Engine.Jobs;
 /// </remarks>
 public static class RemoveJob
 {
-    public sealed record Command(Guid Id);
+    public sealed record Command(JobId Id);
 
     public sealed record Removed;
 

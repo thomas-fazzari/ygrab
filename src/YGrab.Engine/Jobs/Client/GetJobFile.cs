@@ -10,7 +10,7 @@ public sealed record JobFile(string Path, string Name);
 
 public static class GetJobFile
 {
-    public sealed record Query(Guid Id);
+    public sealed record Query(JobId Id);
 
     public readonly union Outcome(JobFile, NotFound, NotReady, Expired);
 
@@ -24,7 +24,7 @@ public static class GetJobFile
             return ValueTask.FromResult(Find(query.Id));
         }
 
-        private Outcome Find(Guid id) =>
+        private Outcome Find(JobId id) =>
             jobs.Get(id) switch
             {
                 null => new NotFound(),
@@ -34,7 +34,7 @@ public static class GetJobFile
                 _ => new NotReady(),
             };
 
-        private Outcome File(Guid id, string name) =>
+        private Outcome File(JobId id, string name) =>
             output.FindFile(id, name) is { } path ? new JobFile(path, name) : new Expired();
     }
 }

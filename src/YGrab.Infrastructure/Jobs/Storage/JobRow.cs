@@ -81,7 +81,7 @@ internal static class JobRowMapper
         var (kind, linkId, quality) = Describe(job.Request);
         var (status, columns) = Describe(job.State);
         return new JobRow(
-            GuidBlob.ToBlob(job.Id),
+            GuidBlob.ToBlob(job.Id.Value),
             job.Url.AbsoluteUri,
             kind,
             linkId,
@@ -98,7 +98,7 @@ internal static class JobRowMapper
             columns.Error,
             columns.FileName,
             columns.FileSize,
-            columns.DuplicateOf is { } duplicate ? GuidBlob.ToBlob(duplicate) : null,
+            columns.DuplicateOf is { } duplicate ? GuidBlob.ToBlob(duplicate.Value) : null,
             columns.FinishedAt?.ToUnixTimeMilliseconds(),
             job.EnrichmentFailure is { } failure ? Describe(failure) : null
         );
@@ -112,7 +112,7 @@ internal static class JobRowMapper
             row.Error,
             row.FileName,
             row.FileSize,
-            row.DuplicateOf is { } duplicate ? GuidBlob.FromBlob(duplicate) : null,
+            row.DuplicateOf is { } duplicate ? new JobId(GuidBlob.FromBlob(duplicate)) : null,
             row.FinishedAt is { } finishedAt
                 ? DateTimeOffset.FromUnixTimeMilliseconds(finishedAt)
                 : null
@@ -124,7 +124,7 @@ internal static class JobRowMapper
                 $"A {row.Status} job row has columns that its state does not use."
             )
             : Job.Restore(
-                GuidBlob.FromBlob(row.Id),
+                new JobId(GuidBlob.FromBlob(row.Id)),
                 new Uri(row.Url, UriKind.Absolute),
                 ToRequest(row.LinkKind, row.LinkId, row.Quality),
                 row.Force == 1,
@@ -339,7 +339,7 @@ internal static class JobRowMapper
                     track.Track.Title,
                     track.Track.Artists,
                     track.Track.Number,
-                    track.Track.Seconds,
+                    Durations.ToSeconds(track.Track.Duration),
                     track.Track.Explicit,
                     track.State switch
                     {
@@ -394,7 +394,7 @@ internal static class JobRowMapper
                         document.Title,
                         document.Artists,
                         document.Number,
-                        document.Seconds,
+                        Durations.FromSeconds(document.Seconds),
                         document.Explicit
                     ),
                     document.State switch
@@ -424,7 +424,7 @@ internal static class JobRowMapper
         string? Error,
         string? FileName,
         long? FileSize,
-        Guid? DuplicateOf,
+        JobId? DuplicateOf,
         DateTimeOffset? FinishedAt
     )
     {

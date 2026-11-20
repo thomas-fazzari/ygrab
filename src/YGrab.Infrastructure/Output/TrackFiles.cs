@@ -17,7 +17,7 @@ internal static class TrackFiles
     extension(StorageOptions storage)
     {
         /// <returns>The path of the file of the video, or null when it is not downloaded.</returns>
-        public string? FindTrackFile(Guid jobId, VideoId videoId)
+        public string? FindTrackFile(JobId jobId, VideoId videoId)
         {
             var directory = storage.TracksDirectory(jobId);
             return Directory.Exists(directory)
@@ -28,7 +28,7 @@ internal static class TrackFiles
         /// <summary>
         /// Moves a finished download into the tracks folder, named after its video id.
         /// </summary>
-        public void KeepTrackFile(Guid jobId, VideoId videoId, string path)
+        public void KeepTrackFile(JobId jobId, VideoId videoId, string path)
         {
             var tracks = Directory.CreateDirectory(storage.TracksDirectory(jobId));
             File.Move(

@@ -38,7 +38,7 @@ public static class StartJob
         VideoQuality Quality = VideoQuality.P1080
     );
 
-    public sealed record Started(Guid Id);
+    public sealed record Started(JobId Id);
 
     public readonly union Outcome(Started, Invalid, AlreadyGrabbed);
 
@@ -70,7 +70,13 @@ public static class StartJob
                 return new AlreadyGrabbed(previous);
 
             var now = timeProvider.GetUtcNow();
-            var job = Job.Create(Guid.CreateVersion7(now), url, request, command.Force, now);
+            var job = Job.Create(
+                new JobId(Guid.CreateVersion7(now)),
+                url,
+                request,
+                command.Force,
+                now
+            );
             await jobs.AddAsync(job, cancellationToken);
             signal.Ring();
             return new Started(job.Id);

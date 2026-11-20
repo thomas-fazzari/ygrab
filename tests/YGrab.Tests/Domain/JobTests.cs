@@ -241,7 +241,10 @@ public sealed class JobTests
             .Downloading(release)
             .Fail(new RemoteFailure.Unavailable("private"), _now);
         var failed = Samples.Downloading(release).Abort("broken", _now);
-        var skipped = Samples.Queued(Samples.AlbumLink()).Resume(_now).Skip(Guid.Empty, _now);
+        var skipped = Samples
+            .Queued(Samples.AlbumLink())
+            .Resume(_now)
+            .Skip(new JobId(Guid.Empty), _now);
         var expired = Samples.Ready(release).Expire();
 
         missing.Covers(Samples.Audio(Samples.TrackLink("v1"))).Should().BeFalse();

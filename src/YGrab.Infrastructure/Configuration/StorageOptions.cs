@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 using System.ComponentModel.DataAnnotations;
+using YGrab.Domain;
 
 namespace YGrab.Infrastructure.Configuration;
 
@@ -31,23 +32,23 @@ public sealed class StorageOptions
     /// </summary>
     public string JobsDirectory => Path.Combine(DataDirectory, "jobs");
 
-    internal string JobDirectory(Guid id) =>
-        Path.Combine(JobsDirectory, id.ToString("N", CultureInfo.InvariantCulture));
+    internal string JobDirectory(JobId id) =>
+        Path.Combine(JobsDirectory, id.Value.ToString("N", CultureInfo.InvariantCulture));
 
     /// <summary>
     /// The output of the running yt-dlp, emptied before each run.
     /// </summary>
-    internal string WorkDirectory(Guid id) => Path.Combine(JobDirectory(id), "work");
+    internal string WorkDirectory(JobId id) => Path.Combine(JobDirectory(id), "work");
 
     /// <summary>
     /// The audio of the downloaded tracks, named after their video ids.
     /// </summary>
-    internal string TracksDirectory(Guid id) => Path.Combine(JobDirectory(id), "tracks");
+    internal string TracksDirectory(JobId id) => Path.Combine(JobDirectory(id), "tracks");
 
     /// <summary>
     /// The packaged file.
     /// </summary>
-    internal string OutputDirectory(Guid id) => Path.Combine(JobDirectory(id), "out");
+    internal string OutputDirectory(JobId id) => Path.Combine(JobDirectory(id), "out");
 }
 
 [OptionsValidator]

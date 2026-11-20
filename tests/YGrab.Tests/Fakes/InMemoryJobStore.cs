@@ -11,7 +11,7 @@ namespace YGrab.Tests.Fakes;
 /// </summary>
 internal sealed class InMemoryJobStore : IJobStore
 {
-    public Dictionary<Guid, Job> Jobs { get; } = [];
+    public Dictionary<JobId, Job> Jobs { get; } = [];
 
     public Cooldown Cooldown { get; set; } = Cooldown.None;
 
@@ -32,7 +32,7 @@ internal sealed class InMemoryJobStore : IJobStore
         return ValueTask.CompletedTask;
     }
 
-    public ValueTask DeleteAsync(Guid id, CancellationToken cancellationToken)
+    public ValueTask DeleteAsync(JobId id, CancellationToken cancellationToken)
     {
         Jobs.Remove(id);
         return ValueTask.CompletedTask;

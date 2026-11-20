@@ -22,6 +22,8 @@ internal static class Samples
 
     public static VideoId Video(string id) => VideoId.Create(id).ShouldSucceed();
 
+    public static JobId NewJobId() => new(Guid.CreateVersion7());
+
     public static AlbumLink AlbumLink() => new(Album);
 
     public static TrackLink TrackLink(string id) => new(Video(id));
@@ -43,7 +45,7 @@ internal static class Samples
                         string.Create(CultureInfo.InvariantCulture, $"Title {number}"),
                         ["Artist"],
                         number,
-                        200 + number,
+                        TimeSpan.FromSeconds(200 + number),
                         number % 2 == 0
                     )),
             ]
@@ -52,13 +54,7 @@ internal static class Samples
     public static JobRequest.Audio Audio(MusicLink link) => new(link);
 
     public static Job Queued(MusicLink link, bool force = false, DateTimeOffset? now = null) =>
-        Job.Create(
-            Guid.CreateVersion7(),
-            new Uri(AlbumUrl),
-            Audio(link),
-            force,
-            now ?? TestTime.Start
-        );
+        Job.Create(NewJobId(), new Uri(AlbumUrl), Audio(link), force, now ?? TestTime.Start);
 
     public static JobRequest.Video VideoRequest(
         string id = "vid",
@@ -67,7 +63,7 @@ internal static class Samples
 
     public static Job QueuedVideo(JobRequest.Video? request = null, DateTimeOffset? now = null) =>
         Job.Create(
-            Guid.CreateVersion7(),
+            NewJobId(),
             new Uri(VideoUrl),
             request ?? VideoRequest(),
             force: false,

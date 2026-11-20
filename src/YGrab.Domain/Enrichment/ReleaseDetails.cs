@@ -18,7 +18,7 @@ namespace YGrab.Domain;
 /// <param name="DiscTotal">The number of discs of the whole release, even for a job of one track.</param>
 public sealed record ReleaseDetails(
     string? Label,
-    string? Barcode,
+    Barcode? Barcode,
     DateOnly? ReleaseDate,
     ReleaseType? ReleaseType,
     int DiscTotal,
@@ -27,7 +27,7 @@ public sealed record ReleaseDetails(
 
 /// <param name="NumberInDisc">The position of the track on its disc.</param>
 /// <param name="DiscTrackCount">The number of tracks on its disc.</param>
-public sealed record TrackDetails(string? Isrc, int Disc, int NumberInDisc, int DiscTrackCount);
+public sealed record TrackDetails(Isrc? Isrc, int Disc, int NumberInDisc, int DiscTrackCount);
 
 public enum ReleaseType
 {
