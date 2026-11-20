@@ -34,6 +34,8 @@ internal sealed class JobRegistry(ChangeFeed feed, IJobStore store)
             .OrderByDescending(job => job.CreatedAt)
             .FirstOrDefault();
 
+    public IEnumerable<Job> All() => Volatile.Read(ref _jobs).Values;
+
     public Job? Active() => Volatile.Read(ref _jobs).Values.FirstOrDefault(job => job.IsActive);
 
     /// <returns>The oldest queued job, or null.</returns>

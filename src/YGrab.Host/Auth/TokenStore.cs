@@ -27,6 +27,9 @@ internal sealed partial class TokenStore(
 {
     internal const int GeneratedTokenBytes = 32;
 
+    // A generated token belongs only in the token file and the console
+    internal static readonly string LogCategory = typeof(TokenStore).FullName!;
+
     private string? _generated;
 
     /// <summary>

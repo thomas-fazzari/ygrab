@@ -15,5 +15,7 @@
 
   <ItemGroup>
     <PackageReference Include="NetEscapades.Configuration.Yaml" />
+    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" />
+    <PackageReference Include="OpenTelemetry.Extensions.Hosting" />
   </ItemGroup>
 </Project>

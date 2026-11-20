@@ -73,6 +73,20 @@ Every setting and its default is in [`ygrab.example.yaml`](ygrab.example.yaml). 
 
 If YouTube asks you to sign in, export the cookies of a logged-in browser to `cookies.txt`, copy the file into the volume with `docker compose cp cookies.txt ygrab:/data/cookies.txt`, and set `YtDlp__CookiesFile: /data/cookies.txt`.
 
+## Telemetry
+
+YGrab can send traces, metrics and logs to any OpenTelemetry backend. Set `OTEL_EXPORTER_OTLP_ENDPOINT` under `environment`, such as `http://otel-collector:4317`, to enable it.
+
+Available metrics:
+
+| Metric                     | Tags                       | Shows                                                                                       |
+| -------------------------- | -------------------------- | ------------------------------------------------------------------------------------------- |
+| `ygrab.job.step.duration`  | `ygrab.step`, `error.type` | The duration of each step, and its failures by kind                                         |
+| `ygrab.ytdlp.warnings`     | `error.type`               | The page and API calls that yt-dlp retries or that YouTube rate-limits |
+| `ygrab.cooldown.strikes`   |                            | The rate limits since the last packaged job                                                 |
+| `ygrab.jobs`               | `ygrab.job.state`          | The jobs by state                                                                           |
+| `ygrab.enrichment.lookups` | `ygrab.enrichment.outcome` | The Deezer lookups by outcome                                                               |
+
 ## CLI
 
 The `ygrab` CLI talks to the same server from your terminal. On Linux or macOS, this installs it to `~/.local/bin`:
@@ -92,7 +106,7 @@ ygrab add --wait 'https://music.youtube.com/playlist?list=...'
 
 ## Development
 
-Start with [`ARCHITECTURE.md`](ARCHITECTURE.md) and [`AGENTS.md`](AGENTS.md). The tooling runs on [mise](https://mise.jdx.dev): `mise install` sets up the tools, `mise run dev` starts the server and the web app, and `mise run check` runs all checks.
+Start with [`ARCHITECTURE.md`](ARCHITECTURE.md) and [`AGENTS.md`](AGENTS.md). The tooling runs on [mise](https://mise.jdx.dev): `mise install` sets up the tools, `mise run dev` starts the server and the web app, and `mise run check` runs all checks. `mise run dev:aspire` starts both through the Aspire AppHost in [`tools/YGrab.AppHost`](tools/YGrab.AppHost), with the traces, metrics and logs in its dashboard.
 
 ## License
 

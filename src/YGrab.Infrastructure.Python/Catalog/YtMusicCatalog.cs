@@ -4,6 +4,7 @@
 using System.Globalization;
 using CSnakes.Runtime;
 using YGrab.Domain;
+using YGrab.Engine.Diagnostics;
 using YGrab.Engine.Jobs;
 using YGrab.Infrastructure.Python.Extensions;
 
@@ -35,7 +36,13 @@ internal sealed partial class YtMusicCatalog(
     {
         ArgumentNullException.ThrowIfNull(link);
 
-        return await Task.Run(() => Find(link), cancellationToken).WaitAsync(cancellationToken);
+        using var activity = YGrabTelemetry.Source.StartActivity("ytmusicapi");
+        var lookup = await Task.Run(() => Find(link), cancellationToken)
+            .WaitAsync(cancellationToken);
+        if (lookup is RemoteFailure failure)
+            YGrabTelemetry.MarkFailed(activity, YGrabTelemetry.ErrorType(failure));
+
+        return lookup;
     }
 
     private CatalogLookup Find(MusicLink link)

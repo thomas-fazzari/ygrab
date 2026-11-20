@@ -45,6 +45,9 @@ jobs:
     if: needs.changes.outputs.code == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    env:
+      # Only runs the AppHost, which is for local development
+      MISE_DISABLE_TOOLS: aspire
     steps:
       - uses: actions/checkout@v7.0.1
       - uses: jdx/mise-action@v5.2.9

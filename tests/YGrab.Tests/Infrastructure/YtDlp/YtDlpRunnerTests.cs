@@ -85,6 +85,11 @@ public sealed class YtDlpRunnerTests : IDisposable
             services.GetRequiredService<IOptionsMonitor<YtDlpOptions>>(),
             NullLogger<LastValidOptions<YtDlpOptions>>.Instance
         );
-        return new YtDlpRunner(options, TimeProvider.System, NullLogger<YtDlpRunner>.Instance);
+        return new YtDlpRunner(
+            options,
+            TimeProvider.System,
+            FakeMeterFactory.Instance,
+            NullLogger<YtDlpRunner>.Instance
+        );
     }
 }

@@ -22,6 +22,7 @@ public static class YGrabEngineServiceCollectionExtensions
             services.AddSingleton<CooldownHolder>();
             services.AddSingleton<JobSignal>();
             services.AddSingleton<ActiveStep>();
+            services.AddSingleton<JobMetrics>();
             services.AddSingleton<
                 ICommandHandler<StartJob.Command, StartJob.Outcome>,
                 StartJob.Handler

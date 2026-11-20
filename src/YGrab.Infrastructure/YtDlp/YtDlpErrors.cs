@@ -6,13 +6,14 @@ using YGrab.Domain;
 namespace YGrab.Infrastructure.YtDlp;
 
 /// <summary>
-/// Classifies the last error line of yt-dlp.
+/// Classifies the last error line of yt-dlp, and the warning lines that report a failed call.
 /// </summary>
 internal static class YtDlpErrors
 {
     private const string NoErrorLine = "The download stopped without a reason.";
-
     private const string IdEnd = ": ";
+    private const string WarningPrefix = "WARNING: ";
+    private const string RetryMark = ". Retrying";
 
     private static readonly SearchValues<string> _rateLimited = SearchValues.Create(
         [
@@ -62,6 +63,30 @@ internal static class YtDlpErrors
         return line.ContainsAny(_unavailable)
             ? new RemoteFailure.Unavailable(reason)
             : new RemoteFailure.Transient(reason);
+    }
+
+    /// <summary>
+    /// Classifies a warning line of yt-dlp that reports a failed call to YouTube.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Such a warning either announces a retry, as in
+    /// <c>WARNING: [youtube] abc: The read operation timed out. Retrying (1/3)...</c>, or reports
+    /// a rate limit. yt-dlp never retries a 429, and it reports one on a call it can do without as
+    /// <c>WARNING: [youtube] abc: HTTP Error 429: Too Many Requests</c>.
+    /// </para>
+    /// </remarks>
+    /// <returns>The failure that the line reports, or null for any other line.</returns>
+    internal static RemoteFailure? WarningCause(string line)
+    {
+        if (!line.StartsWith(WarningPrefix, StringComparison.Ordinal))
+            return null;
+
+        var failure = Classify(line[WarningPrefix.Length..]);
+        if (failure is RemoteFailure.RateLimited)
+            return failure;
+
+        return line.Contains(RetryMark, StringComparison.Ordinal) ? failure : null;
     }
 
     // yt-dlp starts the line with the extractor and the video id, such as "[youtube] abc: "

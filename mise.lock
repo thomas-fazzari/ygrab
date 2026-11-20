@@ -2,6 +2,77 @@
 
 lockfile_version = 4
 
+[[tools.aspire]]
+version = "17.0.0"
+backend = "github:microsoft/aspire"
+specifiers = ["17.0.0"]
+
+[tools.aspire."platforms.linux-arm64"]
+checksum = "sha256:8af9d02ea052b4b0edbe3f9f3d5d2f488b502f53f83c9043a0580fd236c126de"
+url = "https://github.com/microsoft/aspire/releases/download/v17.0.0/aspire-cli-linux-arm64-17.0.0.tar.gz"
+url_api = "https://api.github.com/repos/microsoft/aspire/releases/assets/761955427"
+provenance = "github-attestations"
+
+[tools.aspire."platforms.linux-arm64-musl"]
+checksum = "sha256:8af9d02ea052b4b0edbe3f9f3d5d2f488b502f53f83c9043a0580fd236c126de"
+url = "https://github.com/microsoft/aspire/releases/download/v17.0.0/aspire-cli-linux-arm64-17.0.0.tar.gz"
+url_api = "https://api.github.com/repos/microsoft/aspire/releases/assets/761955427"
+provenance = "github-attestations"
+
+[tools.aspire."platforms.linux-x64"]
+checksum = "sha256:74a6d6418fcddb117770ccd235e2de4a96a02e36ebcfd0b0e2a0e69d6e85fc18"
+url = "https://github.com/microsoft/aspire/releases/download/v17.0.0/aspire-cli-linux-x64-17.0.0.tar.gz"
+url_api = "https://api.github.com/repos/microsoft/aspire/releases/assets/761955433"
+provenance = "github-attestations"
+
+[tools.aspire."platforms.linux-x64-baseline"]
+checksum = "sha256:74a6d6418fcddb117770ccd235e2de4a96a02e36ebcfd0b0e2a0e69d6e85fc18"
+url = "https://github.com/microsoft/aspire/releases/download/v17.0.0/aspire-cli-linux-x64-17.0.0.tar.gz"
+url_api = "https://api.github.com/repos/microsoft/aspire/releases/assets/761955433"
+provenance = "github-attestations"
+
+[tools.aspire."platforms.linux-x64-musl"]
+checksum = "sha256:7bd65ee8cf376382f679f731822a183f01da34695c79b9b1e6037a193f940f7d"
+url = "https://github.com/microsoft/aspire/releases/download/v17.0.0/aspire-cli-linux-musl-x64-17.0.0.tar.gz"
+url_api = "https://api.github.com/repos/microsoft/aspire/releases/assets/761955428"
+provenance = "github-attestations"
+
+[tools.aspire."platforms.linux-x64-musl-baseline"]
+checksum = "sha256:7bd65ee8cf376382f679f731822a183f01da34695c79b9b1e6037a193f940f7d"
+url = "https://github.com/microsoft/aspire/releases/download/v17.0.0/aspire-cli-linux-musl-x64-17.0.0.tar.gz"
+url_api = "https://api.github.com/repos/microsoft/aspire/releases/assets/761955428"
+provenance = "github-attestations"
+
+[tools.aspire."platforms.macos-arm64"]
+checksum = "sha256:9fa37e2ef4a537eca842a30c7bba3b503c62029568b041fed4d11ea62c36178f"
+url = "https://github.com/microsoft/aspire/releases/download/v17.0.0/aspire-cli-osx-arm64-17.0.0.tar.gz"
+url_api = "https://api.github.com/repos/microsoft/aspire/releases/assets/761955459"
+provenance = "github-attestations"
+
+[tools.aspire."platforms.macos-x64"]
+checksum = "sha256:63088bc4e8dbbd28302a81ea5d5099cd0ddf181f3aa3dfaa98f0ca9ab1e8c0e9"
+url = "https://github.com/microsoft/aspire/releases/download/v17.0.0/aspire-cli-osx-x64-17.0.0.tar.gz"
+url_api = "https://api.github.com/repos/microsoft/aspire/releases/assets/761955503"
+provenance = "github-attestations"
+
+[tools.aspire."platforms.macos-x64-baseline"]
+checksum = "sha256:63088bc4e8dbbd28302a81ea5d5099cd0ddf181f3aa3dfaa98f0ca9ab1e8c0e9"
+url = "https://github.com/microsoft/aspire/releases/download/v17.0.0/aspire-cli-osx-x64-17.0.0.tar.gz"
+url_api = "https://api.github.com/repos/microsoft/aspire/releases/assets/761955503"
+provenance = "github-attestations"
+
+[tools.aspire."platforms.windows-x64"]
+checksum = "sha256:3d88b09be9cd3d344323b2e3531280954953581adb8102ad50eaf23c67007c05"
+url = "https://github.com/microsoft/aspire/releases/download/v17.0.0/aspire-cli-win-x64-17.0.0.zip"
+url_api = "https://api.github.com/repos/microsoft/aspire/releases/assets/761955790"
+provenance = "github-attestations"
+
+[tools.aspire."platforms.windows-x64-baseline"]
+checksum = "sha256:3d88b09be9cd3d344323b2e3531280954953581adb8102ad50eaf23c67007c05"
+url = "https://github.com/microsoft/aspire/releases/download/v17.0.0/aspire-cli-win-x64-17.0.0.zip"
+url_api = "https://api.github.com/repos/microsoft/aspire/releases/assets/761955790"
+provenance = "github-attestations"
+
 [[tools.bun]]
 version = "1.4.4"
 backend = "core:bun"

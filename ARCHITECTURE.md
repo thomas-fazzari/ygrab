@@ -35,3 +35,7 @@ Domain is pure: no I/O, time or randomness. The Cli never touches the Engine or 
 ## Rate limits
 
 Every request comes from the VPS address, and a flagged address stays flagged. One job runs one step at a time, with a pause after each request, a backoff on transient errors and a global cooldown on rate limits. Change these values only for a reason that comes from YouTube's behavior.
+
+## Telemetry
+
+The Engine and the adapters emit spans and metrics through the BCL `ActivitySource` and `Meter` named `YGrab`, so no layer below the Host references OpenTelemetry. The Host exports them over OTLP only when `OTEL_EXPORTER_OTLP_ENDPOINT` is set. A job id goes on spans only, never on metrics.

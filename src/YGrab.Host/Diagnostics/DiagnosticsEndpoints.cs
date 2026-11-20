@@ -14,9 +14,6 @@ namespace YGrab.Host.Diagnostics;
 
 internal static class DiagnosticsEndpoints
 {
-    // The file of a generated token is the only place its value belongs
-    private static readonly string _tokenCategory = typeof(TokenStore).FullName!;
-
     extension(IServiceCollection services)
     {
         /// <summary>
@@ -32,7 +29,7 @@ internal static class DiagnosticsEndpoints
                 provider.GetRequiredService<LogBuffer>()
             );
             services.AddLogging(logging =>
-                logging.AddFilter<LogBuffer>(_tokenCategory, LogLevel.None)
+                logging.AddFilter<LogBuffer>(TokenStore.LogCategory, LogLevel.None)
             );
             return services;
         }
