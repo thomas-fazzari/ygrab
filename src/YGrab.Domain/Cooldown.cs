@@ -13,6 +13,10 @@ namespace YGrab.Domain;
 /// <para>
 /// A packaged job clears it with <see cref="Clear"/>.
 /// </para>
+/// <para>
+/// A client ends the pause early with <see cref="End"/>, which keeps the strikes, so the next
+/// rate limit pauses twice as long.
+/// </para>
 /// </remarks>
 public sealed record Cooldown
 {
@@ -54,4 +58,6 @@ public sealed record Cooldown
     }
 
     public Cooldown Clear() => Strikes == 0 ? this : None;
+
+    public Cooldown End() => Until is null ? this : this with { Until = null };
 }

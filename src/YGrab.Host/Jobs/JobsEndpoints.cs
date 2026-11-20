@@ -28,6 +28,7 @@ internal static class JobsEndpoints
             jobs.MapPost("/{id:guid}/retry", RetryAsync);
             jobs.MapDelete("/{id:guid}", RemoveAsync);
             endpoints.MapGet("/cooldown", GetCooldownAsync);
+            endpoints.MapDelete("/cooldown", EndCooldownAsync);
             return endpoints;
         }
     }
@@ -140,6 +141,15 @@ internal static class JobsEndpoints
         TypedResults.Ok(
             (await handler.HandleAsync(new GetCooldown.Query(), cancellationToken)).ToDto()
         );
+
+    private static async Task<NoContent> EndCooldownAsync(
+        ICommandHandler<EndCooldown.Command, Done> handler,
+        CancellationToken cancellationToken
+    )
+    {
+        await handler.HandleAsync(new EndCooldown.Command(), cancellationToken);
+        return TypedResults.NoContent();
+    }
 
     private static string ContentTypeOf(string fileName) =>
         _contentTypes.TryGetContentType(fileName, out var contentType)

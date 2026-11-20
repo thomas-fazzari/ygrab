@@ -19,7 +19,8 @@ namespace YGrab.Engine.Jobs;
 /// before the next call, so that the caller owns every wait.
 /// </para>
 /// <para>
-/// A rate limit starts the <see cref="Cooldown"/>, and only a packaged job clears it.
+/// A rate limit starts the <see cref="Cooldown"/>, and only a packaged job clears it. A ring ends
+/// the wait of the cooldown, so a client that ends the cooldown resumes the jobs.
 /// </para>
 /// <para>
 /// The provider of the extra tags is not YouTube, so its failures change neither the cooldown nor
@@ -72,7 +73,7 @@ public static partial class AdvanceJobs
         {
             var now = timeProvider.GetUtcNow();
             if (cooldown.Current is { Until: { } until } active && active.IsActiveAt(now))
-                return new WaitUntil(until, until);
+                return new WaitUntil(until, now);
 
             var job = jobs.Active() ?? jobs.NextQueued();
             if (job is null)
@@ -354,7 +355,7 @@ public static partial class AdvanceJobs
             cooldown.Set(hit);
             await store.SaveAsync(hit, CancellationToken.None);
             LogCooldownStarted(hit.Strikes, hit.Until, failure.Reason);
-            return hit.Until is { } until ? new WaitUntil(until, until) : new Stepped();
+            return hit.Until is { } until ? new WaitUntil(until, now) : new Stepped();
         }
 
         private Job? Duplicate(Job job, Job resolved) =>

@@ -2,6 +2,8 @@ import type { JSX } from "@solidjs/web";
 import { createMemo, createSignal, Loading, Show, useContext } from "solid-js";
 import ClockIcon from "~icons/solar/clock-circle-linear";
 
+import { endCooldown } from "@/shared/api/client.ts";
+import { failureOf } from "@/shared/api/failures.ts";
 import type { Job } from "@/shared/api/schemas.ts";
 import { createMinuteClock, formatClock } from "@/shared/clock.ts";
 import { JobFeedContext } from "@/shared/jobs/jobFeed.ts";
@@ -10,6 +12,7 @@ import { JobList, JobListSkeleton } from "@/shared/jobs/JobList.tsx";
 import { activeJobs, recentJobs } from "@/shared/jobs/jobView.ts";
 import { nameOf } from "@/shared/jobs/jobNames.ts";
 import { isFinished } from "@/shared/jobs/jobStates.ts";
+import { notifyError } from "@/shared/notifications.ts";
 import { Link } from "@/shared/router.tsx";
 import { JOBS_ROUTE } from "@/shared/session.ts";
 import { Button } from "@/shared/ui/Button.tsx";
@@ -141,9 +144,33 @@ function ActiveStatus(props: ActiveStatusProps) {
           <>
             <ClockIcon />
             YouTube limit, paused until {formatClock(until())}
+            <ResumeButton />
           </>
         )}
       </Show>
     </Show>
+  );
+}
+
+function ResumeButton() {
+  const [sending, setSending] = createSignal(false);
+  const resume = async () => {
+    setSending(true);
+    const failure = failureOf(await endCooldown());
+    setSending(false);
+    if (failure !== null) {
+      notifyError("Cannot resume the jobs", failure);
+    }
+  };
+  return (
+    <Button
+      quiet
+      disabled={sending()}
+      onClick={() => {
+        void resume();
+      }}
+    >
+      Resume now
+    </Button>
   );
 }
