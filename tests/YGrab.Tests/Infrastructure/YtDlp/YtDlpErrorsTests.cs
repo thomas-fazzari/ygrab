@@ -37,4 +37,18 @@ public sealed class YtDlpErrorsTests
     [InlineData("HTTP Error 429: Too Many Requests", "HTTP Error 429: Too Many Requests")]
     public void The_reason_drops_the_extractor_and_the_video_id(string line, string reason) =>
         YtDlpErrors.Classify(line).Reason.Should().Be(reason);
+
+    [Theory]
+    [InlineData(
+        "WARNING: [youtube] abc: Unable to download API page: HTTP Error 429: Too Many Requests (caused by <HTTPError 429: Too Many Requests>)",
+        typeof(RemoteFailure.RateLimited)
+    )]
+    [InlineData(
+        "WARNING: [youtube] abc: The read operation timed out. Retrying (2/3)...",
+        typeof(RemoteFailure.Transient)
+    )]
+    [InlineData("WARNING: [youtube] abc: Some formats are missing", null)]
+    [InlineData("ERROR: [youtube] abc: HTTP Error 429: Too Many Requests", null)]
+    public void Only_a_warning_of_a_retry_or_a_rate_limit_has_a_cause(string line, Type? kind) =>
+        (YtDlpErrors.WarningCause(line)?.GetType()).Should().Be(kind);
 }

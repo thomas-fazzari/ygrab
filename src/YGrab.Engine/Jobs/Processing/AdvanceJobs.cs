@@ -3,6 +3,7 @@
 
 using Microsoft.Extensions.Logging;
 using YGrab.Domain;
+using YGrab.Engine.Diagnostics;
 
 namespace YGrab.Engine.Jobs;
 
@@ -60,6 +61,7 @@ public static partial class AdvanceJobs
         IJobOutput output,
         Random random,
         TimeProvider timeProvider,
+        JobMetrics metrics,
         ILogger<Handler> logger
     ) : ICommandHandler<Command, Outcome>
     {
@@ -126,32 +128,47 @@ public static partial class AdvanceJobs
             var current = job.State is JobState.Queued or JobState.Waiting
                 ? await jobs.UpdateAsync(job.Id, next => next.Resume(now), cancellationToken)
                 : job;
-            return current is null
-                ? new Stepped()
-                : current.NextStep() switch
+            if (current is null)
+                return new Stepped();
+
+            var next = current.NextStep();
+            using var run = metrics.StartStep(current.Id, next);
+            try
+            {
+                return next switch
                 {
                     JobStep.Resolve step => await ResolveAsync(
                         current,
                         step.Link,
+                        run,
                         cancellationToken
                     ),
                     JobStep.DownloadTrack step => await DownloadAsync(
                         current,
                         step.Track,
+                        run,
                         cancellationToken
                     ),
                     JobStep.DownloadVideo step => await DownloadVideoAsync(
                         current,
                         step.Video,
+                        run,
                         cancellationToken
                     ),
                     JobStep.Package => await PackageAsync(current, cancellationToken),
                 };
+            }
+            catch (Exception exception) when (exception is not OperationCanceledException)
+            {
+                run.Fail(exception.GetType().FullName!);
+                throw;
+            }
         }
 
         private async ValueTask<Outcome> ResolveAsync(
             Job job,
             MusicLink link,
+            JobMetrics.StepRun run,
             CancellationToken cancellationToken
         )
         {
@@ -176,7 +193,7 @@ public static partial class AdvanceJobs
                     );
                     return Pause(next);
                 case RemoteFailure failure:
-                    return await FailAsync(job, failure, cancellationToken);
+                    return await FailAsync(job, failure, run, cancellationToken);
                 default:
                     throw Unreachable.NullUnion();
             }
@@ -185,6 +202,7 @@ public static partial class AdvanceJobs
         private async ValueTask<Outcome> DownloadAsync(
             Job job,
             JobTrack track,
+            JobMetrics.StepRun run,
             CancellationToken cancellationToken
         )
         {
@@ -215,7 +233,7 @@ public static partial class AdvanceJobs
                     );
                     return Pause(next);
                 case RemoteFailure failure:
-                    return await FailAsync(job, failure, cancellationToken);
+                    return await FailAsync(job, failure, run, cancellationToken);
                 default:
                     throw Unreachable.NullUnion();
             }
@@ -224,6 +242,7 @@ public static partial class AdvanceJobs
         private async ValueTask<Outcome> DownloadVideoAsync(
             Job job,
             JobRequest.Video video,
+            JobMetrics.StepRun run,
             CancellationToken cancellationToken
         )
         {
@@ -254,7 +273,7 @@ public static partial class AdvanceJobs
                     );
                     return Pause(next);
                 case RemoteFailure failure:
-                    return await FailAsync(job, failure, cancellationToken);
+                    return await FailAsync(job, failure, run, cancellationToken);
                 default:
                     throw Unreachable.NullUnion();
             }
@@ -289,6 +308,8 @@ public static partial class AdvanceJobs
                     default:
                         throw Unreachable.NullUnion();
                 }
+
+                metrics.RecordEnrichment(enrichmentFailure);
             }
 
             var file = await output.PackageAsync(packaging, cover, details, cancellationToken);
@@ -312,9 +333,11 @@ public static partial class AdvanceJobs
         private async ValueTask<Outcome> FailAsync(
             Job job,
             RemoteFailure failure,
+            JobMetrics.StepRun run,
             CancellationToken cancellationToken
         )
         {
+            run.Fail(YGrabTelemetry.ErrorType(failure));
             var now = timeProvider.GetUtcNow();
             var failed = await jobs.UpdateAsync(
                 job.Id,

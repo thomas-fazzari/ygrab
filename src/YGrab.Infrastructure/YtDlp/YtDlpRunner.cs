@@ -1,7 +1,9 @@
 // SPDX-FileCopyrightText: 2026 Thomas Fazzari
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
+using System.Diagnostics.Metrics;
 using YGrab.Domain;
+using YGrab.Engine.Diagnostics;
 using YGrab.Infrastructure.Configuration;
 
 namespace YGrab.Infrastructure.YtDlp;
@@ -31,10 +33,15 @@ namespace YGrab.Infrastructure.YtDlp;
 /// A full disk throws an <see cref="IOException"/> and gives no failure, since a retry would
 /// download the same data again and fail again.
 /// </para>
+/// <para>
+/// The page and API calls that yt-dlp retries, or that YouTube rate-limits, count in
+/// <c>ygrab.ytdlp.warnings</c>. <c>--quiet</c> hides the retries of the file download.
+/// </para>
 /// </remarks>
 internal sealed partial class YtDlpRunner(
     LastValidOptions<YtDlpOptions> options,
     TimeProvider timeProvider,
+    IMeterFactory meterFactory,
     ILogger<YtDlpRunner> logger
 )
 {
@@ -50,6 +57,16 @@ internal sealed partial class YtDlpRunner(
     private const string FragmentRetries = "10";
     private const string ExtractorRetries = "3";
     private const string RetrySleep = "exp=1:30";
+
+    private const string VideoIdTag = "ygrab.video.id";
+
+    private readonly Counter<long> _warnings = meterFactory
+        .Create(YGrabTelemetry.Name)
+        .CreateCounter<long>(
+            "ygrab.ytdlp.warnings",
+            unit: "{warning}",
+            description: "The page and API calls that yt-dlp retries or that YouTube rate-limits."
+        );
 
     /// <param name="work">The work folder of the job, where the arguments write.</param>
     /// <param name="arguments">The arguments that follow the common ones.</param>
@@ -73,9 +90,11 @@ internal sealed partial class YtDlpRunner(
 
         Directory.CreateDirectory(work);
 
+        using var activity = YGrabTelemetry.Source.StartActivity("yt-dlp");
+        activity?.SetTag(VideoIdTag, videoId.Value);
         try
         {
-            return await RunProcessAsync(
+            var failure = await RunProcessAsync(
                 work,
                 videoId,
                 timeout,
@@ -83,6 +102,10 @@ internal sealed partial class YtDlpRunner(
                 onLine,
                 cancellationToken
             );
+            if (failure is not null)
+                YGrabTelemetry.MarkFailed(activity, YGrabTelemetry.ErrorType(failure));
+
+            return failure;
         }
         finally
         {
@@ -230,6 +253,15 @@ internal sealed partial class YtDlpRunner(
         return info;
     }
 
+    private void CountWarning(RemoteFailure cause) =>
+        _warnings.Add(
+            1,
+            new KeyValuePair<string, object?>(
+                YGrabTelemetry.ErrorTypeTag,
+                YGrabTelemetry.ErrorType(cause)
+            )
+        );
+
     // Waits so that no killed yt-dlp or ffmpeg still writes into the work folder
     private static void Stop(Process process)
     {
@@ -238,7 +270,7 @@ internal sealed partial class YtDlpRunner(
     }
 
     /// <returns>The last error line of yt-dlp, without its prefix.</returns>
-    private static async Task<string?> ReadErrorAsync(StreamReader reader)
+    private async Task<string?> ReadErrorAsync(StreamReader reader)
     {
         const string errorPrefix = "ERROR: ";
 
@@ -248,6 +280,8 @@ internal sealed partial class YtDlpRunner(
         {
             if (line.StartsWith(errorPrefix, StringComparison.Ordinal))
                 error = line[errorPrefix.Length..];
+            else if (YtDlpErrors.WarningCause(line) is { } cause)
+                CountWarning(cause);
         }
 
         return error;

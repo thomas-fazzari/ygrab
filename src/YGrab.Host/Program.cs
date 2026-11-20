@@ -20,6 +20,7 @@ builder.Services.AddYGrabPython(builder.Configuration);
 builder.Services.AddYGrabAuth();
 builder.Services.AddYGrabEndpoints();
 builder.Services.AddYGrabDiagnostics();
+builder.Services.AddYGrabTelemetry(builder.Configuration);
 
 var app = builder.Build();
 

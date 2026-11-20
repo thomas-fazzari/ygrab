@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Time.Testing;
 using YGrab.Domain;
 using YGrab.Engine;
+using YGrab.Engine.Diagnostics;
 using YGrab.Engine.Jobs;
 
 namespace YGrab.Tests.Fakes;
@@ -48,6 +49,7 @@ internal sealed class JobRig
             Output,
             new Random(Seed),
             Time,
+            new JobMetrics(FakeMeterFactory.Instance, Jobs, Cooldown, Time),
             NullLogger<AdvanceJobs.Handler>.Instance
         );
     }

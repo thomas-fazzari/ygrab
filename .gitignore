@@ -47,6 +47,8 @@
 !/src/**
 !/tests/
 !/tests/**
+!/tools/
+!/tools/**
 !/web/
 !/web/**
 
@@ -65,3 +67,4 @@ src/YGrab.Host/wwwroot/
 **/*.suo
 **/.env
 **/.env.*
+**/aspire.config.json
