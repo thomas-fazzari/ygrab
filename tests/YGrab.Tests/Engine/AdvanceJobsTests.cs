@@ -23,7 +23,7 @@ public sealed class AdvanceJobsTests
         var limited = await rig.AdvanceAsync(steps: 4);
 
         var until = TestTime.Start + Cooldown.Base;
-        limited.Value.Should().Be(new AdvanceJobs.WaitUntil(until, NotBefore: until));
+        limited.Value.Should().Be(new AdvanceJobs.WaitUntil(until, NotBefore: TestTime.Start));
         var job = rig.Jobs.List(1)[0];
         job.State.Should().BeOfType<JobState.Queued>();
         job.Tracks.Select(track => track.State)
@@ -35,13 +35,29 @@ public sealed class AdvanceJobsTests
 
         var held = await rig.AdvanceAsync(steps: 1);
 
-        held.Value.Should().Be(new AdvanceJobs.WaitUntil(until, NotBefore: until));
+        held.Value.Should().Be(new AdvanceJobs.WaitUntil(until, NotBefore: TestTime.Start));
         rig.Audio.Downloads.Should().HaveCount(3);
 
         rig.Time.Advance(Cooldown.Base);
         await rig.AdvanceAsync(steps: 1);
 
         rig.Audio.Downloads[^1].Should().Be(Samples.Video("v3"));
+    }
+
+    [Fact]
+    public async Task Ending_the_cooldown_resumes_the_jobs_and_keeps_its_strikes()
+    {
+        var rig = new JobRig(Samples.Release(TrackCount));
+        rig.Audio.Script(null, null, new RemoteFailure.RateLimited("429"));
+        await rig.Start.HandleAsync(new StartJob.Command(Samples.AlbumUrl), Cancellation);
+        await rig.AdvanceAsync(steps: 4);
+
+        await rig.EndCooldown.HandleAsync(new EndCooldown.Command(), Cancellation);
+        await rig.AdvanceAsync(steps: 1);
+
+        rig.Audio.Downloads[^1].Should().Be(Samples.Video("v3"));
+        rig.Store.Cooldown.Should().Be(rig.Cooldown.Current);
+        rig.Cooldown.Current.Strikes.Should().Be(1);
     }
 
     [Fact]
@@ -107,7 +123,7 @@ public sealed class AdvanceJobsTests
             ReleaseDate: null,
             ReleaseType: null,
             1,
-            ImmutableDictionary<int, TrackDetails>.Empty
+            []
         );
         var rig = new JobRig(Samples.Release(TrackCount));
         rig.Enricher.Result = details;

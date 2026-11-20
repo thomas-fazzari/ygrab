@@ -59,6 +59,9 @@ internal sealed class ApiClient(HttpClient http, Uri baseUrl, string token)
     public Task<ApiResult<None>> RemoveJobAsync(Guid id, CancellationToken cancellationToken) =>
         SendEmptyAsync(HttpMethod.Delete, JobPath(id, string.Empty), cancellationToken);
 
+    public Task<ApiResult<None>> EndCooldownAsync(CancellationToken cancellationToken) =>
+        SendEmptyAsync(HttpMethod.Delete, "api/cooldown", cancellationToken);
+
     /// <returns>The answer, whose body the caller reads and then disposes with it.</returns>
     public Task<ApiResult<HttpResponseMessage>> OpenFileAsync(
         Guid id,
@@ -84,8 +87,7 @@ internal sealed class ApiClient(HttpClient http, Uri baseUrl, string token)
             cancellationToken
         );
 
-    private static string JobPath(Guid id, string suffix) =>
-        string.Create(CultureInfo.InvariantCulture, $"api/jobs/{id:D}{suffix}");
+    private static string JobPath(Guid id, string suffix) => $"api/jobs/{id:D}{suffix}";
 
     private async Task<ApiResult<None>> SendEmptyAsync(
         HttpMethod method,

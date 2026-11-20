@@ -98,6 +98,7 @@ export const getJob = (id: JobId) => request("GET", `/jobs/${id}`, JobSchema);
 export const retryJob = (id: JobId) => request("POST", `/jobs/${id}/retry`, NoContentSchema);
 export const removeJob = (id: JobId) => request("DELETE", `/jobs/${id}`, NoContentSchema);
 export const getCooldown = () => request("GET", "/cooldown", CooldownSchema);
+export const endCooldown = () => request("DELETE", "/cooldown", NoContentSchema);
 export const getStatus = () => request("GET", "/status", StatusSchema);
 
 export const jobFileUrl = (id: JobId) => `${API_PREFIX}/jobs/${id}/file`;

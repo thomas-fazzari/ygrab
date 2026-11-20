@@ -102,7 +102,7 @@ ygrab login https://ygrab.example.com
 ygrab add --wait 'https://music.youtube.com/playlist?list=...'
 ```
 
-`login` prompts for the token. `add --wait` follows the jobs and saves each file to the current directory. Run `ygrab --help` for the other commands: `ls`, `show`, `watch`, `get`, `retry` and `rm`.
+`login` prompts for the token. `add --wait` follows the jobs and saves each file to the current directory. Run `ygrab --help` for the other commands: `ls`, `show`, `watch`, `get`, `retry`, `rm` and `resume`.
 
 ## Development
 

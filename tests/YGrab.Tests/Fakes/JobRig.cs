@@ -36,6 +36,7 @@ internal sealed class JobRig
             NullLogger<ExpireJobs.Handler>.Instance
         );
         Retry = new RetryJob.Handler(Jobs, Audio, Videos, signal);
+        EndCooldown = new EndCooldown.Handler(Cooldown, Store, signal, Time);
         Advance = new AdvanceJobs.Handler(
             Jobs,
             Cooldown,
@@ -81,6 +82,8 @@ internal sealed class JobRig
     public ICommandHandler<RemoveJob.Command, RemoveJob.Outcome> Remove { get; }
 
     public ICommandHandler<RetryJob.Command, RetryJob.Outcome> Retry { get; }
+
+    public ICommandHandler<EndCooldown.Command, Done> EndCooldown { get; }
 
     public ICommandHandler<AdvanceJobs.Command, AdvanceJobs.Outcome> Advance { get; }
 

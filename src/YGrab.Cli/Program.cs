@@ -35,6 +35,7 @@ internal static class Program
             new GetCommand(session),
             new RetryCommand(session),
             new RemoveCommand(session),
+            new ResumeCommand(session),
         };
 
         var parseResult = rootCommand.Parse(args);
