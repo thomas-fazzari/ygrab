@@ -23,7 +23,7 @@ public sealed record Job
 
     private Job() { }
 
-    public Guid Id { get; private init; }
+    public JobId Id { get; private init; }
 
     public Uri Url { get; private init; } = null!;
 
@@ -82,7 +82,7 @@ public sealed record Job
 
     public DateTimeOffset? FinishedAt => (State as JobState.Finished)?.FinishedAt;
 
-    public static Job Create(Guid id, Uri url, JobRequest request, bool force, DateTimeOffset now)
+    public static Job Create(JobId id, Uri url, JobRequest request, bool force, DateTimeOffset now)
     {
         ArgumentNullException.ThrowIfNull(url);
         ArgumentNullException.ThrowIfNull(request);
@@ -100,7 +100,7 @@ public sealed record Job
 
     /// <exception cref="InvalidOperationException">The stored fields break an invariant.</exception>
     public static Job Restore(
-        Guid id,
+        JobId id,
         Uri url,
         JobRequest request,
         bool force,
@@ -283,7 +283,7 @@ public sealed record Job
             );
     }
 
-    public Job Skip(Guid duplicateOf, DateTimeOffset now) =>
+    public Job Skip(JobId duplicateOf, DateTimeOffset now) =>
         State is JobState.Resolving
             ? this with
             {

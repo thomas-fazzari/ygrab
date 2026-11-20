@@ -12,14 +12,14 @@ public interface IAudioSource
 {
     /// <param name="progress">Receives the downloaded fraction, from 0 to 1.</param>
     ValueTask<AudioDownload> DownloadAsync(
-        Guid jobId,
+        JobId jobId,
         VideoId videoId,
         Action<double> progress,
         CancellationToken cancellationToken
     );
 
     /// <returns>True when an earlier run already kept the audio of the video.</returns>
-    bool IsDownloaded(Guid jobId, VideoId videoId);
+    bool IsDownloaded(JobId jobId, VideoId videoId);
 }
 
 /// <summary>

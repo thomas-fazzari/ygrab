@@ -35,8 +35,8 @@ public sealed class EnrichmentMatchTests
 
         var details = result.Value.Should().BeOfType<ReleaseDetails>().Subject;
         details.DiscTotal.Should().Be(2);
-        details.Tracks[1].Should().Be(new TrackDetails("GBN9Y1100079", 1, 1, 3));
-        details.Tracks[4].Should().Be(new TrackDetails("GBN9Y1100095", 2, 1, 2));
+        details.Tracks[1].Should().Be(new TrackDetails(IsrcOf("GBN9Y1100079"), 1, 1, 3));
+        details.Tracks[4].Should().Be(new TrackDetails(IsrcOf("GBN9Y1100095"), 2, 1, 2));
         details.Tracks[5].Should().Be(new TrackDetails(Isrc: null, 2, 2, 2));
     }
 
@@ -197,7 +197,7 @@ public sealed class EnrichmentMatchTests
             title,
             ["Artist"],
             number,
-            200,
+            TimeSpan.FromSeconds(200),
             explicitFlag
         );
 
@@ -214,5 +214,8 @@ public sealed class EnrichmentMatchTests
         int disc = 1,
         int numberInDisc = 1,
         string? isrc = null
-    ) => new(title, seconds, explicitFlag, disc, numberInDisc, isrc);
+    ) => new(title, Durations.FromSeconds(seconds), explicitFlag, disc, numberInDisc, IsrcOf(isrc));
+
+    private static Isrc? IsrcOf(string? value) =>
+        value is null ? null : Isrc.Create(value).ShouldSucceed();
 }

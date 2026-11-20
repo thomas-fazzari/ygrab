@@ -17,7 +17,7 @@ public interface IVideoSource
     /// <param name="quality">The resolution cap, within which the best format wins.</param>
     /// <param name="progress">Receives the downloaded fraction, from 0 to 1.</param>
     ValueTask<VideoDownload> DownloadAsync(
-        Guid jobId,
+        JobId jobId,
         VideoId videoId,
         VideoQuality quality,
         Action<double> progress,
@@ -25,7 +25,7 @@ public interface IVideoSource
     );
 
     /// <returns>The info of the video that an earlier run kept, or null.</returns>
-    VideoInfo? FindKept(Guid jobId, VideoId videoId);
+    VideoInfo? FindKept(JobId jobId, VideoId videoId);
 }
 
 public readonly union VideoDownload(VideoInfo, RemoteFailure);

@@ -109,7 +109,7 @@ public static partial class AdvanceJobs
                 if (aborted is not null)
                     throw;
 
-                LogRemovedStepFailed(job.Id, exception);
+                LogRemovedStepFailed(job.Id.Value, exception);
                 return Pause(job: null);
             }
             finally
@@ -304,7 +304,7 @@ public static partial class AdvanceJobs
                         break;
                     case NotEnriched missed:
                         enrichmentFailure = missed.Failure;
-                        LogNotEnriched(job.Id, missed.Failure);
+                        LogNotEnriched(job.Id.Value, missed.Failure);
                         break;
                     default:
                         throw Unreachable.NullUnion();
@@ -345,7 +345,11 @@ public static partial class AdvanceJobs
                 current => current.Fail(failure, now),
                 cancellationToken
             );
-            LogStepFailed(job.Id, failed?.State.GetType().Name ?? RemovedState, failure.Reason);
+            LogStepFailed(
+                job.Id.Value,
+                failed?.State.GetType().Name ?? RemovedState,
+                failure.Reason
+            );
 
             if (failure is not RemoteFailure.RateLimited)
                 return Pause(failed);

@@ -14,14 +14,14 @@ internal static class JobMappings
     {
         public JobDto ToDto(Retention retention) =>
             new(
-                job.Id,
+                job.Id.Value,
                 job.Url,
                 ToCode(job.Request),
                 job.Request is JobRequest.Video video ? ToCode(video.Quality) : null,
                 ToCode(job.State),
                 ReasonOf(job.State),
                 (job.State as JobState.Waiting)?.RetryAt,
-                (job.State as JobState.Skipped)?.DuplicateOf,
+                (job.State as JobState.Skipped)?.DuplicateOf.Value,
                 job.CreatedAt,
                 job.FinishedAt,
                 retention.ExpiresAt(job),

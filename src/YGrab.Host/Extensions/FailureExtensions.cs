@@ -56,7 +56,7 @@ internal static class FailureExtensions
                 Status = StatusCodes.Status409Conflict,
                 Type = TypePrefix + "already-grabbed",
                 Title = "Already grabbed",
-                Extensions = { [PreviousIdMember] = grabbed.Previous.Id },
+                Extensions = { [PreviousIdMember] = grabbed.Previous.Id.Value },
             }
         );
 

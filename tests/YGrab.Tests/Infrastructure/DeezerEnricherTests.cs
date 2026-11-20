@@ -27,7 +27,7 @@ public sealed class DeezerEnricherTests : IDisposable
         """;
 
     private const string AlbumBody = """
-        {"label":"Lab","upc":"0123","release_date":"2019-03-04","record_type":"compile"}
+        {"label":"Lab","upc":"012345678901","release_date":"2019-03-04","record_type":"compile"}
         """;
 
     private const string QuotaBody = """
@@ -57,15 +57,40 @@ public sealed class DeezerEnricherTests : IDisposable
                 new
                 {
                     Label = "Lab",
-                    Barcode = "0123",
+                    Barcode = Barcode.Create("012345678901").ShouldSucceed(),
                     ReleaseDate = new DateOnly(2019, 3, 4),
                     ReleaseType = ReleaseType.Compilation,
                     DiscTotal = 1,
                 }
             );
-        details.Tracks[1].Should().Be(new TrackDetails("USAAA1111111", 1, 1, 2));
+        details
+            .Tracks[1]
+            .Should()
+            .Be(new TrackDetails(Isrc.Create("USAAA1111111").ShouldSucceed(), 1, 1, 2));
         details.Tracks[2].Should().Be(new TrackDetails(Isrc: null, 1, 2, 2));
         _http.Paths.Should().Equal("/search/album", "/search/album", "/album/2/tracks", "/album/2");
+    }
+
+    [Fact]
+    public async Task A_barcode_or_isrc_that_is_not_valid_is_dropped_from_the_details()
+    {
+        _http.Bodies["/search/album"] = SearchBody;
+        _http.Bodies["/album/2/tracks"] = TracksBody.Replace(
+            "USAAA1111111",
+            "short",
+            StringComparison.Ordinal
+        );
+        _http.Bodies["/album/2"] = AlbumBody.Replace(
+            "012345678901",
+            "0123",
+            StringComparison.Ordinal
+        );
+
+        var result = await Enricher().EnrichAsync(Samples.Release(2), Cancellation);
+
+        var details = result.Value.Should().BeOfType<ReleaseDetails>().Subject;
+        details.Barcode.Should().BeNull();
+        details.Tracks[1].Isrc.Should().BeNull();
     }
 
     [Fact]

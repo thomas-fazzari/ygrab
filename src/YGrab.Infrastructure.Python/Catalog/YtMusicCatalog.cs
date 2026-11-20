@@ -95,16 +95,26 @@ internal sealed partial class YtMusicCatalog(
         if (browseId is null)
             return new RemoteFailure.Unavailable(missing);
 
-        return BrowseId.Create(browseId) is BrowseId parsed
-            ? Read(module, parsed, audioVideoId)
-            : new RemoteFailure.Unavailable(
+        if (BrowseId.Create(browseId) is not BrowseId parsed)
+        {
+            return new RemoteFailure.Unavailable(
                 $"YouTube Music sent an album id that YGrab cannot read ({browseId})."
+            );
+        }
+
+        if (audioVideoId is null)
+            return Read(module, parsed, audioVideoId: null);
+
+        return VideoId.Create(audioVideoId) is VideoId audio
+            ? Read(module, parsed, audio)
+            : new RemoteFailure.Unavailable(
+                $"YouTube Music sent a video id that YGrab cannot read ({audioVideoId})."
             );
     }
 
-    private static CatalogLookup Read(IYtMusic module, BrowseId browseId, string? audioVideoId)
+    private static CatalogLookup Read(IYtMusic module, BrowseId browseId, VideoId? audioVideoId)
     {
-        var album = module.Album(browseId.Value, audioVideoId);
+        var album = module.Album(browseId.Value, audioVideoId?.Value);
         if (album.Tracks.Count == 0)
         {
             return new RemoteFailure.Unavailable(
@@ -130,7 +140,7 @@ internal sealed partial class YtMusicCatalog(
                     track.Title,
                     [.. track.Artists],
                     (int)track.Number,
-                    (int)track.Seconds,
+                    Durations.FromSeconds((int)track.Seconds),
                     track.Explicit
                 )
             );

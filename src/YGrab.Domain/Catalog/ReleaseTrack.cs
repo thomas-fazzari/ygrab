@@ -4,12 +4,12 @@
 namespace YGrab.Domain;
 
 /// <param name="VideoId">The audio-only video when the album has one, the music video otherwise.</param>
-/// <param name="Seconds">The duration, or 0 when YouTube Music has none.</param>
+/// <param name="Duration">The duration, or null when YouTube Music has none.</param>
 public sealed record ReleaseTrack(
     VideoId VideoId,
     string Title,
     ImmutableArray<string> Artists,
     int Number,
-    int Seconds,
+    TimeSpan? Duration,
     bool Explicit
 );

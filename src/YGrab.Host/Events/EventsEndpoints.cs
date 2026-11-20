@@ -112,7 +112,7 @@ internal static class EventsEndpoints
             ),
             JobRemoved removed => new(
                 JsonSerializer.Serialize(
-                    new JobRemovedDto(removed.Id),
+                    new JobRemovedDto(removed.Id.Value),
                     ApiJsonContext.Default.JobRemovedDto
                 ),
                 EventNames.JobRemoved

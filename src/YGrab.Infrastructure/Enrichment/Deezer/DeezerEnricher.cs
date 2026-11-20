@@ -148,10 +148,14 @@ internal sealed partial class DeezerEnricher(
                 if (album.Error is { } albumError)
                     return Refused(albumError);
 
+                var isrcs = Items(listed.Data).Select(track => track.Isrc);
+                foreach (var isrc in isrcs.Where(IsInvalidIsrc))
+                    LogInvalidIsrc(isrc, hit.Id);
+
                 return matched with
                 {
                     Label = Present(album.Label),
-                    Barcode = Present(album.Upc),
+                    Barcode = ToBarcode(album.Upc, hit.Id),
                     ReleaseDate = ToDate(album.ReleaseDate),
                     ReleaseType = ToType(album.RecordType),
                 };
@@ -194,12 +198,35 @@ internal sealed partial class DeezerEnricher(
     private static CandidateTrack ToCandidate(DeezerTrack track) =>
         new(
             track.Title,
-            track.Duration,
+            Durations.FromSeconds(track.Duration),
             track.ExplicitLyrics,
             track.DiskNumber,
             track.TrackPosition,
-            Present(track.Isrc)
+            ToIsrc(track.Isrc)
         );
+
+    private static Isrc? ToIsrc(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return null;
+
+        return Isrc.Create(value) is Isrc isrc ? isrc : null;
+    }
+
+    private static bool IsInvalidIsrc(string? value) =>
+        !string.IsNullOrWhiteSpace(value) && ToIsrc(value) is null;
+
+    private Barcode? ToBarcode(string? value, long albumId)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return null;
+
+        if (Barcode.Create(value) is Barcode barcode)
+            return barcode;
+
+        LogInvalidBarcode(value, albumId);
+        return null;
+    }
 
     private static string? Present(string? value) =>
         string.IsNullOrWhiteSpace(value) ? null : value;
@@ -242,4 +269,16 @@ internal sealed partial class DeezerEnricher(
         Message = "The Deezer album {AlbumId} is not the same product: {Reason}"
     )]
     private partial void LogRejected(long albumId, string reason);
+
+    [LoggerMessage(
+        Level = LogLevel.Warning,
+        Message = "Deezer sent the barcode {Barcode} of album {AlbumId}, which is not a UPC-A or EAN-13 code"
+    )]
+    private partial void LogInvalidBarcode(string barcode, long albumId);
+
+    [LoggerMessage(
+        Level = LogLevel.Warning,
+        Message = "Deezer sent the ISRC {Isrc} on album {AlbumId}, which is not a valid ISRC"
+    )]
+    private partial void LogInvalidIsrc(string? isrc, long albumId);
 }

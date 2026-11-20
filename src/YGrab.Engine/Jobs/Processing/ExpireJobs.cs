@@ -55,7 +55,7 @@ public static partial class ExpireJobs
                 }
                 catch (Exception exception) when (!cancellationToken.IsCancellationRequested)
                 {
-                    LogSweepFailed(job.Id, exception);
+                    LogSweepFailed(job.Id.Value, exception);
                 }
             }
 
@@ -63,7 +63,7 @@ public static partial class ExpireJobs
         }
 
         private async ValueTask SweepAsync(
-            Guid id,
+            JobId id,
             Retention retention,
             DateTimeOffset now,
             CancellationToken cancellationToken

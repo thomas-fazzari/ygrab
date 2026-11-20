@@ -16,14 +16,14 @@ public sealed record CandidateRelease(
     ImmutableArray<CandidateTrack> Tracks
 );
 
-/// <param name="Seconds">The duration, or 0 when the provider has none.</param>
+/// <param name="Duration">The duration, or null when the provider has none.</param>
 /// <param name="Disc">The disc number, from 1.</param>
 /// <param name="NumberInDisc">The position of the track on its disc, from 1.</param>
 public sealed record CandidateTrack(
     string Title,
-    int Seconds,
+    TimeSpan? Duration,
     bool Explicit,
     int Disc,
     int NumberInDisc,
-    string? Isrc
+    Isrc? Isrc
 );

@@ -33,7 +33,7 @@ internal sealed class YtDlpAudioSource(YtDlpRunner runner, IOptions<StorageOptio
         "--extract-audio",
     ];
 
-    public bool IsDownloaded(Guid jobId, VideoId videoId)
+    public bool IsDownloaded(JobId jobId, VideoId videoId)
     {
         ArgumentNullException.ThrowIfNull(videoId);
 
@@ -41,7 +41,7 @@ internal sealed class YtDlpAudioSource(YtDlpRunner runner, IOptions<StorageOptio
     }
 
     public async ValueTask<AudioDownload> DownloadAsync(
-        Guid jobId,
+        JobId jobId,
         VideoId videoId,
         Action<double> progress,
         CancellationToken cancellationToken

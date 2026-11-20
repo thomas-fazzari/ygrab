@@ -67,7 +67,7 @@ public sealed class SqliteJobStoreTests : IAsyncLifetime
                 .StartPackaging(_now)
                 .Finish("a.zip", 2048, EnrichmentFailure.ProviderError, _now)
                 .Expire(),
-            Samples.Queued(Samples.AlbumLink()).Resume(_now).Skip(Guid.CreateVersion7(), _now),
+            Samples.Queued(Samples.AlbumLink()).Resume(_now).Skip(Samples.NewJobId(), _now),
             Samples.Queued(Samples.AlbumLink()).Abort("broken", _now),
             Samples.QueuedVideo(Samples.VideoRequest(quality: VideoQuality.Best)),
             Samples.DownloadingVideo(Samples.VideoRequest(quality: VideoQuality.P720)),

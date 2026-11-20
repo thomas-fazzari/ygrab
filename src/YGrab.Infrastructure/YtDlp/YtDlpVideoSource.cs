@@ -63,7 +63,7 @@ internal sealed class YtDlpVideoSource(YtDlpRunner runner, IOptions<StorageOptio
     private const string LiveTag = "live";
     private const string LiveTrue = "True";
 
-    public VideoInfo? FindKept(Guid jobId, VideoId videoId)
+    public VideoInfo? FindKept(JobId jobId, VideoId videoId)
     {
         ArgumentNullException.ThrowIfNull(videoId);
 
@@ -77,7 +77,7 @@ internal sealed class YtDlpVideoSource(YtDlpRunner runner, IOptions<StorageOptio
     }
 
     public async ValueTask<VideoDownload> DownloadAsync(
-        Guid jobId,
+        JobId jobId,
         VideoId videoId,
         VideoQuality quality,
         Action<double> progress,
@@ -187,7 +187,7 @@ internal sealed class YtDlpVideoSource(YtDlpRunner runner, IOptions<StorageOptio
             : YtDlpProgress.TryParseVideo(line, out fraction);
 
     private async ValueTask KeepAsync(
-        Guid jobId,
+        JobId jobId,
         VideoId videoId,
         VideoInfo video,
         string path,

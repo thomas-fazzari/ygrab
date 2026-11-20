@@ -35,12 +35,12 @@ public interface IJobOutput
     /// The full path of the packaged file on disk, or null when the file is gone.
     /// </summary>
     /// <param name="fileName">The <see cref="PackagedFile.Name"/> that <see cref="PackageAsync"/> returned.</param>
-    string? FindFile(Guid jobId, string fileName);
+    string? FindFile(JobId jobId, string fileName);
 
     /// <summary>
     /// Deletes the folder of the job, with every file in it.
     /// </summary>
-    void Delete(Guid jobId);
+    void Delete(JobId jobId);
 }
 
 /// <param name="Name">The name that the browser saves, which is not the name on disk.</param>

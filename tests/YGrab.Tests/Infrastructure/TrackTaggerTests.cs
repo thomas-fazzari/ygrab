@@ -12,7 +12,8 @@ namespace YGrab.Tests.Infrastructure;
 
 public sealed class TrackTaggerTests : IDisposable
 {
-    private const string Isrc = "USABC1234567";
+    private const string IsrcText = "USABC1234567";
+    private const string BarcodeText = "0123456789012";
     private const int ReleaseYear = 2020;
     private const int ExplicitValue = 1;
 
@@ -34,10 +35,10 @@ public sealed class TrackTaggerTests : IDisposable
         enriched.DiscTotal.Should().Be(2);
         enriched.TrackNumber.Should().Be(1);
         enriched.TrackTotal.Should().Be(4);
-        enriched.ISRC.Should().Be(Isrc);
+        enriched.ISRC.Should().Be(IsrcText);
         Day(enriched).Should().Be("2019-03-04");
         enriched.AdditionalFields["LABEL"].Should().Be("Lab");
-        enriched.AdditionalFields["BARCODE"].Should().Be("0123456789012");
+        enriched.AdditionalFields["BARCODE"].Should().Be(BarcodeText);
         enriched.AdditionalFields["RELEASETYPE"].Should().Be("album;compilation");
         enriched.AdditionalFields["ORIGINALYEAR"].Should().Be("2020");
         enriched.AdditionalFields["ITUNESADVISORY"].Should().Be("1");
@@ -79,7 +80,7 @@ public sealed class TrackTaggerTests : IDisposable
         var raw = Raw(path);
 
         enriched.ISRC.Should().BeEmpty();
-        enriched.AdditionalFields["ISRC"].Should().Be(Isrc);
+        enriched.AdditionalFields["ISRC"].Should().Be(IsrcText);
         enriched.AdditionalFields["ORIGINALDATE"].Should().Be("2020");
         enriched.AdditionalFields["MusicBrainz Album Type"].Should().Be("compilation");
         enriched.AlbumArtist.Should().Be("Artist, Guest");
@@ -113,13 +114,13 @@ public sealed class TrackTaggerTests : IDisposable
         var source = release.Tracks[1];
         var details = new ReleaseDetails(
             "Lab",
-            "0123456789012",
+            Barcode.Create(BarcodeText).ShouldSucceed(),
             new DateOnly(2019, 3, 4),
             ReleaseType.Compilation,
             2,
             ImmutableDictionary<int, TrackDetails>.Empty.Add(
                 source.Number,
-                new TrackDetails(Isrc, 2, 1, 4)
+                new TrackDetails(Isrc.Create(IsrcText).ShouldSucceed(), 2, 1, 4)
             )
         );
         return (release, source, details);

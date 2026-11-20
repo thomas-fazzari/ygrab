@@ -47,7 +47,7 @@ public closed record JobState
     public sealed record Failed(string Reason, DateTimeOffset FinishedAt) : Finished(FinishedAt);
 
     /// <param name="DuplicateOf">The job that already covers the link.</param>
-    public sealed record Skipped(Guid DuplicateOf, DateTimeOffset FinishedAt)
+    public sealed record Skipped(JobId DuplicateOf, DateTimeOffset FinishedAt)
         : Finished(FinishedAt);
 
     /// <summary>
