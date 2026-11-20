@@ -1,5 +1,23 @@
 [
   {
+    "version": "0.2.0",
+    "date": "2026-11-20",
+    "changes": [
+      {
+        "type": "feat",
+        "text": "export telemetry over OTLP",
+        "author": "thomas-fazzari",
+        "sha": "6b3beabbe7bcef23e0bd0b0e56f92baf86fc72af"
+      },
+      {
+        "type": "fix",
+        "text": "drop bearer debug lines from the log stream",
+        "author": "thomas-fazzari",
+        "sha": "7c487969c1a821e604b02102138dfe60b1261a56"
+      }
+    ]
+  },
+  {
     "version": "0.1.1",
     "date": "2026-11-18",
     "changes": [
