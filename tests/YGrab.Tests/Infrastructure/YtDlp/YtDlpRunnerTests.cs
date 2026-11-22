@@ -2,9 +2,11 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 using System.ComponentModel;
+using System.Runtime.Versioning;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
+using YGrab.Domain;
 using YGrab.Infrastructure.Configuration;
 using YGrab.Infrastructure.YtDlp;
 using YGrab.Tests.Fakes;
@@ -59,6 +61,44 @@ public sealed class YtDlpRunnerTests : IDisposable
 
         await run.Should().ThrowAsync<Win32Exception>();
         Directory.EnumerateFiles(work).Should().BeEmpty();
+    }
+
+    [Fact(Timeout = 10_000)]
+    [UnsupportedOSPlatform("windows")]
+    public async Task An_error_after_a_carriage_return_keeps_its_reason()
+    {
+        var script = Path.Combine(_temp.FullName, "yt-dlp");
+        await File.WriteAllTextAsync(
+            script,
+            """
+            #!/bin/sh
+            printf 'ERROR: \r[download] Got error: HTTP Error 503: Service Unavailable. Giving up after 10 retries\n' >&2
+            exit 1
+            """,
+            TestContext.Current.CancellationToken
+        );
+        File.SetUnixFileMode(
+            script,
+            UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute
+        );
+        var runner = Runner(new YtDlpOptions { Executable = script });
+
+        var failure = await runner.RunAsync(
+            Path.Combine(_temp.FullName, "work"),
+            Samples.Video("v1"),
+            TimeSpan.FromMinutes(1),
+            [],
+            _ => { },
+            TestContext.Current.CancellationToken
+        );
+
+        failure
+            .Should()
+            .Be(
+                new RemoteFailure.Transient(
+                    "HTTP Error 503: Service Unavailable. Giving up after 10 retries"
+                )
+            );
     }
 
     private async Task<string> WriteCookiesAsync()
