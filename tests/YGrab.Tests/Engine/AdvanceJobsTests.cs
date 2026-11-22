@@ -82,7 +82,7 @@ public sealed class AdvanceJobsTests
     {
         var rig = new JobRig(Samples.Release(TrackCount));
         var past = Cooldown.None.Hit("429", TestTime.Start - TimeSpan.FromDays(1));
-        rig.Cooldown.Set(past);
+        rig.Cooldown.Load(past);
         rig.Store.Cooldown = past;
         await rig.Start.HandleAsync(new StartJob.Command(Samples.AlbumUrl), Cancellation);
 

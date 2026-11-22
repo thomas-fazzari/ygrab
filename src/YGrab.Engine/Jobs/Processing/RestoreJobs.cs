@@ -40,7 +40,7 @@ public static class RestoreJobs
             }
 
             jobs.Load(restored.MoveToImmutable());
-            cooldown.Set(snapshot.Cooldown);
+            cooldown.Load(snapshot.Cooldown);
             signal.Ring();
             return new Done();
         }
