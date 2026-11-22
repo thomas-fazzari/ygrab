@@ -6,6 +6,8 @@ import { createListMotion } from "@/shared/listMotion.ts";
 import { Skeleton } from "@/shared/ui/Skeleton.tsx";
 import { JobCardSkeleton } from "./JobCard.tsx";
 import styles from "./JobList.module.css";
+import { createQueueDrag } from "./queueDrag.tsx";
+import type { OnMove } from "./queueDrag.tsx";
 
 const SKELETON_CARDS = 3;
 const EXIT_SIZE = "--exit-size";
@@ -13,7 +15,8 @@ const MOTION = "data-motion";
 
 interface JobListProps {
   readonly jobs: readonly Job[];
-  readonly card: (job: Job) => JSX.Element;
+  readonly card: (job: Job, movable: boolean) => JSX.Element;
+  readonly onMove?: OnMove | undefined;
 }
 
 const settled = (card: HTMLElement) =>
@@ -38,12 +41,27 @@ async function exit(card: HTMLElement) {
 }
 
 export function JobList(props: JobListProps) {
-  const resolved = children(() => <For each={props.jobs}>{props.card}</For>);
+  const resolved = children(() => (
+    <For each={props.jobs}>{(job) => props.card(job, props.onMove !== undefined)}</For>
+  ));
   const cards = createListMotion(
     () => resolved.toArray().filter((card) => card instanceof HTMLElement),
     { enter, exit },
   );
-  return <div class={styles.cards}>{cards()}</div>;
+  const drag = createQueueDrag((id, before) => {
+    props.onMove?.(id, before);
+  });
+  return (
+    <div
+      class={styles.cards}
+      onDragStart={drag.onDragStart}
+      onDragOver={drag.onDragOver}
+      onDrop={drag.onDrop}
+      onDragEnd={drag.onDragEnd}
+    >
+      {cards()}
+    </div>
+  );
 }
 
 export function JobListSkeleton() {

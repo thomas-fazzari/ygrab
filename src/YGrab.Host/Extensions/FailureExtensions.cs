@@ -30,6 +30,7 @@ internal static class FailureExtensions
                     "not-retryable",
                     "Not retryable"
                 ),
+                NotMovable => Problem(StatusCodes.Status409Conflict, "not-movable", "Not movable"),
                 AlreadyGrabbed grabbed => AlreadyGrabbedProblem(grabbed),
             };
     }

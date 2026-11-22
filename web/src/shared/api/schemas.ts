@@ -53,6 +53,7 @@ export const JobSchema = v.object({
   retryAt: v.nullable(TimestampSchema),
   duplicateOf: v.nullable(IdSchema),
   createdAt: TimestampSchema,
+  queueRank: v.number(),
   finishedAt: v.nullable(TimestampSchema),
   expiresAt: v.nullable(TimestampSchema),
   title: NullableTextSchema,

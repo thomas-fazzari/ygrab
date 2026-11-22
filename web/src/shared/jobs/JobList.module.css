@@ -17,6 +17,31 @@
     & > [data-motion="exit"] {
       animation: card-out var(--duration) var(--ease-out) forwards;
     }
+
+    & > [data-dragging] {
+      opacity: 0.4;
+    }
+
+    & > [data-drop] {
+      position: relative;
+    }
+
+    & > [data-drop]::after {
+      position: absolute;
+      inset-inline: 0;
+      block-size: 2px;
+      background: var(--color-text);
+      content: "";
+      pointer-events: none;
+    }
+
+    & > [data-drop="before"]::after {
+      inset-block-start: calc(-1 * (var(--gap) + 2px) / 2);
+    }
+
+    & > [data-drop="after"]::after {
+      inset-block-end: calc(-1 * (var(--gap) + 2px) / 2);
+    }
   }
 
   @keyframes card-in {

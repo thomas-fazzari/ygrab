@@ -192,6 +192,7 @@ public sealed class JobTests
                     queued.Request,
                     force: false,
                     queued.CreatedAt,
+                    queued.QueueRank,
                     queued.State,
                     resolved: null,
                     keptVideo: null,

@@ -33,6 +33,8 @@ public sealed record Job
 
     public DateTimeOffset CreatedAt { get; private init; }
 
+    public double QueueRank { get; private init; }
+
     public JobState State { get; private init; } = null!;
 
     /// <summary>
@@ -75,6 +77,8 @@ public sealed record Job
 
     public bool CanRetry => State is JobState.Failed or JobState.Incomplete;
 
+    public bool CanMove => State is JobState.Queued;
+
     public bool CanFallBackToVideo =>
         State is JobState.Failed && Resolved is null && Link is TrackLink;
 
@@ -84,10 +88,18 @@ public sealed record Job
 
     public DateTimeOffset? RetryAt => (State as JobState.Waiting)?.RetryAt;
 
-    public static Job Create(JobId id, Uri url, JobRequest request, bool force, DateTimeOffset now)
+    public static Job Create(
+        JobId id,
+        Uri url,
+        JobRequest request,
+        bool force,
+        double queueRank,
+        DateTimeOffset now
+    )
     {
         ArgumentNullException.ThrowIfNull(url);
         ArgumentNullException.ThrowIfNull(request);
+        ThrowIfNotFinite(queueRank);
 
         return new Job
         {
@@ -96,6 +108,7 @@ public sealed record Job
             Request = request,
             Force = force,
             CreatedAt = now,
+            QueueRank = queueRank,
             State = new JobState.Queued(),
         };
     }
@@ -107,6 +120,7 @@ public sealed record Job
         JobRequest request,
         bool force,
         DateTimeOffset createdAt,
+        double queueRank,
         JobState state,
         JobRelease? resolved,
         VideoInfo? keptVideo,
@@ -125,6 +139,7 @@ public sealed record Job
             Request = request,
             Force = force,
             CreatedAt = createdAt,
+            QueueRank = queueRank,
             State = state,
             Resolved = resolved,
             KeptVideo = keptVideo,
@@ -136,6 +151,7 @@ public sealed record Job
         var problem = job switch
         {
             { Attempt: < 0 } => "its attempt is negative",
+            { QueueRank: var rank } when !double.IsFinite(rank) => "its queue rank is not finite",
             { Request: JobRequest.Audio, KeptVideo: not null } => "an audio job has a kept video",
             { Request: JobRequest.Video, EnrichmentFailure: not null } =>
                 "a video job has an enrichment failure",
@@ -412,6 +428,13 @@ public sealed record Job
             );
     }
 
+    public Job MoveTo(double queueRank)
+    {
+        ThrowIfNotFinite(queueRank);
+
+        return CanMove ? this with { QueueRank = queueRank } : throw Wrong(nameof(MoveTo));
+    }
+
     public Job Requeue() =>
         State is JobState.Resolving or JobState.Downloading or JobState.Packaging
             ? this with
@@ -532,6 +555,18 @@ public sealed record Job
         {
             State = new JobState.Failed(reason, now),
         };
+
+    private static void ThrowIfNotFinite(double queueRank)
+    {
+        if (!double.IsFinite(queueRank))
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(queueRank),
+                queueRank,
+                "The rank is not finite."
+            );
+        }
+    }
 
     private InvalidOperationException Wrong(string transition) =>
         new($"{transition} does not apply to job {Id} in state {State.GetType().Name}.");

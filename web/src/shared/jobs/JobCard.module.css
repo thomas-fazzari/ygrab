@@ -22,6 +22,26 @@
     object-fit: cover;
   }
 
+  .handle {
+    display: grid;
+    grid-area: cover;
+    place-items: center;
+    border-radius: var(--radius-small);
+    background: color-mix(in srgb, var(--color-background) 60%, transparent);
+    color: var(--color-text);
+    cursor: grab;
+    opacity: 0;
+    transition: opacity var(--duration) var(--ease-out);
+  }
+
+  .handle:hover {
+    opacity: 1;
+  }
+
+  .handle[hidden] {
+    display: none;
+  }
+
   .card[data-state="expired"] .cover {
     opacity: 0.4;
   }

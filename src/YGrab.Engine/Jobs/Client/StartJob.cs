@@ -75,7 +75,14 @@ public static class StartJob
         )
         {
             var now = timeProvider.GetUtcNow();
-            var job = Job.Create(new JobId(Guid.CreateVersion7(now)), url, request, force, now);
+            var job = Job.Create(
+                new JobId(Guid.CreateVersion7(now)),
+                url,
+                request,
+                force,
+                jobs.NextRank(),
+                now
+            );
             if (jobs.FindCover(job) is { } previous)
                 return new AlreadyGrabbed(previous);
 
