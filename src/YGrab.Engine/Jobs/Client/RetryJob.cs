@@ -49,14 +49,8 @@ public static class RetryJob
             if (!job.CanRetry)
                 return new NotRetryable();
 
-            if (
-                !job.Force
-                && jobs.Find(other => other.Id != job.Id && other.Covers(job.Request))
-                    is { } previous
-            )
-            {
+            if (jobs.FindCover(job) is { } previous)
                 return new AlreadyGrabbed(previous);
-            }
 
             var gone = Gone(job);
             var retried = false;

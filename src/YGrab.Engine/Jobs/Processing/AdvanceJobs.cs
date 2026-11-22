@@ -172,7 +172,7 @@ public static partial class AdvanceJobs
             switch (await catalog.FindAsync(link, cancellationToken))
             {
                 case Release release:
-                    if (!job.Force && Duplicate(job, job.Resolve(release)) is { } duplicate)
+                    if (jobs.FindCover(job, release) is { } duplicate)
                     {
                         var now = timeProvider.GetUtcNow();
                         var skipped = await jobs.UpdateAsync(
@@ -348,9 +348,6 @@ public static partial class AdvanceJobs
             LogCooldownStarted(hit.Strikes, hit.Until, failure.Reason);
             return hit.Until is { } until ? new WaitUntil(until, now) : new Stepped();
         }
-
-        private Job? Duplicate(Job job, Job resolved) =>
-            jobs.Find(other => other.Id != job.Id && other.Covers(resolved));
 
         private Outcome Pause(Job? job)
         {
