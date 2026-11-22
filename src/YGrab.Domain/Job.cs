@@ -82,6 +82,8 @@ public sealed record Job
 
     public DateTimeOffset? FinishedAt => (State as JobState.Finished)?.FinishedAt;
 
+    public DateTimeOffset? RetryAt => (State as JobState.Waiting)?.RetryAt;
+
     public static Job Create(JobId id, Uri url, JobRequest request, bool force, DateTimeOffset now)
     {
         ArgumentNullException.ThrowIfNull(url);

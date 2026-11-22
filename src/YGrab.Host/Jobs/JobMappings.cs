@@ -20,7 +20,7 @@ internal static class JobMappings
                 job.Request is JobRequest.Video video ? ToCode(video.Quality) : null,
                 ToCode(job.State),
                 ReasonOf(job.State),
-                (job.State as JobState.Waiting)?.RetryAt,
+                job.RetryAt,
                 (job.State as JobState.Skipped)?.DuplicateOf.Value,
                 job.CreatedAt,
                 job.FinishedAt,

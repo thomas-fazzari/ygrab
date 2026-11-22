@@ -33,9 +33,6 @@ namespace YGrab.Engine.Jobs;
 /// </remarks>
 public static partial class AdvanceJobs
 {
-    internal const int MinPauseSeconds = 5;
-    internal const int MaxPauseSeconds = 15;
-
     private const string RemovedState = "Removed";
 
     public sealed record Command;
@@ -78,7 +75,7 @@ public static partial class AdvanceJobs
             if (job is null)
                 return new Idle();
 
-            if (job.State is JobState.Waiting { RetryAt: var retryAt } && retryAt > now)
+            if (job.RetryAt is { } retryAt && retryAt > now)
                 return new WaitUntil(retryAt, now);
 
             // The step exists before the job is read again, so a removal either shows in the read
@@ -355,13 +352,10 @@ public static partial class AdvanceJobs
         private Job? Duplicate(Job job, Job resolved) =>
             jobs.Find(other => other.Id != job.Id && other.Covers(resolved));
 
-        // YT sees a step after a pause, at a different time each step
         private Outcome Pause(Job? job)
         {
-            var pause =
-                timeProvider.GetUtcNow()
-                + TimeSpan.FromSeconds(random.Next(MinPauseSeconds, MaxPauseSeconds + 1));
-            return job?.State is JobState.Waiting { RetryAt: var retryAt }
+            var pause = timeProvider.GetUtcNow() + Pacing.Pause(random.Next(Pacing.PauseChoices));
+            return job?.RetryAt is { } retryAt
                 ? new WaitUntil(retryAt, pause)
                 : new WaitUntil(pause, pause);
         }

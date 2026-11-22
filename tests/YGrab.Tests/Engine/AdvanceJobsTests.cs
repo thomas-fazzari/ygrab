@@ -73,8 +73,8 @@ public sealed class AdvanceJobsTests
         var waiting = rig.Jobs.List(1)[0].State.Should().BeOfType<JobState.Waiting>().Subject;
         wait.At.Should().Be(waiting.RetryAt);
         wait.NotBefore.Should()
-            .BeOnOrAfter(TestTime.Start + TimeSpan.FromSeconds(AdvanceJobs.MinPauseSeconds))
-            .And.BeOnOrBefore(TestTime.Start + TimeSpan.FromSeconds(AdvanceJobs.MaxPauseSeconds));
+            .BeOnOrAfter(TestTime.Start + TimeSpan.FromSeconds(Pacing.MinPauseSeconds))
+            .And.BeOnOrBefore(TestTime.Start + TimeSpan.FromSeconds(Pacing.MaxPauseSeconds));
     }
 
     [Fact]

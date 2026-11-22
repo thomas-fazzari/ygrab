@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: 2026 Thomas Fazzari
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
+using YGrab.Domain;
 using YGrab.Engine.Jobs;
 using YGrab.Tests.Fakes;
 
@@ -37,7 +38,7 @@ public sealed class RemoveJobTests
         var pause = outcome.Value.Should().BeOfType<AdvanceJobs.WaitUntil>().Subject;
         pause
             .At.Should()
-            .BeOnOrAfter(TestTime.Start + TimeSpan.FromSeconds(AdvanceJobs.MinPauseSeconds))
-            .And.BeOnOrBefore(TestTime.Start + TimeSpan.FromSeconds(AdvanceJobs.MaxPauseSeconds));
+            .BeOnOrAfter(TestTime.Start + TimeSpan.FromSeconds(Pacing.MinPauseSeconds))
+            .And.BeOnOrBefore(TestTime.Start + TimeSpan.FromSeconds(Pacing.MaxPauseSeconds));
     }
 }
