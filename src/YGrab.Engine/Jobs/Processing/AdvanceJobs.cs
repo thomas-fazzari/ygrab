@@ -169,31 +169,27 @@ public static partial class AdvanceJobs
             CancellationToken cancellationToken
         )
         {
-            switch (await catalog.FindAsync(link, cancellationToken))
+            var lookup = await catalog.FindAsync(link, cancellationToken);
+            var now = timeProvider.GetUtcNow();
+            return lookup switch
             {
-                case Release release:
-                    if (jobs.FindCover(job, release) is { } duplicate)
-                    {
-                        var now = timeProvider.GetUtcNow();
-                        var skipped = await jobs.UpdateAsync(
-                            job.Id,
-                            current => current.Skip(duplicate.Id, now),
-                            cancellationToken
-                        );
-                        return Pause(skipped);
-                    }
-
-                    var next = await jobs.UpdateAsync(
+                Release release when jobs.FindCover(job, release) is { } duplicate => Pause(
+                    await jobs.UpdateAsync(
+                        job.Id,
+                        current => current.Skip(duplicate.Id, now),
+                        cancellationToken
+                    )
+                ),
+                Release release => Pause(
+                    await jobs.UpdateAsync(
                         job.Id,
                         current => current.Resolve(release),
                         cancellationToken
-                    );
-                    return Pause(next);
-                case RemoteFailure failure:
-                    return await FailAsync(job, failure, run, cancellationToken);
-                default:
-                    throw Unreachable.NullUnion();
-            }
+                    )
+                ),
+                RemoteFailure failure => await FailAsync(job, failure, run, cancellationToken),
+                null => throw Unreachable.NullUnion(),
+            };
         }
 
         private async ValueTask<Outcome> DownloadAsync(
@@ -220,20 +216,18 @@ public static partial class AdvanceJobs
                 fraction => jobs.Update(job.Id, current => current.Progress(fraction)),
                 cancellationToken
             );
-            switch (download)
+            return download switch
             {
-                case Downloaded:
-                    var next = await jobs.UpdateAsync(
+                Downloaded => Pause(
+                    await jobs.UpdateAsync(
                         job.Id,
                         current => current.CompleteTrack(),
                         cancellationToken
-                    );
-                    return Pause(next);
-                case RemoteFailure failure:
-                    return await FailAsync(job, failure, run, cancellationToken);
-                default:
-                    throw Unreachable.NullUnion();
-            }
+                    )
+                ),
+                RemoteFailure failure => await FailAsync(job, failure, run, cancellationToken),
+                null => throw Unreachable.NullUnion(),
+            };
         }
 
         private async ValueTask<Outcome> DownloadVideoAsync(
@@ -260,20 +254,18 @@ public static partial class AdvanceJobs
                 fraction => jobs.Update(job.Id, current => current.Progress(fraction)),
                 cancellationToken
             );
-            switch (download)
+            return download switch
             {
-                case VideoInfo info:
-                    var next = await jobs.UpdateAsync(
+                VideoInfo info => Pause(
+                    await jobs.UpdateAsync(
                         job.Id,
                         current => current.CompleteVideo(info),
                         cancellationToken
-                    );
-                    return Pause(next);
-                case RemoteFailure failure:
-                    return await FailAsync(job, failure, run, cancellationToken);
-                default:
-                    throw Unreachable.NullUnion();
-            }
+                    )
+                ),
+                RemoteFailure failure => await FailAsync(job, failure, run, cancellationToken),
+                null => throw Unreachable.NullUnion(),
+            };
         }
 
         private async ValueTask<Outcome> PackageAsync(Job job, CancellationToken cancellationToken)
