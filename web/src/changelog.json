@@ -1,5 +1,29 @@
 [
   {
+    "version": "0.3.0",
+    "date": "2026-11-22",
+    "changes": [
+      {
+        "type": "feat",
+        "text": "reorder queued jobs",
+        "author": "thomas-fazzari",
+        "sha": "f444db232a8f319c41bd90496297676fe4821b74"
+      },
+      {
+        "type": "fix",
+        "text": "harden token reads on config reload",
+        "author": "thomas-fazzari",
+        "sha": "49fc24359dd8e47c2845e00c4e9f63dd8c16b04d"
+      },
+      {
+        "type": "feat",
+        "text": "end the cooldown from the UI and the CLI",
+        "author": "thomas-fazzari",
+        "sha": "253b1e8bea1a41cf4b65ce514d1a6bc422b64988"
+      }
+    ]
+  },
+  {
     "version": "0.2.0",
     "date": "2026-11-20",
     "changes": [
