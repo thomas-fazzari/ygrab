@@ -79,13 +79,13 @@ YGrab can send traces, metrics and logs to any OpenTelemetry backend. Set `OTEL_
 
 Available metrics:
 
-| Metric                     | Tags                       | Shows                                                                                       |
-| -------------------------- | -------------------------- | ------------------------------------------------------------------------------------------- |
-| `ygrab.job.step.duration`  | `ygrab.step`, `error.type` | The duration of each step, and its failures by kind                                         |
+| Metric                     | Tags                       | Shows                                                                  |
+| -------------------------- | -------------------------- | ---------------------------------------------------------------------- |
+| `ygrab.job.step.duration`  | `ygrab.step`, `error.type` | The duration of each step, and its failures by kind                    |
 | `ygrab.ytdlp.warnings`     | `error.type`               | The page and API calls that yt-dlp retries or that YouTube rate-limits |
-| `ygrab.cooldown.strikes`   |                            | The rate limits since the last packaged job                                                 |
-| `ygrab.jobs`               | `ygrab.job.state`          | The jobs by state                                                                           |
-| `ygrab.enrichment.lookups` | `ygrab.enrichment.outcome` | The Deezer lookups by outcome                                                               |
+| `ygrab.cooldown.strikes`   |                            | The rate limits since the last packaged job                            |
+| `ygrab.jobs`               | `ygrab.job.state`          | The jobs by state                                                      |
+| `ygrab.enrichment.lookups` | `ygrab.enrichment.outcome` | The Deezer lookups by outcome                                          |
 
 ## CLI
 
