@@ -30,7 +30,7 @@ internal static class SessionEndpoints
         if (!limiter.CanTry(context))
             return TypedResults.StatusCode(StatusCodes.Status429TooManyRequests);
 
-        if (!tokens.Matches(request.Token) || tokens.CurrentHash() is not { } hash)
+        if (tokens.MatchingHash(request.Token) is not { } hash)
         {
             limiter.CountWrong(context);
             return TypedResults.Unauthorized();
