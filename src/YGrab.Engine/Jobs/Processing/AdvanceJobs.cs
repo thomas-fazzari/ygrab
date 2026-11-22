@@ -53,7 +53,6 @@ public static partial class AdvanceJobs
         JobRegistry jobs,
         CooldownHolder cooldown,
         ActiveStep activeStep,
-        IJobStore store,
         ICatalog catalog,
         IAudioSource audio,
         IVideoSource videos,
@@ -321,13 +320,7 @@ public static partial class AdvanceJobs
                 cancellationToken
             );
 
-            var cleared = cooldown.Current.Clear();
-            if (cleared != cooldown.Current)
-            {
-                cooldown.Set(cleared);
-                await store.SaveAsync(cleared, CancellationToken.None);
-            }
-
+            await cooldown.UpdateAsync(current => current.Clear());
             return Pause(done);
         }
 
@@ -354,10 +347,7 @@ public static partial class AdvanceJobs
             if (failure is not RemoteFailure.RateLimited)
                 return Pause(failed);
 
-            var hit = cooldown.Current.Hit(failure.Reason, now);
-            // Memory changes first and the save ignores shutdown, so no call follows a rate limit
-            cooldown.Set(hit);
-            await store.SaveAsync(hit, CancellationToken.None);
+            var (hit, _) = await cooldown.UpdateAsync(current => current.Hit(failure.Reason, now));
             LogCooldownStarted(hit.Strikes, hit.Until, failure.Reason);
             return hit.Until is { } until ? new WaitUntil(until, now) : new Stepped();
         }

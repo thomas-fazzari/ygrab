@@ -21,7 +21,7 @@ internal sealed class JobRig
     {
         var feed = new ChangeFeed();
         Jobs = new JobRegistry(feed, Store);
-        Cooldown = new CooldownHolder(feed);
+        Cooldown = new CooldownHolder(feed, Store);
         var signal = new JobSignal();
         var activeStep = new ActiveStep();
         Catalog = new FakeCatalog(release);
@@ -36,12 +36,11 @@ internal sealed class JobRig
             NullLogger<ExpireJobs.Handler>.Instance
         );
         Retry = new RetryJob.Handler(Jobs, Audio, Videos, signal);
-        EndCooldown = new EndCooldown.Handler(Cooldown, Store, signal, Time);
+        EndCooldown = new EndCooldown.Handler(Cooldown, signal, Time);
         Advance = new AdvanceJobs.Handler(
             Jobs,
             Cooldown,
             activeStep,
-            Store,
             Catalog,
             Audio,
             Videos,
