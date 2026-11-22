@@ -30,7 +30,8 @@ internal sealed partial class TokenStore(
     // A generated token belongs only in the token file and the console
     internal static readonly string LogCategory = typeof(TokenStore).FullName!;
 
-    private string? _generated;
+    // A reload can remove the token of the options while the host runs
+    private readonly Lazy<string> _fileToken = new(() => LoadOrCreate(storage, logger));
 
     /// <summary>
     /// Reads or creates the token file when the options hold no token.
@@ -38,31 +39,36 @@ internal sealed partial class TokenStore(
     public void Initialize()
     {
         if (options.CurrentValue.Token is null)
-            Volatile.Write(ref _generated, LoadOrCreate());
+            _ = _fileToken.Value;
     }
 
-    public bool Matches(string? candidate) =>
-        candidate is not null && Current() is { } current && Equal(Hash(candidate), Hash(current));
+    public bool Matches(string? candidate) => MatchingHash(candidate) is not null;
+
+    public byte[]? MatchingHash(string? candidate)
+    {
+        if (candidate is null)
+            return null;
+
+        var hash = Hash(candidate);
+        return Equal(hash, Hash(Current())) ? hash : null;
+    }
 
     public bool MatchesHash(string base64Hash)
     {
         var hash = new byte[SHA256.HashSizeInBytes];
-        return Current() is { } current
-            && Convert.TryFromBase64String(base64Hash, hash, out var written)
+        return Convert.TryFromBase64String(base64Hash, hash, out var written)
             && written == hash.Length
-            && Equal(hash, Hash(current));
+            && Equal(hash, Hash(Current()));
     }
-
-    public byte[]? CurrentHash() => Current() is { } current ? Hash(current) : null;
 
     private static byte[] Hash(string token) => SHA256.HashData(Encoding.UTF8.GetBytes(token));
 
     private static bool Equal(byte[] left, byte[] right) =>
         CryptographicOperations.FixedTimeEquals(left, right);
 
-    private string? Current() => options.CurrentValue.Token ?? Volatile.Read(ref _generated);
+    private string Current() => options.CurrentValue.Token ?? _fileToken.Value;
 
-    private string LoadOrCreate()
+    private static string LoadOrCreate(HostStorage storage, ILogger logger)
     {
         var existing = File.Exists(storage.TokenFile)
             ? File.ReadAllText(storage.TokenFile).Trim()
@@ -83,7 +89,7 @@ internal sealed partial class TokenStore(
 
         using var stream = new FileStream(storage.TokenFile, fileOptions);
         stream.Write(Encoding.UTF8.GetBytes(token + Environment.NewLine));
-        LogGenerated(storage.TokenFile, token);
+        LogGenerated(logger, storage.TokenFile, token);
         return token;
     }
 
@@ -91,5 +97,5 @@ internal sealed partial class TokenStore(
         Level = LogLevel.Warning,
         Message = "No auth token is set, so one was generated and saved in {Path}: {Token}"
     )]
-    private partial void LogGenerated(string path, string token);
+    private static partial void LogGenerated(ILogger logger, string path, string token);
 }
