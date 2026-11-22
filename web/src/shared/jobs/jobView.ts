@@ -54,9 +54,10 @@ const time = (timestamp: string) => Date.parse(timestamp);
 const finishedTime = (job: Job) => time(job.finishedAt ?? job.createdAt);
 const needsAttention = (job: Job) => job.state === "failed" || job.state === "incomplete";
 
-// The order in which the engine runs them: the running job, then the oldest queued one
+// The running job, then the queued jobs in JobQueue.InRunOrder
 const byRunOrder = (first: Job, second: Job) =>
   Number(isRunning(second)) - Number(isRunning(first)) ||
+  first.queueRank - second.queueRank ||
   time(first.createdAt) - time(second.createdAt) ||
   first.id.localeCompare(second.id);
 

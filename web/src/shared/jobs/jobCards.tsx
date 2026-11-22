@@ -29,6 +29,12 @@ export function createJobCards(
     original: originalOf(feed.jobs, shown(), job),
     now: now(),
   });
-  const card = (job: Job) => <JobCard job={job} context={contextOf(job)} />;
+  const card = (job: Job, movable: boolean) => (
+    <JobCard
+      job={job}
+      context={contextOf(job)}
+      movable={movable && isQueued(job) && queued().length > 1}
+    />
+  );
   return { cooldownUntil, card };
 }

@@ -22,6 +22,7 @@ internal static class JobMappings
                 job.RetryAt,
                 (job.State as JobState.Skipped)?.DuplicateOf.Value,
                 job.CreatedAt,
+                job.QueueRank,
                 job.FinishedAt,
                 retention.ExpiresAt(job),
                 job.Release?.Title ?? job.KeptVideo?.Title,

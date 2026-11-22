@@ -20,6 +20,8 @@ internal static class Samples
 
     public static readonly RemoteFailure Transient = new RemoteFailure.Transient("timeout");
 
+    private static long _lastRank;
+
     public static VideoId Video(string id) => VideoId.Create(id).ShouldSucceed();
 
     public static JobId NewJobId() => new(Guid.CreateVersion7());
@@ -54,7 +56,14 @@ internal static class Samples
     public static JobRequest.Audio Audio(MusicLink link) => new(link);
 
     public static Job Queued(MusicLink link, bool force = false, DateTimeOffset? now = null) =>
-        Job.Create(NewJobId(), new Uri(AlbumUrl), Audio(link), force, now ?? TestTime.Start);
+        Job.Create(
+            NewJobId(),
+            new Uri(AlbumUrl),
+            Audio(link),
+            force,
+            NextRank(),
+            now ?? TestTime.Start
+        );
 
     public static JobRequest.Video VideoRequest(
         string id = "vid",
@@ -67,6 +76,7 @@ internal static class Samples
             new Uri(VideoUrl),
             request ?? VideoRequest(),
             force: false,
+            NextRank(),
             now ?? TestTime.Start
         );
 
@@ -119,6 +129,7 @@ internal static class Samples
             RetryAt: null,
             DuplicateOf: null,
             DateTimeOffset.UnixEpoch,
+            QueueRank: 1,
             FinishedAt: null,
             ExpiresAt: null,
             title,
@@ -132,4 +143,6 @@ internal static class Samples
             currentTrack,
             CanFallBackToVideo: false
         );
+
+    private static double NextRank() => Interlocked.Increment(ref _lastRank);
 }

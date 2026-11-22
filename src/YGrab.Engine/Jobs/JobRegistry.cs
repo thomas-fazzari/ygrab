@@ -23,6 +23,7 @@ internal sealed class JobRegistry(ChangeFeed feed, IJobStore store)
 {
     private readonly Lock _lock = new();
     private ImmutableDictionary<JobId, Job> _jobs = [];
+    private long _lastRank;
 
     public Job? Get(JobId id) => Volatile.Read(ref _jobs).GetValueOrDefault(id);
 
@@ -40,14 +41,13 @@ internal sealed class JobRegistry(ChangeFeed feed, IJobStore store)
 
     public Job? Active() => Volatile.Read(ref _jobs).Values.FirstOrDefault(job => job.IsActive);
 
-    /// <returns>The oldest queued job, or null.</returns>
-    public Job? NextQueued() =>
-        Volatile
-            .Read(ref _jobs)
-            .Values.Where(job => job.State is JobState.Queued)
-            .OrderBy(job => job.CreatedAt)
-            .ThenBy(job => job.Id)
-            .FirstOrDefault();
+    public Job? NextQueued() => Queued().FirstOrDefault();
+
+    public IEnumerable<Job> Queued() =>
+        Volatile.Read(ref _jobs).Values.Where(job => job.State is JobState.Queued).InRunOrder();
+
+    /// <returns>A rank above every rank given or loaded so far.</returns>
+    public double NextRank() => Interlocked.Increment(ref _lastRank);
 
     /// <returns>The newest jobs first.</returns>
     public ImmutableArray<Job> List(int limit) =>
@@ -64,6 +64,8 @@ internal sealed class JobRegistry(ChangeFeed feed, IJobStore store)
         lock (_lock)
         {
             _jobs = jobs.ToImmutableDictionary(job => job.Id);
+            var last = jobs.IsEmpty ? 0 : jobs.Max(job => job.QueueRank);
+            Interlocked.Exchange(ref _lastRank, (long)Math.Ceiling(last));
         }
     }
 
@@ -76,6 +78,9 @@ internal sealed class JobRegistry(ChangeFeed feed, IJobStore store)
     /// <summary>
     /// Applies <paramref name="change"/> to the job and publishes the result when it differs.
     /// </summary>
+    /// <remarks>
+    /// The change runs under the lock, so a registry read inside it sees no concurrent change.
+    /// </remarks>
     /// <returns>The job after the change, or null when the job is gone.</returns>
     public Job? Update(JobId id, Func<Job, Job> change) => Apply(id, change).Job;
 

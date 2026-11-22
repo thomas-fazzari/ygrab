@@ -20,10 +20,12 @@ import {
   stateLineOf,
 } from "./jobView.ts";
 import type { CardContext, Original, StateLine } from "./jobView.ts";
+import { DragHandle } from "./queueDrag.tsx";
 
 interface JobCardProps {
   readonly job: Job;
   readonly context: CardContext;
+  readonly movable: boolean;
 }
 
 const NO_TRACK_LIST: ReadonlySet<Job["state"]> = new Set(["expired", "skipped"]);
@@ -53,11 +55,13 @@ export function JobCard(props: JobCardProps) {
       id={cardIdOf(props.job)}
       class={styles.card}
       data-state={props.job.state}
+      data-job={props.job.id}
       data-fallback={props.job.canFallBackToVideo}
       aria-labelledby={titleId}
       tabindex="-1"
     >
       <Cover url={coverOf(props.job)} />
+      <DragHandle class={styles.handle} hidden={!props.movable} />
       <Title id={titleId} job={props.job} />
       <Badge class={styles.badge} tone={badgeTone(props.job.state)}>
         {STATE_LABELS[props.job.state]}

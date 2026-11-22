@@ -18,6 +18,7 @@ namespace YGrab.Contracts;
 )]
 [JsonSerializable(typeof(StartJobRequest))]
 [JsonSerializable(typeof(StartedJobDto))]
+[JsonSerializable(typeof(MoveJobRequest))]
 [JsonSerializable(typeof(JobDto))]
 [JsonSerializable(typeof(ImmutableArray<JobDto>))]
 [JsonSerializable(typeof(CooldownDto))]

@@ -34,3 +34,5 @@ public sealed record Expired : Failure;
 public sealed record AlreadyGrabbed(Job Previous) : Failure;
 
 public sealed record NotRetryable : Failure;
+
+public sealed record NotMovable : Failure;

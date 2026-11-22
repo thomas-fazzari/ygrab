@@ -2,13 +2,14 @@ import type { JSX } from "@solidjs/web";
 import { createMemo, createSignal, Loading, Show, useContext } from "solid-js";
 import ClockIcon from "~icons/solar/clock-circle-linear";
 
-import { endCooldown } from "@/shared/api/client.ts";
+import { endCooldown, moveJob } from "@/shared/api/client.ts";
 import { failureOf } from "@/shared/api/failures.ts";
-import type { Job } from "@/shared/api/schemas.ts";
+import type { Job, JobId } from "@/shared/api/schemas.ts";
 import { createMinuteClock, formatClock } from "@/shared/clock.ts";
 import { JobFeedContext } from "@/shared/jobs/jobFeed.ts";
 import { createJobCards } from "@/shared/jobs/jobCards.tsx";
 import { JobList, JobListSkeleton } from "@/shared/jobs/JobList.tsx";
+import type { OnMove } from "@/shared/jobs/queueDrag.tsx";
 import { activeJobs, recentJobs } from "@/shared/jobs/jobView.ts";
 import { nameOf } from "@/shared/jobs/jobNames.ts";
 import { isFinished } from "@/shared/jobs/jobStates.ts";
@@ -52,6 +53,9 @@ export function HomePage() {
           pinned={feed.offline || cooldownUntil() !== null}
           jobs={active()}
           card={card}
+          onMove={(id, before) => {
+            void move(id, before);
+          }}
         />
         <JobSection
           title="Recent"
@@ -67,10 +71,17 @@ export function HomePage() {
   );
 }
 
+async function move(id: JobId, before: JobId | null) {
+  const failure = failureOf(await moveJob(id, before));
+  if (failure !== null) {
+    notifyError("Cannot move the job", failure);
+  }
+}
+
 interface ExistingSectionProps {
   readonly existing: Existing | null;
   readonly jobs: readonly Job[];
-  readonly card: (job: Job) => JSX.Element;
+  readonly card: (job: Job, movable: boolean) => JSX.Element;
 }
 
 // A finished job offers a new download, a running one has nothing to add
@@ -118,7 +129,8 @@ interface JobSectionProps {
   /** Keeps the section without jobs, for a status in its aside. */
   readonly pinned?: boolean;
   readonly jobs: readonly Job[];
-  readonly card: (job: Job) => JSX.Element;
+  readonly card: (job: Job, movable: boolean) => JSX.Element;
+  readonly onMove?: OnMove;
 }
 
 // Hidden rather than unmounted while empty, so the first card to come in animates
@@ -126,7 +138,7 @@ function JobSection(props: JobSectionProps) {
   return (
     <section hidden={props.jobs.length === 0 && props.pinned !== true}>
       <SectionHeading title={props.title} detail={props.count} aside={props.aside} />
-      <JobList jobs={props.jobs} card={props.card} />
+      <JobList jobs={props.jobs} card={props.card} onMove={props.onMove} />
     </section>
   );
 }

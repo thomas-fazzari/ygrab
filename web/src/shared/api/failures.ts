@@ -17,6 +17,7 @@ const JOB_PROBLEMS: Readonly<Record<string, string>> = {
   "/problems/not-ready": "The file is not ready yet.",
   "/problems/expired": "The files of this job were deleted.",
   "/problems/not-retryable": "This job can no longer be retried.",
+  "/problems/not-movable": "This job or its new place has left the queue.",
 };
 
 const jobProblemOf = (problem: Problem) =>

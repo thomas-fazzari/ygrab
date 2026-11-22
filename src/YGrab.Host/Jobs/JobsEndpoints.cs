@@ -26,6 +26,7 @@ internal static class JobsEndpoints
             jobs.MapGet("/{id:guid}", GetAsync);
             jobs.MapGet("/{id:guid}/file", GetFileAsync);
             jobs.MapPost("/{id:guid}/retry", RetryAsync);
+            jobs.MapPost("/{id:guid}/move", MoveAsync);
             jobs.MapDelete("/{id:guid}", RemoveAsync);
             endpoints.MapGet("/cooldown", GetCooldownAsync);
             endpoints.MapDelete("/cooldown", EndCooldownAsync);
@@ -124,6 +125,27 @@ internal static class JobsEndpoints
             Failure failure => failure.ToProblem(),
             null => throw Unreachable.NullUnion(),
         };
+
+    private static async Task<Results<NoContent, ProblemHttpResult>> MoveAsync(
+        Guid id,
+        MoveJobRequest request,
+        ICommandHandler<MoveJob.Command, MoveJob.Outcome> handler,
+        CancellationToken cancellationToken
+    )
+    {
+        MoveJob.Destination to = request.Before is { } before
+            ? new MoveJob.Destination.Before(new JobId(before))
+            : new MoveJob.Destination.Last();
+        return await handler.HandleAsync(
+            new MoveJob.Command(new JobId(id), to),
+            cancellationToken
+        ) switch
+        {
+            MoveJob.Moved => TypedResults.NoContent(),
+            Failure failure => failure.ToProblem(),
+            null => throw Unreachable.NullUnion(),
+        };
+    }
 
     private static async Task<Results<NoContent, ProblemHttpResult>> RemoveAsync(
         Guid id,

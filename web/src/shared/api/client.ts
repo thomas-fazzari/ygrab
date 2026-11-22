@@ -27,7 +27,7 @@ export type ApiResult<TValue> =
   | { readonly kind: "unreachable" };
 
 type HttpMethod = "GET" | "POST" | "DELETE";
-type JsonBody = Readonly<Record<string, string | number | boolean>>;
+type JsonBody = Readonly<Record<string, string | number | boolean | null>>;
 
 interface Reply {
   readonly ok: boolean;
@@ -96,6 +96,8 @@ export const listJobs = (limit?: number) =>
   request("GET", limit === undefined ? "/jobs" : `/jobs?limit=${limit}`, JobsSchema);
 export const getJob = (id: JobId) => request("GET", `/jobs/${id}`, JobSchema);
 export const retryJob = (id: JobId) => request("POST", `/jobs/${id}/retry`, NoContentSchema);
+export const moveJob = (id: JobId, before: JobId | null) =>
+  request("POST", `/jobs/${id}/move`, NoContentSchema, { before });
 export const removeJob = (id: JobId) => request("DELETE", `/jobs/${id}`, NoContentSchema);
 export const getCooldown = () => request("GET", "/cooldown", CooldownSchema);
 export const endCooldown = () => request("DELETE", "/cooldown", NoContentSchema);
