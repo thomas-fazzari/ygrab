@@ -278,6 +278,10 @@ internal sealed partial class YtDlpRunner(
         // The stream ends with the process, which the caller kills on any failure
         while (await reader.ReadLineAsync(CancellationToken.None) is { } line)
         {
+            // yt-dlp starts some errors with "\r", which ends the line after the prefix
+            if (error is not null && string.IsNullOrWhiteSpace(error))
+                error = line;
+
             if (line.StartsWith(errorPrefix, StringComparison.Ordinal))
                 error = line[errorPrefix.Length..];
             else if (YtDlpErrors.WarningCause(line) is { } cause)
