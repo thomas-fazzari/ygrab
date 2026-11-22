@@ -4,7 +4,6 @@
 using YGrab.Contracts;
 using YGrab.Contracts.Jobs;
 using YGrab.Domain;
-using YGrab.Engine.Jobs;
 
 namespace YGrab.Host.Jobs;
 
@@ -45,11 +44,11 @@ internal static class JobMappings
 
     extension(JobModeCode mode)
     {
-        public StartJob.JobMode ToDomain() =>
+        public JobMode ToDomain() =>
             mode switch
             {
-                JobModeCode.Audio => StartJob.JobMode.Audio,
-                JobModeCode.Video => StartJob.JobMode.Video,
+                JobModeCode.Audio => JobMode.Audio,
+                JobModeCode.Video => JobMode.Video,
                 _ => throw UnknownCode(mode),
             };
     }

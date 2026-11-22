@@ -19,15 +19,6 @@ namespace YGrab.Engine.Jobs;
 /// </remarks>
 public static class StartJob
 {
-    private const string UnknownModeMessage = "The mode is not audio or video.";
-    private const string UnknownQualityMessage = "The quality is not one of the video qualities.";
-
-    public enum JobMode
-    {
-        Audio = 0,
-        Video = 1,
-    }
-
     /// <param name="Force">Grabs the link even when an earlier job already covers it.</param>
     /// <param name="Mode">Whether to grab the audio of a music link or one video.</param>
     /// <param name="Quality">The resolution cap of a video, which an audio job ignores.</param>
@@ -52,28 +43,39 @@ public static class StartJob
         {
             ArgumentNullException.ThrowIfNull(command);
 
-            if (!Enum.IsDefined(command.Mode))
-                return new Invalid(nameof(Command.Mode), UnknownModeMessage);
-
-            if (command.Mode is JobMode.Video && !Enum.IsDefined(command.Quality))
-                return new Invalid(nameof(Command.Quality), UnknownQualityMessage);
-
-            if (
-                !Uri.TryCreate(command.Link.Trim(), UriKind.Absolute, out var url)
-                || ToRequest(command, url) is not { } request
-            )
+            if (!Uri.TryCreate(command.Link.Trim(), UriKind.Absolute, out var url))
             {
-                return new Invalid(nameof(Command.Link), InvalidMessage(command.Mode));
+                return new Invalid(
+                    nameof(Command.Link),
+                    JobRequest.InvalidLinkMessage(command.Mode)
+                );
             }
 
+            return JobRequest.Parse(url, command.Mode, command.Quality) switch
+            {
+                JobRequest request => await StartAsync(
+                    url,
+                    request,
+                    command.Force,
+                    cancellationToken
+                ),
+                ValidationError error => new Invalid(
+                    error.Field ?? nameof(Command.Link),
+                    error.Message
+                ),
+                null => throw Unreachable.NullUnion(),
+            };
+        }
+
+        private async ValueTask<Outcome> StartAsync(
+            Uri url,
+            JobRequest request,
+            bool force,
+            CancellationToken cancellationToken
+        )
+        {
             var now = timeProvider.GetUtcNow();
-            var job = Job.Create(
-                new JobId(Guid.CreateVersion7(now)),
-                url,
-                request,
-                command.Force,
-                now
-            );
+            var job = Job.Create(new JobId(Guid.CreateVersion7(now)), url, request, force, now);
             if (jobs.FindCover(job) is { } previous)
                 return new AlreadyGrabbed(previous);
 
@@ -81,17 +83,5 @@ public static class StartJob
             signal.Ring();
             return new Started(job.Id);
         }
-
-        private static JobRequest? ToRequest(Command command, Uri url) =>
-            command.Mode switch
-            {
-                JobMode.Video => VideoLink.Parse(url) is VideoId videoId
-                    ? new JobRequest.Video(videoId, command.Quality)
-                    : null,
-                _ => MusicLink.Parse(url) is MusicLink link ? new JobRequest.Audio(link) : null,
-            };
-
-        private static string InvalidMessage(JobMode mode) =>
-            mode is JobMode.Video ? VideoLink.InvalidMessage : MusicLink.InvalidMessage;
     }
 }
