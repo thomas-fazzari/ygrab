@@ -26,13 +26,15 @@ internal sealed class JobRegistry(ChangeFeed feed, IJobStore store)
 
     public Job? Get(JobId id) => Volatile.Read(ref _jobs).GetValueOrDefault(id);
 
-    /// <returns>The newest job that matches, or null.</returns>
-    public Job? Find(Func<Job, bool> predicate) =>
-        Volatile
-            .Read(ref _jobs)
-            .Values.Where(predicate)
-            .OrderByDescending(job => job.CreatedAt)
-            .FirstOrDefault();
+    /// <returns>The newest other job that covers the request of the job, or null when the job forces its link.</returns>
+    public Job? FindCover(Job job) => FindCover(job, other => other.Covers(job.Request));
+
+    /// <returns>The newest other job that covers the job once it resolves to the release, or null when the job forces its link.</returns>
+    public Job? FindCover(Job job, Release release)
+    {
+        var resolved = job.Resolve(release);
+        return FindCover(job, other => other.Covers(resolved));
+    }
 
     public IEnumerable<Job> All() => Volatile.Read(ref _jobs).Values;
 
@@ -109,6 +111,15 @@ internal sealed class JobRegistry(ChangeFeed feed, IJobStore store)
             return job;
         }
     }
+
+    private Job? FindCover(Job job, Func<Job, bool> covers) =>
+        job.Force
+            ? null
+            : Volatile
+                .Read(ref _jobs)
+                .Values.Where(other => other.Id != job.Id && covers(other))
+                .OrderByDescending(other => other.CreatedAt)
+                .FirstOrDefault();
 
     private (Job? Job, bool Changed) Apply(JobId id, Func<Job, Job> change)
     {

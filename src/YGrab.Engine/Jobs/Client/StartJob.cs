@@ -66,9 +66,6 @@ public static class StartJob
                 return new Invalid(nameof(Command.Link), InvalidMessage(command.Mode));
             }
 
-            if (!command.Force && jobs.Find(job => job.Covers(request)) is { } previous)
-                return new AlreadyGrabbed(previous);
-
             var now = timeProvider.GetUtcNow();
             var job = Job.Create(
                 new JobId(Guid.CreateVersion7(now)),
@@ -77,6 +74,9 @@ public static class StartJob
                 command.Force,
                 now
             );
+            if (jobs.FindCover(job) is { } previous)
+                return new AlreadyGrabbed(previous);
+
             await jobs.AddAsync(job, cancellationToken);
             signal.Ring();
             return new Started(job.Id);
