@@ -11,6 +11,9 @@
     --color-text-helper: #8d8d8d;
     --color-focus: #f4f4f4;
     --color-error: #fa4d56;
+    --color-warning: #f1c21b;
+    --color-success: #42be65;
+    --color-info: #78a9ff;
 
     --space-1: 2px;
     --space-2: 4px;
