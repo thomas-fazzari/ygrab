@@ -6,6 +6,7 @@ using System.Net.Mime;
 using System.Text;
 using YGrab.Contracts;
 using YGrab.Contracts.Jobs;
+using YGrab.Host;
 using YGrab.Tests.Fakes;
 
 namespace YGrab.Tests.Host;
@@ -50,7 +51,7 @@ public sealed class JobsTests
     [Theory]
     [InlineData("""{"mode":"audio"}""")]
     [InlineData("""{"link":"https://music.youtube.com/watch?v=abc","mode":7}""")]
-    public async Task A_malformed_body_answers_400(string body)
+    public async Task A_malformed_body_answers_a_400_bad_request_problem(string body)
     {
         await using var factory = new HostFactory();
         using var client = factory.CreateBearerClient();
@@ -59,5 +60,10 @@ public sealed class JobsTests
         var response = await client.PostAsync(HostFactory.JobsUrl, content, Cancellation);
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        var problem = await response.Content.ReadFromJsonAsync(
+            ApiJsonContext.Default.ProblemBody,
+            Cancellation
+        );
+        problem!.Type.Should().Be(GlobalExceptionHandler.BadRequestType);
     }
 }

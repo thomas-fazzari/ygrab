@@ -36,6 +36,13 @@ internal static class EndpointExtensions
         {
             services.ConfigureHttpJsonOptions(options => ConfigureJson(options.SerializerOptions));
             services.AddProblemDetails();
+            services.Configure<RouteHandlerOptions>(options => options.ThrowOnBadRequest = true);
+            services.AddExceptionHandler<GlobalExceptionHandler>();
+            // The middleware still logs and tags every exception except a malformed request
+            services.Configure<ExceptionHandlerOptions>(options =>
+                options.SuppressDiagnosticsCallback = context =>
+                    context.Exception is Microsoft.AspNetCore.Http.BadHttpRequestException
+            );
             services.AddHealthChecks();
             services.AddTrustedProxies();
             services.Configure<KestrelServerOptions>(options =>
