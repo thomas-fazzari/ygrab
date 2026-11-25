@@ -5,6 +5,7 @@ using System.Reflection;
 using ArchUnitNET.Fluent.Syntax.Elements.Types;
 using ArchUnitNET.Loader;
 using ArchUnitNET.xUnitV3;
+using YGrab.Domain;
 using YGrab.Engine;
 using static ArchUnitNET.Fluent.ArchRuleDefinition;
 using ArchModel = ArchUnitNET.Domain.Architecture;
@@ -123,6 +124,34 @@ public sealed class LayerTests
                 Classes().That().ResideInAssembly(_engine).And().HaveNameEndingWith("Handler")
             )
             .Check(_model);
+
+    [Fact]
+    public void Domain_classes_are_immutable() =>
+        Classes().That().ResideInAssembly(_domain).Should().BeImmutable().Check(_model);
+
+    [Fact]
+    public void Value_objects_are_created_through_their_factory() =>
+        _domain
+            .GetTypes()
+            .Where(type =>
+                HasResultFactory(type)
+                && (
+                    type.IsValueType
+                    || type.GetConstructors(BindingFlags.Public | BindingFlags.Instance).Length > 0
+                )
+            )
+            .Select(type => type.FullName)
+            .Should()
+            .BeEmpty();
+
+    // A factory returns Result<T> of its own type, as VideoId.Create or MusicLink.Parse
+    private static bool HasResultFactory(System.Type type) =>
+        type.GetMethods(BindingFlags.Public | BindingFlags.Static)
+            .Any(method =>
+                method.ReturnType is { IsGenericType: true } returnType
+                && returnType.GetGenericTypeDefinition() == typeof(Result<>)
+                && returnType.GetGenericArguments()[0] == type
+            );
 
     private static GivenTypesConjunction AssemblyTypes(params Assembly[] assemblies)
     {
