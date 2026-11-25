@@ -6,23 +6,6 @@ using YGrab.Engine.Diagnostics;
 
 namespace YGrab.Engine;
 
-internal sealed class TracingCommandDecorator<TCommand, TOutcome>(
-    ICommandHandler<TCommand, TOutcome> inner
-) : ICommandHandler<TCommand, TOutcome>
-{
-    public ValueTask<TOutcome> HandleAsync(TCommand command, CancellationToken cancellationToken) =>
-        HandlerSpans.TraceAsync(typeof(TCommand), () =>
-            inner.HandleAsync(command, cancellationToken)
-        );
-}
-
-internal sealed class TracingQueryDecorator<TQuery, TResult>(IQueryHandler<TQuery, TResult> inner)
-    : IQueryHandler<TQuery, TResult>
-{
-    public ValueTask<TResult> HandleAsync(TQuery query, CancellationToken cancellationToken) =>
-        HandlerSpans.TraceAsync(typeof(TQuery), () => inner.HandleAsync(query, cancellationToken));
-}
-
 /// <summary>
 /// Runs a handler in a span named after its use case, tagged with the case of its outcome.
 /// </summary>
