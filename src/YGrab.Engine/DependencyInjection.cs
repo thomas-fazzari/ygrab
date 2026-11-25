@@ -10,11 +10,11 @@ namespace Microsoft.Extensions.DependencyInjection;
 
 public static class YGrabEngineServiceCollectionExtensions
 {
-    private static readonly Type[] _handlerInterfaces =
-    [
-        typeof(ICommandHandler<,>),
-        typeof(IQueryHandler<,>),
-    ];
+    private static readonly Dictionary<Type, Type> _tracingDecorators = new()
+    {
+        [typeof(ICommandHandler<,>)] = typeof(TracingCommandDecorator<,>),
+        [typeof(IQueryHandler<,>)] = typeof(TracingQueryDecorator<,>),
+    };
 
     extension(IServiceCollection services)
     {
@@ -35,16 +35,28 @@ public static class YGrabEngineServiceCollectionExtensions
 
     private static void AddHandlers(IServiceCollection services)
     {
+        // Skips the open generic decorators, which implement the handler interfaces too
         var handlers = typeof(YGrabEngineServiceCollectionExtensions)
             .Assembly.GetTypes()
-            .Where(type => type is { IsClass: true, IsAbstract: false });
+            .Where(type => type is { IsClass: true, IsAbstract: false, IsGenericType: false });
         foreach (var handler in handlers)
         {
             foreach (var contract in handler.GetInterfaces().Where(IsHandlerInterface))
-                services.AddSingleton(contract, handler);
+            {
+                var decorator = _tracingDecorators[contract.GetGenericTypeDefinition()]
+                    .MakeGenericType(contract.GetGenericArguments());
+                services.TryAddSingleton(handler);
+                services.AddSingleton(contract, provider =>
+                    ActivatorUtilities.CreateInstance(
+                        provider,
+                        decorator,
+                        provider.GetRequiredService(handler)
+                    )
+                );
+            }
         }
     }
 
     private static bool IsHandlerInterface(Type type) =>
-        type.IsGenericType && _handlerInterfaces.Contains(type.GetGenericTypeDefinition());
+        type.IsGenericType && _tracingDecorators.ContainsKey(type.GetGenericTypeDefinition());
 }
