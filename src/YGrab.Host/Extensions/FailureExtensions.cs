@@ -13,8 +13,7 @@ namespace YGrab.Host.Extensions;
 internal static class FailureExtensions
 {
     internal const string PreviousIdMember = "previousId";
-
-    private const string TypePrefix = "/problems/";
+    internal const string TypePrefix = "/problems/";
 
     extension(Failure failure)
     {
