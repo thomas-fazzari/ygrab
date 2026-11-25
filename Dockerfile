@@ -34,13 +34,13 @@ RUN mise trust && mise install --locked deno uv yt-dlp \
   && mkdir /opt/tools \
   && cp "$(mise which deno)" /opt/tools/ \
   && cp -r "$(mise where yt-dlp)" /opt/tools/yt-dlp
-COPY Directory.Packages.props src/YGrab.Infrastructure.Python/YGrabPythonServiceCollectionExtensions.cs ./
+COPY Directory.Packages.props src/YGrab.Infrastructure.Python/DependencyInjection.cs ./
 COPY src/YGrab.Infrastructure.Python/Python/requirements.txt ./
 # Stages the Python that the host expects, so it finds it and downloads nothing
 # CSnakes.Stage targets an older .NET, hence the roll forward
 ENV CSNAKES_REDIST_CACHE=/opt/python
 RUN csnakes="$(sed -n 's/.*"CSnakes.Runtime" Version="\(.*\)".*/\1/p' Directory.Packages.props)" \
-  && python="$(sed -n 's/.*PythonVersion = "\(.*\)";/\1/p' YGrabPythonServiceCollectionExtensions.cs)" \
+  && python="$(sed -n 's/.*PythonVersion = "\(.*\)";/\1/p' DependencyInjection.cs)" \
   && dotnet tool install CSnakes.Stage --version "$csnakes" --tool-path /usr/local/bin \
   && DOTNET_ROLL_FORWARD=Major setup-python --python "$python" --venv /opt/python/venv \
   && cp "$(mise which uv)" /opt/python/venv/bin/ \
