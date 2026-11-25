@@ -1,5 +1,41 @@
 [
   {
+    "version": "0.3.1",
+    "date": "2026-11-25",
+    "changes": [
+      {
+        "type": "feat",
+        "text": "redesign the notification panel",
+        "author": "thomas-fazzari",
+        "sha": "fc90a2a2852b850dceacf7bb4ba81f7a14337366"
+      },
+      {
+        "type": "perf",
+        "text": "skip handler spans without a listener",
+        "author": "thomas-fazzari",
+        "sha": "b6feb3d01bba82dc1ff926ca6f206547b568b767"
+      },
+      {
+        "type": "feat",
+        "text": "trace each command and query",
+        "author": "thomas-fazzari",
+        "sha": "e735053f97c9aa22c7b03ec7c01cab1838b0d052"
+      },
+      {
+        "type": "feat",
+        "text": "answer bad requests with a problem type",
+        "author": "thomas-fazzari",
+        "sha": "64e5fbc44e48abf8800d9a8110841195014185e0"
+      },
+      {
+        "type": "fix",
+        "text": "keep yt-dlp errors after a carriage return",
+        "author": "thomas-fazzari",
+        "sha": "21737c5ed67601a88acf354d5f97e144192dec86"
+      }
+    ]
+  },
+  {
     "version": "0.3.0",
     "date": "2026-11-22",
     "changes": [
