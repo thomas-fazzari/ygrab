@@ -7,3 +7,8 @@ public interface ICommandHandler<in TCommand, TOutcome>
 {
     ValueTask<TOutcome> HandleAsync(TCommand command, CancellationToken cancellationToken);
 }
+
+public interface IQueryHandler<in TQuery, TResult>
+{
+    ValueTask<TResult> HandleAsync(TQuery query, CancellationToken cancellationToken);
+}

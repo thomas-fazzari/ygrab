@@ -6,6 +6,11 @@ using YGrab.Domain;
 namespace YGrab.Engine;
 
 /// <summary>
+/// Outcome of a command that has nothing to report.
+/// </summary>
+public readonly record struct Done;
+
+/// <summary>
 /// The base of the outcome cases that report a failure several use cases share.
 /// </summary>
 public closed record Failure;
