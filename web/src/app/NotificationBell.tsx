@@ -1,5 +1,5 @@
-import { createEffect, createMemo, createUniqueId, For, Show } from "solid-js";
-import { Popover, PopoverButton, PopoverPanel } from "terracotta/popover";
+import { createEffect, createMemo, createSignal, createUniqueId, For, Show } from "solid-js";
+import { Popover, PopoverButton, PopoverOverlay, PopoverPanel } from "terracotta/popover";
 import { match } from "ts-pattern";
 import BellIcon from "~icons/solar/bell-linear";
 import CheckIcon from "~icons/solar/check-circle-linear";
@@ -21,6 +21,7 @@ import {
 import type { NotificationItem, NotificationKind } from "@/shared/notifications.ts";
 import { Link } from "@/shared/router.tsx";
 import { JOBS_ROUTE } from "@/shared/session.ts";
+import { Badge } from "@/shared/ui/Badge.tsx";
 import { Button } from "@/shared/ui/Button.tsx";
 import { createDisclosure } from "@/shared/ui/disclosure.ts";
 import { IconButton } from "@/shared/ui/IconControl.tsx";
@@ -33,18 +34,23 @@ const countText = (count: number) => (count > MAX_COUNT ? `${MAX_COUNT}+` : Stri
 
 const isEmpty = () => notifications().length === 0;
 
+const unreadIds = () => new Set(notifications().flatMap((item) => (item.read ? [] : [item.id])));
+
 // The bell is inactive without notifications, so the panel closes with the last one
 function createPanel() {
   const disclosure = createDisclosure();
+  const [fresh, setFresh] = createSignal<ReadonlySet<string>>(new Set());
   const close = () => {
     disclosure.onChange(false);
   };
   return {
     ref: disclosure.ref,
     isOpen: disclosure.isOpen,
+    fresh,
     close,
     change: (open: boolean) => {
       if (open) {
+        setFresh(unreadIds());
         markAllRead();
       }
       disclosure.onChange(open && !isEmpty());
@@ -71,9 +77,17 @@ export function NotificationBell() {
   return (
     <Popover ref={panel.ref} class={styles.bell} isOpen={panel.isOpen()} onChange={panel.change}>
       <BellButton anchor={anchor} unread={unread()} empty={isEmpty()} />
+      <Show when={panel.isOpen()}>
+        <PopoverOverlay class={styles.scrim} />
+      </Show>
       <PopoverPanel class={styles.panel} style={anchor}>
+        <h2 class={styles.heading}>Notifications</h2>
+        <Show when={panel.fresh().size > 0}>
+          <span class={styles.new}>{panel.fresh().size} new</span>
+        </Show>
         <NotificationList
           items={notifications()}
+          fresh={panel.fresh()}
           onFollow={panel.close}
           onDismiss={panel.dismiss}
         />
@@ -136,6 +150,7 @@ function BellButton(props: BellButtonProps) {
 
 interface NotificationListProps {
   readonly items: readonly NotificationItem[];
+  readonly fresh: ReadonlySet<string>;
   readonly onFollow: () => void;
   readonly onDismiss: (id: string) => void;
 }
@@ -168,7 +183,14 @@ function NotificationList(props: NotificationListProps) {
       }}
     >
       <For each={props.items} keyed={(item) => item.id}>
-        {(item) => <NotificationRow item={item()} now={now()} onDismiss={dismiss} />}
+        {(item) => (
+          <NotificationRow
+            item={item()}
+            unread={props.fresh.has(item().id)}
+            now={now()}
+            onDismiss={dismiss}
+          />
+        )}
       </For>
     </ol>
   );
@@ -182,29 +204,57 @@ const kindIcon = (kind: NotificationKind) =>
     .with("paused", () => <ClockIcon />)
     .exhaustive();
 
+function Thumbnail(props: { readonly item: NotificationItem }) {
+  return (
+    <Show
+      when={props.item.cover}
+      fallback={
+        <span class={styles.kind} data-kind={props.item.kind}>
+          {kindIcon(props.item.kind)}
+        </span>
+      }
+    >
+      {(cover) => (
+        <img
+          class={styles.cover}
+          src={cover()}
+          alt=""
+          loading="lazy"
+          referrerpolicy="no-referrer"
+        />
+      )}
+    </Show>
+  );
+}
+
 interface NotificationRowProps {
   readonly item: NotificationItem;
+  readonly unread: boolean;
   readonly now: number;
   readonly onDismiss: (id: string) => void;
 }
 
 function NotificationRow(props: NotificationRowProps) {
   return (
-    <li class={styles.item} data-failure={isFailure(props.item)}>
-      <span class={styles.kind}>{kindIcon(props.item.kind)}</span>
-      <Show when={props.item.jobId} fallback={<span class={styles.title}>{props.item.title}</span>}>
-        {(jobId) => (
-          <span class={styles.title}>
+    <li class={styles.item} data-unread={props.unread}>
+      <Thumbnail item={props.item} />
+      <span class={styles.title}>
+        <Show when={props.unread}>
+          <span class="visually-hidden">Unread: </span>
+        </Show>
+        <Show when={props.item.jobId} fallback={props.item.title}>
+          {(jobId) => (
             <Link href={`${JOBS_ROUTE}#${cardIdOf({ id: jobId() })}`}>{props.item.title}</Link>
-          </span>
-        )}
-      </Show>
-      <time class={styles.time} datetime={props.item.at}>
-        {formatAgo(props.item.at, props.now)}
-      </time>
-      <Show when={props.item.detail}>
-        {(detail) => <span class={styles.detail}>{detail()}</span>}
-      </Show>
+          )}
+        </Show>
+      </span>
+      <Badge class={styles.badge} tone={isFailure(props.item) ? "error" : "live"}>
+        {props.item.kind}
+      </Badge>
+      <span class={styles.meta}>
+        <Show when={props.item.detail}>{(detail) => <span>{detail()}</span>}</Show>
+        <time datetime={props.item.at}>{formatAgo(props.item.at, props.now)}</time>
+      </span>
       <span class={styles.dismiss}>
         <IconButton
           label="Dismiss"

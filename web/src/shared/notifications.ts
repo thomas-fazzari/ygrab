@@ -11,8 +11,7 @@ import { formatBytes } from "@/shared/bytes.ts";
 import { formatClock } from "@/shared/clock.ts";
 import type { JobFeed } from "@/shared/jobs/jobFeed.ts";
 import { nameOf } from "@/shared/jobs/jobNames.ts";
-import { STATE_LABELS } from "@/shared/jobs/jobStates.ts";
-import { missingTracksText } from "@/shared/jobs/jobView.ts";
+import { coverOf, missingTracksText } from "@/shared/jobs/jobView.ts";
 import { otherTabs, storedAs } from "@/shared/storage.ts";
 
 const MAX_NOTIFICATIONS = 20;
@@ -24,6 +23,7 @@ const NotificationSchema = v.object({
   detail: v.nullable(v.string()),
   at: TimestampSchema,
   jobId: v.nullable(v.string()),
+  cover: v.optional(v.nullable(v.string()), null),
   read: v.boolean(),
 });
 export type NotificationItem = v.InferOutput<typeof NotificationSchema>;
@@ -83,6 +83,7 @@ export function notifyError(title: string, detail: string) {
     detail,
     at,
     jobId: null,
+    cover: null,
     read: false,
   };
   setInbox((current) => withItems(current, [item]));
@@ -149,9 +150,10 @@ const jobItem = (job: NotifiedJob): NotificationItem => ({
   id: `${job.id}:${job.finishedAt}`,
   kind: job.state,
   title: nameOf(job),
-  detail: [STATE_LABELS[job.state], jobFact(job)].filter((part) => part !== null).join(" · "),
+  detail: jobFact(job),
   at: job.finishedAt,
   jobId: job.id,
+  cover: coverOf(job),
   read: false,
 });
 
@@ -174,6 +176,7 @@ function cooldownItem(previous: Cooldown | null, cooldown: Cooldown): Notificati
     detail: cooldown.reason,
     at: new Date().toISOString(),
     jobId: null,
+    cover: null,
     read: false,
   };
 }
