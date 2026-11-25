@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Checks a commit message file against the rules of CONTRIBUTING.md
+# Checks that a commit message is a Conventional Commits title only
 set -euo pipefail
 
 types='fix|feat|test|style|docs|build|ops|chore|perf|refactor'
