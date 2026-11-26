@@ -47,7 +47,7 @@ Branch from `master`. Name the branch after the type of its main commit and a sh
 
 Commits follow [Conventional Commits](https://www.conventionalcommits.org/) with a title only, within 50 characters, as in `fix: requeue a rate-limited track`. Put the description in the pull request. The `commit-msg` hook checks each commit, but it cannot see the title of a pull request.
 
-Pick the first type that applies:
+Pick the first type that applies to the main change. Tests, docs or formatting that come with a change of code do not count:
 
 | Order | Question                                                  | Type       |
 | ----- | --------------------------------------------------------- | ---------- |
