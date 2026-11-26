@@ -6,21 +6,8 @@ using System.ComponentModel.DataAnnotations;
 namespace YGrab.Host.Auth;
 
 /// <summary>
-/// The secret of the API and the switch that turns the check off.
+/// A new token applies from the next request, while <see cref="Disabled"/> is read at start.
 /// </summary>
-/// <remarks>
-/// <para>
-/// A new token applies to the next request and signs every browser out. <see cref="Disabled"/>
-/// is read at start.
-/// </para>
-/// <para>
-/// The host refuses to start with <see cref="Disabled"/> set outside the Development environment.
-/// </para>
-/// <para>
-/// Without a token, the host generates one at start and keeps it in a file of the data folder. A
-/// start with <see cref="Disabled"/> set generates none.
-/// </para>
-/// </remarks>
 public sealed class AuthOptions
 {
     public const string SectionName = "Auth";

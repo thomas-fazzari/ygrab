@@ -8,13 +8,6 @@ using Microsoft.AspNetCore.Authentication;
 
 namespace YGrab.Host.Auth;
 
-/// <summary>
-/// Signs in a request that carries the token in its Authorization header, for the CLI.
-/// </summary>
-/// <remarks>
-/// A client that sent too many wrong tokens gets a 401 even with the right one, until its window
-/// ends.
-/// </remarks>
 internal sealed class BearerHandler(
     IOptionsMonitor<AuthenticationSchemeOptions> options,
     ILoggerFactory loggers,
@@ -52,7 +45,6 @@ internal sealed class BearerHandler(
         return Task.CompletedTask;
     }
 
-    /// <returns>The Authorization header when it has the bearer scheme, whatever its token.</returns>
     internal static AuthenticationHeaderValue? HeaderOf(HttpRequest request) =>
         AuthenticationHeaderValue.TryParse(request.Headers.Authorization, out var header)
         && string.Equals(header.Scheme, SchemeName, StringComparison.OrdinalIgnoreCase)

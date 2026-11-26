@@ -12,13 +12,13 @@ namespace YGrab.Tests.Host;
 public sealed class LogBufferTests
 {
     [Fact]
-    public async Task The_log_buffer_keeps_no_line_of_the_token_store()
+    public async Task The_log_buffer_keeps_no_line_of_the_token_file()
     {
         await using var factory = new HostFactory();
         var loggers = factory.Services.GetRequiredService<ILoggerFactory>();
         var buffer = factory.Services.GetRequiredService<LogBuffer>();
 
-        Warn(loggers.CreateLogger<TokenStore>(), "secret-token");
+        Warn(loggers.CreateLogger<TokenFile>(), "secret-token");
         Warn(loggers.CreateLogger<LogBufferTests>(), "kept");
 
         using var subscription = buffer.Subscribe();

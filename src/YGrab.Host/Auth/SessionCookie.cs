@@ -7,12 +7,6 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 
 namespace YGrab.Host.Auth;
 
-/// <summary>
-/// The session cookie of the web client, which carries a hash of the token.
-/// </summary>
-/// <remarks>
-/// A request checks the hash against the current token, so a new token signs every browser out.
-/// </remarks>
 internal static class SessionCookie
 {
     internal const string Name = "ygrab";
@@ -37,6 +31,7 @@ internal static class SessionCookie
     public static Task SignOutAsync(HttpContext context) =>
         context.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
 
+    // A new token signs every browser out
     public static async Task ValidateAsync(CookieValidatePrincipalContext context)
     {
         var tokens = context.HttpContext.RequestServices.GetRequiredService<TokenStore>();

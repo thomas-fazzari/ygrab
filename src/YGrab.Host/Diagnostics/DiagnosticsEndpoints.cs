@@ -29,7 +29,7 @@ internal static class DiagnosticsEndpoints
                 provider.GetRequiredService<LogBuffer>()
             );
             services.AddLogging(logging =>
-                logging.AddFilter<LogBuffer>(TokenStore.LogCategory, LogLevel.None)
+                logging.AddFilter<LogBuffer>(TokenFile.LogCategory, LogLevel.None)
             );
             return services;
         }

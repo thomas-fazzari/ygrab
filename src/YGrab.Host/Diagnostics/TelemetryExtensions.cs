@@ -67,10 +67,7 @@ internal static class TelemetryExtensions
                 )
                 .UseOtlpExporter();
             services.AddLogging(logging =>
-                logging.AddFilter<OpenTelemetryLoggerProvider>(
-                    TokenStore.LogCategory,
-                    LogLevel.None
-                )
+                logging.AddFilter<OpenTelemetryLoggerProvider>(TokenFile.LogCategory, LogLevel.None)
             );
             return services;
         }
