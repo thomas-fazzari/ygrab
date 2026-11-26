@@ -36,9 +36,10 @@ internal static class AuthExtensions
                     provider.GetRequiredService<IConfiguration>().GetYGrabDataDirectory()
                 )
             ));
+            services.AddSingleton<TokenFile>();
             services.AddSingleton<TokenStore>();
             services.AddSingleton<WrongTokenLimiter>();
-            services.AddHostedService<AuthStartup>();
+            services.AddHostedService(provider => provider.GetRequiredService<TokenStore>());
 
             services
                 .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
