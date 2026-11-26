@@ -14,7 +14,7 @@ namespace YGrab.Engine.Jobs;
 /// one YouTube video.
 /// </para>
 /// <para>
-/// The command has only flat fields, so it can be the body of a REST call.
+/// The request has only flat fields, so it can be the body of a REST call.
 /// </para>
 /// </remarks>
 public static class StartJob
@@ -22,45 +22,45 @@ public static class StartJob
     /// <param name="Force">Grabs the link even when an earlier job already covers it.</param>
     /// <param name="Mode">Whether to grab the audio of a music link or one video.</param>
     /// <param name="Quality">The resolution cap of a video, which an audio job ignores.</param>
-    public sealed record Command(
+    public sealed record StartJobRequest(
         string Link,
         bool Force = false,
         JobMode Mode = JobMode.Audio,
         VideoQuality Quality = VideoQuality.P1080
-    );
+    ) : ICommand<Outcome>;
 
     public sealed record Started(JobId Id);
 
     public readonly union Outcome(Started, Invalid, AlreadyGrabbed);
 
     internal sealed class Handler(JobRegistry jobs, JobSignal signal, TimeProvider timeProvider)
-        : ICommandHandler<Command, Outcome>
+        : IRequestHandler<StartJobRequest, Outcome>
     {
         public async ValueTask<Outcome> HandleAsync(
-            Command command,
+            StartJobRequest request,
             CancellationToken cancellationToken
         )
         {
-            ArgumentNullException.ThrowIfNull(command);
+            ArgumentNullException.ThrowIfNull(request);
 
-            if (!Uri.TryCreate(command.Link.Trim(), UriKind.Absolute, out var url))
+            if (!Uri.TryCreate(request.Link.Trim(), UriKind.Absolute, out var url))
             {
                 return new Invalid(
-                    nameof(Command.Link),
-                    JobRequest.InvalidLinkMessage(command.Mode)
+                    nameof(StartJobRequest.Link),
+                    JobRequest.InvalidLinkMessage(request.Mode)
                 );
             }
 
-            return JobRequest.Parse(url, command.Mode, command.Quality) switch
+            return JobRequest.Parse(url, request.Mode, request.Quality) switch
             {
-                JobRequest request => await StartAsync(
+                JobRequest parsed => await StartAsync(
                     url,
-                    request,
-                    command.Force,
+                    parsed,
+                    request.Force,
                     cancellationToken
                 ),
                 ValidationError error => new Invalid(
-                    error.Field ?? nameof(Command.Link),
+                    error.Field ?? nameof(StartJobRequest.Link),
                     error.Message
                 ),
                 null => throw Unreachable.NullUnion(),

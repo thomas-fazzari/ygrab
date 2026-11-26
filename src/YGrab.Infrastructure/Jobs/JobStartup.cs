@@ -9,11 +9,11 @@ namespace YGrab.Infrastructure.Jobs;
 /// <summary>
 /// Loads the stored jobs before the sweeper and the runner start.
 /// </summary>
-internal sealed class JobStartup(ICommandHandler<RestoreJobs.Command, Done> restore)
+internal sealed class JobStartup(IRequestHandler<RestoreJobs.RestoreJobsRequest, Done> restore)
     : IHostedService
 {
     public async Task StartAsync(CancellationToken cancellationToken) =>
-        await restore.HandleAsync(new RestoreJobs.Command(), cancellationToken);
+        await restore.HandleAsync(new RestoreJobs.RestoreJobsRequest(), cancellationToken);
 
     public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
 }

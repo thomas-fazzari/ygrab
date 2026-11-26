@@ -73,21 +73,21 @@ internal sealed class JobRig
 
     public CooldownHolder Cooldown { get; }
 
-    public ICommandHandler<StartJob.Command, StartJob.Outcome> Start { get; }
+    public IRequestHandler<StartJob.StartJobRequest, StartJob.Outcome> Start { get; }
 
-    public ICommandHandler<RestoreJobs.Command, Done> Restore { get; }
+    public IRequestHandler<RestoreJobs.RestoreJobsRequest, Done> Restore { get; }
 
-    public ICommandHandler<ExpireJobs.Command, Done> Expire { get; }
+    public IRequestHandler<ExpireJobs.ExpireJobsRequest, Done> Expire { get; }
 
-    public ICommandHandler<RemoveJob.Command, RemoveJob.Outcome> Remove { get; }
+    public IRequestHandler<RemoveJob.RemoveJobRequest, RemoveJob.Outcome> Remove { get; }
 
-    public ICommandHandler<RetryJob.Command, RetryJob.Outcome> Retry { get; }
+    public IRequestHandler<RetryJob.RetryJobRequest, RetryJob.Outcome> Retry { get; }
 
-    public ICommandHandler<MoveJob.Command, MoveJob.Outcome> Move { get; }
+    public IRequestHandler<MoveJob.MoveJobRequest, MoveJob.Outcome> Move { get; }
 
-    public ICommandHandler<EndCooldown.Command, Done> EndCooldown { get; }
+    public IRequestHandler<EndCooldown.EndCooldownRequest, Done> EndCooldown { get; }
 
-    public ICommandHandler<AdvanceJobs.Command, AdvanceJobs.Outcome> Advance { get; }
+    public IRequestHandler<AdvanceJobs.AdvanceJobsRequest, AdvanceJobs.Outcome> Advance { get; }
 
     public async ValueTask<AdvanceJobs.Outcome> AdvanceAsync(int steps)
     {
@@ -95,7 +95,7 @@ internal sealed class JobRig
         for (var step = 0; step < steps; step++)
         {
             outcome = await Advance.HandleAsync(
-                new AdvanceJobs.Command(),
+                new AdvanceJobs.AdvanceJobsRequest(),
                 TestContext.Current.CancellationToken
             );
         }

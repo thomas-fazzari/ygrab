@@ -25,8 +25,8 @@ internal static class EventsEndpoints
 
     private static ServerSentEventsResult<string> Stream(
         ChangeFeed feed,
-        IQueryHandler<ListJobs.Query, ListJobs.Outcome> listJobs,
-        IQueryHandler<GetCooldown.Query, Cooldown> getCooldown,
+        IRequestHandler<ListJobs.ListJobsRequest, ListJobs.Outcome> listJobs,
+        IRequestHandler<GetCooldown.GetCooldownRequest, Cooldown> getCooldown,
         IRetentionSource retention,
         IHostApplicationLifetime lifetime,
         TimeProvider timeProvider,
@@ -50,8 +50,8 @@ internal static class EventsEndpoints
     // and sees one twice at worst
     private static async IAsyncEnumerable<SseItem<string>> RelayAsync(
         ChangeFeed feed,
-        IQueryHandler<ListJobs.Query, ListJobs.Outcome> listJobs,
-        IQueryHandler<GetCooldown.Query, Cooldown> getCooldown,
+        IRequestHandler<ListJobs.ListJobsRequest, ListJobs.Outcome> listJobs,
+        IRequestHandler<GetCooldown.GetCooldownRequest, Cooldown> getCooldown,
         IRetentionSource retention,
         IHostApplicationLifetime lifetime,
         TimeProvider timeProvider,
@@ -65,7 +65,10 @@ internal static class EventsEndpoints
         await EventStream.OpenAsync(response, cancellationToken);
 
         var jobs = (
-            await listJobs.HandleAsync(new ListJobs.Query(ListJobs.MaxLimit), cancellationToken)
+            await listJobs.HandleAsync(
+                new ListJobs.ListJobsRequest(ListJobs.MaxLimit),
+                cancellationToken
+            )
         ).Value switch
         {
             ListJobs.Listed listed => listed.Jobs,
@@ -74,7 +77,10 @@ internal static class EventsEndpoints
             ),
             _ => throw Unreachable.NullUnion(),
         };
-        var cooldown = await getCooldown.HandleAsync(new GetCooldown.Query(), cancellationToken);
+        var cooldown = await getCooldown.HandleAsync(
+            new GetCooldown.GetCooldownRequest(),
+            cancellationToken
+        );
         yield return new SseItem<string>(
             JsonSerializer.Serialize(
                 new SnapshotDto(

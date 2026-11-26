@@ -21,9 +21,12 @@ public sealed class EventsTests
     {
         await using var factory = new HostFactory();
         var start = factory.Services.GetRequiredService<
-            ICommandHandler<StartJob.Command, StartJob.Outcome>
+            IRequestHandler<StartJob.StartJobRequest, StartJob.Outcome>
         >();
-        var started = await start.HandleAsync(new StartJob.Command(Samples.AlbumUrl), Cancellation);
+        var started = await start.HandleAsync(
+            new StartJob.StartJobRequest(Samples.AlbumUrl),
+            Cancellation
+        );
         var id = started.Value.Should().BeOfType<StartJob.Started>().Subject.Id;
         using var client = factory.CreateBearerClient();
         using var response = await client.GetAsync(

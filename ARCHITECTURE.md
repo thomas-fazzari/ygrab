@@ -24,7 +24,7 @@ Domain is pure: no I/O, time or randomness. The Cli never touches the Engine or 
 
 ## Conventions
 
-- A use case goes to one file holding its `Command` or `Query`, its `Handler` and a `union` of outcomes. There is no mediator.
+- A use case goes to one file holding its `<UseCase>Request` record, which implements `ICommand<TOutcome>` or `IQuery<TResult>`, its `Handler`, which implements `IRequestHandler<TRequest, TResponse>`, and a `union` of outcomes. There is no mediator.
 - The Domain owns every policy. An adapter only translates I/O and classifies errors into a `RemoteFailure`.
 - A limit, a timeout or a pause is a named constant. Docs name the constant, never its value.
 

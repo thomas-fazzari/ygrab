@@ -18,16 +18,21 @@ public sealed class RemoveJobTests
     {
         var rig = new JobRig(Samples.Release(TrackCount));
         var started = await rig.Start.HandleAsync(
-            new StartJob.Command(Samples.AlbumUrl),
+            new StartJob.StartJobRequest(Samples.AlbumUrl),
             Cancellation
         );
         var id = started.Value.Should().BeOfType<StartJob.Started>().Subject.Id;
         await rig.AdvanceAsync(steps: 1);
         rig.Audio.WaitAfterNextDownload();
-        var step = rig.Advance.HandleAsync(new AdvanceJobs.Command(), Cancellation).AsTask();
+        var step = rig
+            .Advance.HandleAsync(new AdvanceJobs.AdvanceJobsRequest(), Cancellation)
+            .AsTask();
         await rig.Audio.Waiting;
 
-        var removed = await rig.Remove.HandleAsync(new RemoveJob.Command(id), Cancellation);
+        var removed = await rig.Remove.HandleAsync(
+            new RemoveJob.RemoveJobRequest(id),
+            Cancellation
+        );
         rig.Audio.Release();
         var outcome = await step;
 

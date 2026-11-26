@@ -59,5 +59,5 @@ public sealed class MoveJobTests
         JobRig rig,
         JobId id,
         MoveJob.Destination to
-    ) => rig.Move.HandleAsync(new MoveJob.Command(id, to), Cancellation);
+    ) => rig.Move.HandleAsync(new MoveJob.MoveJobRequest(id, to), Cancellation);
 }

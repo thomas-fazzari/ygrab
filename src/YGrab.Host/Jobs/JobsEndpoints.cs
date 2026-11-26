@@ -36,11 +36,11 @@ internal static class JobsEndpoints
 
     private static async Task<Results<Created<StartedJobDto>, ProblemHttpResult>> StartAsync(
         StartJobRequest request,
-        ICommandHandler<StartJob.Command, StartJob.Outcome> handler,
+        IRequestHandler<StartJob.StartJobRequest, StartJob.Outcome> handler,
         CancellationToken cancellationToken
     )
     {
-        var command = new StartJob.Command(
+        var command = new StartJob.StartJobRequest(
             request.Link,
             request.Force,
             request.Mode.ToDomain(),
@@ -59,13 +59,13 @@ internal static class JobsEndpoints
 
     private static async Task<Results<Ok<ImmutableArray<JobDto>>, ProblemHttpResult>> ListAsync(
         int? limit,
-        IQueryHandler<ListJobs.Query, ListJobs.Outcome> handler,
+        IRequestHandler<ListJobs.ListJobsRequest, ListJobs.Outcome> handler,
         IRetentionSource retention,
         CancellationToken cancellationToken
     )
     {
         var outcome = await handler.HandleAsync(
-            new ListJobs.Query(limit ?? ListJobs.MaxLimit),
+            new ListJobs.ListJobsRequest(limit ?? ListJobs.MaxLimit),
             cancellationToken
         );
         return outcome.Value switch
@@ -80,11 +80,11 @@ internal static class JobsEndpoints
 
     private static async Task<Results<Ok<JobDto>, ProblemHttpResult>> GetAsync(
         Guid id,
-        IQueryHandler<GetJob.Query, GetJob.Outcome> handler,
+        IRequestHandler<GetJob.GetJobRequest, GetJob.Outcome> handler,
         IRetentionSource retention,
         CancellationToken cancellationToken
     ) =>
-        await handler.HandleAsync(new GetJob.Query(new JobId(id)), cancellationToken) switch
+        await handler.HandleAsync(new GetJob.GetJobRequest(new JobId(id)), cancellationToken) switch
         {
             Job job => TypedResults.Ok(job.ToDto(retention.Current)),
             Failure failure => failure.ToProblem(),
@@ -93,12 +93,12 @@ internal static class JobsEndpoints
 
     private static async Task<Results<PhysicalFileHttpResult, ProblemHttpResult>> GetFileAsync(
         Guid id,
-        IQueryHandler<GetJobFile.Query, GetJobFile.Outcome> handler,
+        IRequestHandler<GetJobFile.GetJobFileRequest, GetJobFile.Outcome> handler,
         CancellationToken cancellationToken
     )
     {
         var outcome = await handler.HandleAsync(
-            new GetJobFile.Query(new JobId(id)),
+            new GetJobFile.GetJobFileRequest(new JobId(id)),
             cancellationToken
         );
         return outcome.Value switch
@@ -116,10 +116,13 @@ internal static class JobsEndpoints
 
     private static async Task<Results<Accepted, ProblemHttpResult>> RetryAsync(
         Guid id,
-        ICommandHandler<RetryJob.Command, RetryJob.Outcome> handler,
+        IRequestHandler<RetryJob.RetryJobRequest, RetryJob.Outcome> handler,
         CancellationToken cancellationToken
     ) =>
-        await handler.HandleAsync(new RetryJob.Command(new JobId(id)), cancellationToken) switch
+        await handler.HandleAsync(
+            new RetryJob.RetryJobRequest(new JobId(id)),
+            cancellationToken
+        ) switch
         {
             RetryJob.Retried => TypedResults.Accepted(new Uri($"/api/jobs/{id}", UriKind.Relative)),
             Failure failure => failure.ToProblem(),
@@ -129,7 +132,7 @@ internal static class JobsEndpoints
     private static async Task<Results<NoContent, ProblemHttpResult>> MoveAsync(
         Guid id,
         MoveJobRequest request,
-        ICommandHandler<MoveJob.Command, MoveJob.Outcome> handler,
+        IRequestHandler<MoveJob.MoveJobRequest, MoveJob.Outcome> handler,
         CancellationToken cancellationToken
     )
     {
@@ -137,7 +140,7 @@ internal static class JobsEndpoints
             ? new MoveJob.Destination.Before(new JobId(before))
             : new MoveJob.Destination.Last();
         return await handler.HandleAsync(
-            new MoveJob.Command(new JobId(id), to),
+            new MoveJob.MoveJobRequest(new JobId(id), to),
             cancellationToken
         ) switch
         {
@@ -149,10 +152,13 @@ internal static class JobsEndpoints
 
     private static async Task<Results<NoContent, ProblemHttpResult>> RemoveAsync(
         Guid id,
-        ICommandHandler<RemoveJob.Command, RemoveJob.Outcome> handler,
+        IRequestHandler<RemoveJob.RemoveJobRequest, RemoveJob.Outcome> handler,
         CancellationToken cancellationToken
     ) =>
-        await handler.HandleAsync(new RemoveJob.Command(new JobId(id)), cancellationToken) switch
+        await handler.HandleAsync(
+            new RemoveJob.RemoveJobRequest(new JobId(id)),
+            cancellationToken
+        ) switch
         {
             RemoveJob.Removed => TypedResults.NoContent(),
             Failure failure => failure.ToProblem(),
@@ -160,19 +166,21 @@ internal static class JobsEndpoints
         };
 
     private static async Task<Ok<CooldownDto>> GetCooldownAsync(
-        IQueryHandler<GetCooldown.Query, Cooldown> handler,
+        IRequestHandler<GetCooldown.GetCooldownRequest, Cooldown> handler,
         CancellationToken cancellationToken
     ) =>
         TypedResults.Ok(
-            (await handler.HandleAsync(new GetCooldown.Query(), cancellationToken)).ToDto()
+            (
+                await handler.HandleAsync(new GetCooldown.GetCooldownRequest(), cancellationToken)
+            ).ToDto()
         );
 
     private static async Task<NoContent> EndCooldownAsync(
-        ICommandHandler<EndCooldown.Command, Done> handler,
+        IRequestHandler<EndCooldown.EndCooldownRequest, Done> handler,
         CancellationToken cancellationToken
     )
     {
-        await handler.HandleAsync(new EndCooldown.Command(), cancellationToken);
+        await handler.HandleAsync(new EndCooldown.EndCooldownRequest(), cancellationToken);
         return TypedResults.NoContent();
     }
 

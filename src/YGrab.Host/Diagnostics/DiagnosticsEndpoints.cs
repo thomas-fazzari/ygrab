@@ -46,11 +46,14 @@ internal static class DiagnosticsEndpoints
     }
 
     private static async Task<Ok<StatusDto>> GetStatusAsync(
-        IQueryHandler<GetStatus.Query, GetStatus.Status> getStatus,
+        IRequestHandler<GetStatus.GetStatusRequest, GetStatus.Status> getStatus,
         CancellationToken cancellationToken
     )
     {
-        var status = await getStatus.HandleAsync(new GetStatus.Query(), cancellationToken);
+        var status = await getStatus.HandleAsync(
+            new GetStatus.GetStatusRequest(),
+            cancellationToken
+        );
         return TypedResults.Ok(
             new StatusDto(
                 status.Usage.StartedAt,

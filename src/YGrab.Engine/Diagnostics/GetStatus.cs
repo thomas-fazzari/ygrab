@@ -5,15 +5,18 @@ namespace YGrab.Engine.Diagnostics;
 
 public static class GetStatus
 {
-    public sealed record Query;
+    public sealed record GetStatusRequest : IQuery<Status>;
 
     /// <param name="Components">Versions of every adapter, in registration order.</param>
     public sealed record Status(ImmutableArray<ComponentVersion> Components, ServerUsage Usage);
 
     internal sealed class Handler(IEnumerable<IComponentVersions> versions, IServerUsage usage)
-        : IQueryHandler<Query, Status>
+        : IRequestHandler<GetStatusRequest, Status>
     {
-        public async ValueTask<Status> HandleAsync(Query query, CancellationToken cancellationToken)
+        public async ValueTask<Status> HandleAsync(
+            GetStatusRequest request,
+            CancellationToken cancellationToken
+        )
         {
             var reads = versions.Select(source => source.ReadAsync(cancellationToken).AsTask());
             var components = await Task.WhenAll(reads);

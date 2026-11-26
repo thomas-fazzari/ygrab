@@ -23,7 +23,7 @@ namespace YGrab.Engine.Jobs;
 /// </remarks>
 public static class RetryJob
 {
-    public sealed record Command(JobId Id);
+    public sealed record RetryJobRequest(JobId Id) : ICommand<Outcome>;
 
     public sealed record Retried;
 
@@ -34,16 +34,16 @@ public static class RetryJob
         IAudioSource audio,
         IVideoSource videos,
         JobSignal signal
-    ) : ICommandHandler<Command, Outcome>
+    ) : IRequestHandler<RetryJobRequest, Outcome>
     {
         public async ValueTask<Outcome> HandleAsync(
-            Command command,
+            RetryJobRequest request,
             CancellationToken cancellationToken
         )
         {
-            ArgumentNullException.ThrowIfNull(command);
+            ArgumentNullException.ThrowIfNull(request);
 
-            if (jobs.Get(command.Id) is not { } job)
+            if (jobs.Get(request.Id) is not { } job)
                 return new NotFound();
 
             if (!job.CanRetry)

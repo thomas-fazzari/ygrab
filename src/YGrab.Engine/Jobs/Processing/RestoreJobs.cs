@@ -13,17 +13,17 @@ namespace YGrab.Engine.Jobs;
 /// </remarks>
 public static class RestoreJobs
 {
-    public sealed record Command;
+    public sealed record RestoreJobsRequest : ICommand<Done>;
 
     internal sealed class Handler(
         JobRegistry jobs,
         CooldownHolder cooldown,
         IJobStore store,
         JobSignal signal
-    ) : ICommandHandler<Command, Done>
+    ) : IRequestHandler<RestoreJobsRequest, Done>
     {
         public async ValueTask<Done> HandleAsync(
-            Command command,
+            RestoreJobsRequest request,
             CancellationToken cancellationToken
         )
         {

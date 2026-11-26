@@ -10,12 +10,6 @@ namespace Microsoft.Extensions.DependencyInjection;
 
 public static class YGrabEngineServiceCollectionExtensions
 {
-    private static readonly Dictionary<Type, Type> _tracingDecorators = new()
-    {
-        [typeof(ICommandHandler<,>)] = typeof(TracingCommandDecorator<,>),
-        [typeof(IQueryHandler<,>)] = typeof(TracingQueryDecorator<,>),
-    };
-
     extension(IServiceCollection services)
     {
         public IServiceCollection AddYGrabEngine()
@@ -43,8 +37,9 @@ public static class YGrabEngineServiceCollectionExtensions
         {
             foreach (var contract in handler.GetInterfaces().Where(IsHandlerInterface))
             {
-                var decorator = _tracingDecorators[contract.GetGenericTypeDefinition()]
-                    .MakeGenericType(contract.GetGenericArguments());
+                var decorator = typeof(TracingDecorator<,>).MakeGenericType(
+                    contract.GetGenericArguments()
+                );
                 services.TryAddSingleton(handler);
                 services.AddSingleton(contract, provider =>
                     ActivatorUtilities.CreateInstance(
@@ -58,5 +53,5 @@ public static class YGrabEngineServiceCollectionExtensions
     }
 
     private static bool IsHandlerInterface(Type type) =>
-        type.IsGenericType && _tracingDecorators.ContainsKey(type.GetGenericTypeDefinition());
+        type.IsGenericType && type.GetGenericTypeDefinition() == typeof(IRequestHandler<,>);
 }

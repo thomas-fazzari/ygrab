@@ -25,7 +25,7 @@ public sealed class ExpireJobsTests
         rig.Time.Advance(retention + TimeSpan.FromMinutes(1));
 
         await rig.Expire.HandleAsync(
-            new ExpireJobs.Command(new Retention(retention, retention, _history)),
+            new ExpireJobs.ExpireJobsRequest(new Retention(retention, retention, _history)),
             TestContext.Current.CancellationToken
         );
 
@@ -52,7 +52,7 @@ public sealed class ExpireJobsTests
         rig.Time.Advance(videoRetention + TimeSpan.FromMinutes(1));
 
         await rig.Expire.HandleAsync(
-            new ExpireJobs.Command(new Retention(retention, videoRetention, _history)),
+            new ExpireJobs.ExpireJobsRequest(new Retention(retention, videoRetention, _history)),
             TestContext.Current.CancellationToken
         );
 
@@ -74,7 +74,7 @@ public sealed class ExpireJobsTests
         rig.Time.Advance(TimeSpan.FromDays(2));
 
         await rig.Expire.HandleAsync(
-            new ExpireJobs.Command(new Retention(retention, retention, _history)),
+            new ExpireJobs.ExpireJobsRequest(new Retention(retention, retention, _history)),
             TestContext.Current.CancellationToken
         );
 

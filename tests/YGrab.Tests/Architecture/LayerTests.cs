@@ -98,16 +98,14 @@ public sealed class LayerTests
             .Check(_model);
 
     [Fact]
-    public void Engine_handlers_implement_a_handler_interface() =>
+    public void Engine_handlers_implement_the_handler_interface() =>
         Classes()
             .That()
             .ResideInAssembly(_engine)
             .And()
             .HaveNameEndingWith("Handler")
             .Should()
-            .ImplementInterface(typeof(ICommandHandler<,>))
-            .OrShould()
-            .ImplementInterface(typeof(IQueryHandler<,>))
+            .ImplementInterface(typeof(IRequestHandler<,>))
             .Check(_model);
 
     [Fact]
