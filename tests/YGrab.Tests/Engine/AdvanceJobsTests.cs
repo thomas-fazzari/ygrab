@@ -18,7 +18,7 @@ public sealed class AdvanceJobsTests
     {
         var rig = new JobRig(Samples.Release(TrackCount));
         rig.Audio.Script(null, null, new RemoteFailure.RateLimited("429"));
-        await rig.Start.HandleAsync(new StartJob.Command(Samples.AlbumUrl), Cancellation);
+        await rig.Start.HandleAsync(new StartJob.StartJobRequest(Samples.AlbumUrl), Cancellation);
 
         var limited = await rig.AdvanceAsync(steps: 4);
 
@@ -49,10 +49,10 @@ public sealed class AdvanceJobsTests
     {
         var rig = new JobRig(Samples.Release(TrackCount));
         rig.Audio.Script(null, null, new RemoteFailure.RateLimited("429"));
-        await rig.Start.HandleAsync(new StartJob.Command(Samples.AlbumUrl), Cancellation);
+        await rig.Start.HandleAsync(new StartJob.StartJobRequest(Samples.AlbumUrl), Cancellation);
         await rig.AdvanceAsync(steps: 4);
 
-        await rig.EndCooldown.HandleAsync(new EndCooldown.Command(), Cancellation);
+        await rig.EndCooldown.HandleAsync(new EndCooldown.EndCooldownRequest(), Cancellation);
         await rig.AdvanceAsync(steps: 1);
 
         rig.Audio.Downloads[^1].Should().Be(Samples.Video("v3"));
@@ -65,7 +65,7 @@ public sealed class AdvanceJobsTests
     {
         var rig = new JobRig(Samples.Release(TrackCount));
         rig.Audio.Script(Samples.Transient);
-        await rig.Start.HandleAsync(new StartJob.Command(Samples.AlbumUrl), Cancellation);
+        await rig.Start.HandleAsync(new StartJob.StartJobRequest(Samples.AlbumUrl), Cancellation);
 
         var failed = await rig.AdvanceAsync(steps: 2);
 
@@ -84,7 +84,7 @@ public sealed class AdvanceJobsTests
         var past = Cooldown.None.Hit("429", TestTime.Start - TimeSpan.FromDays(1));
         rig.Cooldown.Load(past);
         rig.Store.Cooldown = past;
-        await rig.Start.HandleAsync(new StartJob.Command(Samples.AlbumUrl), Cancellation);
+        await rig.Start.HandleAsync(new StartJob.StartJobRequest(Samples.AlbumUrl), Cancellation);
 
         var packaged = await rig.AdvanceAsync(steps: 1 + TrackCount + 1);
 
@@ -102,7 +102,7 @@ public sealed class AdvanceJobsTests
     {
         var rig = new JobRig(Samples.Release(TrackCount));
         rig.Enricher.Result = new NotEnriched(EnrichmentFailure.Unreachable);
-        await rig.Start.HandleAsync(new StartJob.Command(Samples.AlbumUrl), Cancellation);
+        await rig.Start.HandleAsync(new StartJob.StartJobRequest(Samples.AlbumUrl), Cancellation);
 
         await rig.AdvanceAsync(steps: 1 + TrackCount + 1);
 
@@ -127,7 +127,7 @@ public sealed class AdvanceJobsTests
         );
         var rig = new JobRig(Samples.Release(TrackCount));
         rig.Enricher.Result = details;
-        await rig.Start.HandleAsync(new StartJob.Command(Samples.AlbumUrl), Cancellation);
+        await rig.Start.HandleAsync(new StartJob.StartJobRequest(Samples.AlbumUrl), Cancellation);
 
         await rig.AdvanceAsync(steps: 1 + TrackCount + 1);
 
@@ -145,7 +145,7 @@ public sealed class AdvanceJobsTests
         rig.Store.Jobs[interrupted.Id] = interrupted;
         rig.Store.Cooldown = cooldown;
 
-        await rig.Restore.HandleAsync(new RestoreJobs.Command(), Cancellation);
+        await rig.Restore.HandleAsync(new RestoreJobs.RestoreJobsRequest(), Cancellation);
         var held = await rig.AdvanceAsync(steps: 1);
 
         var job = rig.Jobs.List(1)[0];
@@ -190,7 +190,7 @@ public sealed class AdvanceJobsTests
         rig.Store.Jobs[interrupted.Id] = interrupted;
         rig.Videos.Kept[interrupted.Id] = Samples.VideoDetails;
 
-        await rig.Restore.HandleAsync(new RestoreJobs.Command(), Cancellation);
+        await rig.Restore.HandleAsync(new RestoreJobs.RestoreJobsRequest(), Cancellation);
         await rig.AdvanceAsync(steps: 2);
 
         rig.Jobs.Get(interrupted.Id)!.State.Should().BeOfType<JobState.Ready>();
@@ -203,12 +203,15 @@ public sealed class AdvanceJobsTests
         const string playlistUrl = "https://music.youtube.com/playlist?list=OLAK5uy_x";
         var rig = new JobRig(Samples.Release(TrackCount));
         var first = await rig.Start.HandleAsync(
-            new StartJob.Command(Samples.AlbumUrl),
+            new StartJob.StartJobRequest(Samples.AlbumUrl),
             Cancellation
         );
         await rig.AdvanceAsync(steps: 1 + TrackCount + 1);
 
-        var second = await rig.Start.HandleAsync(new StartJob.Command(playlistUrl), Cancellation);
+        var second = await rig.Start.HandleAsync(
+            new StartJob.StartJobRequest(playlistUrl),
+            Cancellation
+        );
         await rig.AdvanceAsync(steps: 1);
 
         var held = first.Value.Should().BeOfType<StartJob.Started>().Subject;

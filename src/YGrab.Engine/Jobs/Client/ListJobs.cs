@@ -11,22 +11,25 @@ public static class ListJobs
 
     private const string LimitMessage = "The limit is not between 1 and the maximum.";
 
-    public sealed record Query(int Limit);
+    public sealed record ListJobsRequest(int Limit) : IQuery<Outcome>;
 
     public sealed record Listed(ImmutableArray<Job> Jobs);
 
     public readonly union Outcome(Listed, Invalid);
 
-    internal sealed class Handler(JobRegistry jobs) : IQueryHandler<Query, Outcome>
+    internal sealed class Handler(JobRegistry jobs) : IRequestHandler<ListJobsRequest, Outcome>
     {
-        public ValueTask<Outcome> HandleAsync(Query query, CancellationToken cancellationToken)
+        public ValueTask<Outcome> HandleAsync(
+            ListJobsRequest request,
+            CancellationToken cancellationToken
+        )
         {
-            ArgumentNullException.ThrowIfNull(query);
+            ArgumentNullException.ThrowIfNull(request);
 
             return ValueTask.FromResult<Outcome>(
-                query.Limit is < 1 or > MaxLimit
-                    ? new Invalid(nameof(Query.Limit), LimitMessage)
-                    : new Listed(jobs.List(query.Limit))
+                request.Limit is < 1 or > MaxLimit
+                    ? new Invalid(nameof(ListJobsRequest.Limit), LimitMessage)
+                    : new Listed(jobs.List(request.Limit))
             );
         }
     }

@@ -35,7 +35,7 @@ public static partial class AdvanceJobs
 {
     private const string RemovedState = "Removed";
 
-    public sealed record Command;
+    public sealed record AdvanceJobsRequest : ICommand<Outcome>;
 
     public sealed record Idle;
 
@@ -60,10 +60,10 @@ public static partial class AdvanceJobs
         TimeProvider timeProvider,
         JobMetrics metrics,
         ILogger<Handler> logger
-    ) : ICommandHandler<Command, Outcome>
+    ) : IRequestHandler<AdvanceJobsRequest, Outcome>
     {
         public async ValueTask<Outcome> HandleAsync(
-            Command command,
+            AdvanceJobsRequest request,
             CancellationToken cancellationToken
         )
         {

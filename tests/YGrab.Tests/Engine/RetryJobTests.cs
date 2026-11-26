@@ -22,9 +22,18 @@ public sealed class RetryJobTests
         rig.Jobs.Load([first, second]);
         rig.Store.Jobs[first.Id] = first;
 
-        var retried = await rig.Retry.HandleAsync(new RetryJob.Command(first.Id), Cancellation);
-        var again = await rig.Retry.HandleAsync(new RetryJob.Command(first.Id), Cancellation);
-        var refused = await rig.Retry.HandleAsync(new RetryJob.Command(second.Id), Cancellation);
+        var retried = await rig.Retry.HandleAsync(
+            new RetryJob.RetryJobRequest(first.Id),
+            Cancellation
+        );
+        var again = await rig.Retry.HandleAsync(
+            new RetryJob.RetryJobRequest(first.Id),
+            Cancellation
+        );
+        var refused = await rig.Retry.HandleAsync(
+            new RetryJob.RetryJobRequest(second.Id),
+            Cancellation
+        );
 
         retried.Value.Should().BeOfType<RetryJob.Retried>();
         again.Value.Should().BeOfType<NotRetryable>();

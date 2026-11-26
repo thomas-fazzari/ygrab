@@ -20,7 +20,7 @@ namespace YGrab.Engine.Jobs;
 /// </remarks>
 public static class RemoveJob
 {
-    public sealed record Command(JobId Id);
+    public sealed record RemoveJobRequest(JobId Id) : ICommand<Outcome>;
 
     public sealed record Removed;
 
@@ -32,22 +32,22 @@ public static class RemoveJob
         IJobStore store,
         IJobOutput output,
         JobSignal signal
-    ) : ICommandHandler<Command, Outcome>
+    ) : IRequestHandler<RemoveJobRequest, Outcome>
     {
         public async ValueTask<Outcome> HandleAsync(
-            Command command,
+            RemoveJobRequest request,
             CancellationToken cancellationToken
         )
         {
-            ArgumentNullException.ThrowIfNull(command);
+            ArgumentNullException.ThrowIfNull(request);
 
-            if (jobs.Remove(command.Id) is null)
+            if (jobs.Remove(request.Id) is null)
                 return new NotFound();
 
             signal.Ring();
-            await activeStep.CancelAsync(command.Id);
-            await store.DeleteAsync(command.Id, CancellationToken.None);
-            output.Delete(command.Id);
+            await activeStep.CancelAsync(request.Id);
+            await store.DeleteAsync(request.Id, CancellationToken.None);
+            output.Delete(request.Id);
             return new Removed();
         }
     }

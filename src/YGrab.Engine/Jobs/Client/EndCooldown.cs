@@ -8,16 +8,16 @@ namespace YGrab.Engine.Jobs;
 /// </summary>
 public static class EndCooldown
 {
-    public sealed record Command;
+    public sealed record EndCooldownRequest : ICommand<Done>;
 
     internal sealed class Handler(
         CooldownHolder cooldown,
         JobSignal signal,
         TimeProvider timeProvider
-    ) : ICommandHandler<Command, Done>
+    ) : IRequestHandler<EndCooldownRequest, Done>
     {
         public async ValueTask<Done> HandleAsync(
-            Command command,
+            EndCooldownRequest request,
             CancellationToken cancellationToken
         )
         {

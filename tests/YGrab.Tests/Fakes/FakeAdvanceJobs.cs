@@ -10,7 +10,7 @@ namespace YGrab.Tests.Fakes;
 /// Answers the first call with a given outcome and every later call with <see cref="AdvanceJobs.Idle"/>.
 /// </summary>
 internal sealed class FakeAdvanceJobs(TimeProvider time, AdvanceJobs.Outcome first)
-    : ICommandHandler<AdvanceJobs.Command, AdvanceJobs.Outcome>
+    : IRequestHandler<AdvanceJobs.AdvanceJobsRequest, AdvanceJobs.Outcome>
 {
     private int _calls;
 
@@ -18,7 +18,7 @@ internal sealed class FakeAdvanceJobs(TimeProvider time, AdvanceJobs.Outcome fir
         new(TaskCreationOptions.RunContinuationsAsynchronously);
 
     public ValueTask<AdvanceJobs.Outcome> HandleAsync(
-        AdvanceJobs.Command command,
+        AdvanceJobs.AdvanceJobsRequest request,
         CancellationToken cancellationToken
     )
     {

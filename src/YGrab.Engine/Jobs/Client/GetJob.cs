@@ -7,18 +7,21 @@ namespace YGrab.Engine.Jobs;
 
 public static class GetJob
 {
-    public sealed record Query(JobId Id);
+    public sealed record GetJobRequest(JobId Id) : IQuery<Outcome>;
 
     public readonly union Outcome(Job, NotFound);
 
-    internal sealed class Handler(JobRegistry jobs) : IQueryHandler<Query, Outcome>
+    internal sealed class Handler(JobRegistry jobs) : IRequestHandler<GetJobRequest, Outcome>
     {
-        public ValueTask<Outcome> HandleAsync(Query query, CancellationToken cancellationToken)
+        public ValueTask<Outcome> HandleAsync(
+            GetJobRequest request,
+            CancellationToken cancellationToken
+        )
         {
-            ArgumentNullException.ThrowIfNull(query);
+            ArgumentNullException.ThrowIfNull(request);
 
             return ValueTask.FromResult<Outcome>(
-                jobs.Get(query.Id) is { } job ? job : new NotFound()
+                jobs.Get(request.Id) is { } job ? job : new NotFound()
             );
         }
     }

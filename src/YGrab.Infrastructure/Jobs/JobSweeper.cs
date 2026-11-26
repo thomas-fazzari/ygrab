@@ -10,7 +10,7 @@ namespace YGrab.Infrastructure.Jobs;
 /// Runs <see cref="ExpireJobs"/> at start and then at intervals.
 /// </summary>
 internal sealed partial class JobSweeper(
-    ICommandHandler<ExpireJobs.Command, Done> expireJobs,
+    IRequestHandler<ExpireJobs.ExpireJobsRequest, Done> expireJobs,
     IRetentionSource retention,
     TimeProvider timeProvider,
     ILogger<JobSweeper> logger
@@ -32,7 +32,7 @@ internal sealed partial class JobSweeper(
         try
         {
             await expireJobs.HandleAsync(
-                new ExpireJobs.Command(retention.Current),
+                new ExpireJobs.ExpireJobsRequest(retention.Current),
                 cancellationToken
             );
         }

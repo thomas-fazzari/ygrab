@@ -13,7 +13,7 @@ namespace YGrab.Infrastructure.Jobs;
 /// This loop owns every wait. <see cref="AdvanceJobs"/> only says how long to wait.
 /// </remarks>
 internal sealed partial class JobRuns(
-    ICommandHandler<AdvanceJobs.Command, AdvanceJobs.Outcome> advanceJobs,
+    IRequestHandler<AdvanceJobs.AdvanceJobsRequest, AdvanceJobs.Outcome> advanceJobs,
     JobSignal signal,
     TimeProvider timeProvider,
     ILogger<JobRuns> logger
@@ -39,7 +39,9 @@ internal sealed partial class JobRuns(
 
     private async Task StepAsync(CancellationToken cancellationToken)
     {
-        switch (await advanceJobs.HandleAsync(new AdvanceJobs.Command(), cancellationToken))
+        switch (
+            await advanceJobs.HandleAsync(new AdvanceJobs.AdvanceJobsRequest(), cancellationToken)
+        )
         {
             case AdvanceJobs.Idle:
                 await signal.WaitAsync(cancellationToken);

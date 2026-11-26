@@ -7,11 +7,14 @@ namespace YGrab.Engine.Jobs;
 
 public static class GetCooldown
 {
-    public sealed record Query;
+    public sealed record GetCooldownRequest : IQuery<Cooldown>;
 
-    internal sealed class Handler(CooldownHolder cooldown) : IQueryHandler<Query, Cooldown>
+    internal sealed class Handler(CooldownHolder cooldown)
+        : IRequestHandler<GetCooldownRequest, Cooldown>
     {
-        public ValueTask<Cooldown> HandleAsync(Query query, CancellationToken cancellationToken) =>
-            ValueTask.FromResult(cooldown.Current);
+        public ValueTask<Cooldown> HandleAsync(
+            GetCooldownRequest request,
+            CancellationToken cancellationToken
+        ) => ValueTask.FromResult(cooldown.Current);
     }
 }

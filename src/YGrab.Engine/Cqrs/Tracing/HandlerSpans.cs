@@ -13,7 +13,6 @@ internal static class HandlerSpans
 {
     private const string OutcomeTag = "ygrab.outcome";
 
-    // StartJob.Command gives the span StartJob
     public static string NameOf(Type message) => message.DeclaringType?.Name ?? message.Name;
 
     // An async method restores Activity.Current for its caller, so the span starts in one

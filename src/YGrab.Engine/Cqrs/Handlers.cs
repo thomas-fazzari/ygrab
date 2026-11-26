@@ -3,12 +3,14 @@
 
 namespace YGrab.Engine;
 
-public interface ICommandHandler<in TCommand, TOutcome>
-{
-    ValueTask<TOutcome> HandleAsync(TCommand command, CancellationToken cancellationToken);
-}
+public interface IRequest<out TResponse>;
 
-public interface IQueryHandler<in TQuery, TResult>
+public interface ICommand<out TOutcome> : IRequest<TOutcome>;
+
+public interface IQuery<out TResult> : IRequest<TResult>;
+
+public interface IRequestHandler<in TRequest, TResponse>
+    where TRequest : IRequest<TResponse>
 {
-    ValueTask<TResult> HandleAsync(TQuery query, CancellationToken cancellationToken);
+    ValueTask<TResponse> HandleAsync(TRequest request, CancellationToken cancellationToken);
 }

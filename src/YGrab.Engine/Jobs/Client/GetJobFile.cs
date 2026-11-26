@@ -10,18 +10,21 @@ public sealed record JobFile(string Path, string Name);
 
 public static class GetJobFile
 {
-    public sealed record Query(JobId Id);
+    public sealed record GetJobFileRequest(JobId Id) : IQuery<Outcome>;
 
     public readonly union Outcome(JobFile, NotFound, NotReady, Expired);
 
     internal sealed class Handler(JobRegistry jobs, IJobOutput output)
-        : IQueryHandler<Query, Outcome>
+        : IRequestHandler<GetJobFileRequest, Outcome>
     {
-        public ValueTask<Outcome> HandleAsync(Query query, CancellationToken cancellationToken)
+        public ValueTask<Outcome> HandleAsync(
+            GetJobFileRequest request,
+            CancellationToken cancellationToken
+        )
         {
-            ArgumentNullException.ThrowIfNull(query);
+            ArgumentNullException.ThrowIfNull(request);
 
-            return ValueTask.FromResult(Find(query.Id));
+            return ValueTask.FromResult(Find(request.Id));
         }
 
         private Outcome Find(JobId id) =>

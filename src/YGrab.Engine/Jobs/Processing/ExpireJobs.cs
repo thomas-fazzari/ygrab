@@ -29,29 +29,29 @@ namespace YGrab.Engine.Jobs;
 /// </remarks>
 public static partial class ExpireJobs
 {
-    public sealed record Command(Retention Retention);
+    public sealed record ExpireJobsRequest(Retention Retention) : ICommand<Done>;
 
     internal sealed partial class Handler(
         JobRegistry jobs,
         IJobOutput output,
-        ICommandHandler<RemoveJob.Command, RemoveJob.Outcome> removeJob,
+        IRequestHandler<RemoveJob.RemoveJobRequest, RemoveJob.Outcome> removeJob,
         TimeProvider timeProvider,
         ILogger<Handler> logger
-    ) : ICommandHandler<Command, Done>
+    ) : IRequestHandler<ExpireJobsRequest, Done>
     {
         public async ValueTask<Done> HandleAsync(
-            Command command,
+            ExpireJobsRequest request,
             CancellationToken cancellationToken
         )
         {
-            ArgumentNullException.ThrowIfNull(command);
+            ArgumentNullException.ThrowIfNull(request);
 
             var now = timeProvider.GetUtcNow();
             foreach (var job in jobs.List(int.MaxValue))
             {
                 try
                 {
-                    await SweepAsync(job.Id, command.Retention, now, cancellationToken);
+                    await SweepAsync(job.Id, request.Retention, now, cancellationToken);
                 }
                 catch (Exception exception) when (!cancellationToken.IsCancellationRequested)
                 {
@@ -74,7 +74,7 @@ public static partial class ExpireJobs
 
             if (retention.RemovedAt(job) < now)
             {
-                await removeJob.HandleAsync(new RemoveJob.Command(id), cancellationToken);
+                await removeJob.HandleAsync(new RemoveJob.RemoveJobRequest(id), cancellationToken);
                 return;
             }
 

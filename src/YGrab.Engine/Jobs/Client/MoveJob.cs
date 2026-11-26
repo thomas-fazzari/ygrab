@@ -10,7 +10,7 @@ namespace YGrab.Engine.Jobs;
 /// </summary>
 public static class MoveJob
 {
-    public sealed record Command(JobId Id, Destination To);
+    public sealed record MoveJobRequest(JobId Id, Destination To) : ICommand<Outcome>;
 
     public closed record Destination
     {
@@ -23,21 +23,21 @@ public static class MoveJob
 
     public readonly union Outcome(Moved, NotFound, NotMovable);
 
-    internal sealed class Handler(JobRegistry jobs) : ICommandHandler<Command, Outcome>
+    internal sealed class Handler(JobRegistry jobs) : IRequestHandler<MoveJobRequest, Outcome>
     {
         public async ValueTask<Outcome> HandleAsync(
-            Command command,
+            MoveJobRequest request,
             CancellationToken cancellationToken
         )
         {
-            ArgumentNullException.ThrowIfNull(command);
+            ArgumentNullException.ThrowIfNull(request);
 
             var moved = false;
             var updated = await jobs.UpdateAsync(
-                command.Id,
+                request.Id,
                 current =>
                 {
-                    var rank = current.CanMove ? RankOf(current, command.To) : null;
+                    var rank = current.CanMove ? RankOf(current, request.To) : null;
                     moved = rank is not null;
                     return rank is { } value ? current.MoveTo(value) : current;
                 },
