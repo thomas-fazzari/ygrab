@@ -1,5 +1,17 @@
 [
   {
+    "version": "0.3.2",
+    "date": "2026-11-27",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "bump yt-dlp to 2026.11.23",
+        "author": "thomas-fazzari",
+        "sha": "61ed5fee22a69ddfbefdf34d31ccec2a0cc31b55"
+      }
+    ]
+  },
+  {
     "version": "0.3.1",
     "date": "2026-11-25",
     "changes": [
