@@ -23,7 +23,7 @@ shellcheck = "0.11.0"
 shfmt = "3.14.1"
 ty = "0.0.104"
 uv = "0.13.8"
-yt-dlp = "2026.10.26"
+yt-dlp = "2026.11.23"
 
 [tasks.install]
 description = "Restores the .NET dependencies and the Python environment of the editor and the type checker"
