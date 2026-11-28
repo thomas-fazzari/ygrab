@@ -15,7 +15,7 @@ namespace YGrab.Tests.Architecture;
 // eng/BannedSymbols.<Layer>.txt enforces the namespaces, these rules cover the assemblies and what an analyzer cannot see
 public sealed class LayerTests
 {
-    private const string DeezerNamespace = "YGrab.Infrastructure.Deezer";
+    private const string DEEZER_NAMESPACE = "YGrab.Infrastructure.Deezer";
 
     private static readonly Assembly _cli = Assembly.Load("ygrab");
     private static readonly Assembly _contracts = Assembly.Load("YGrab.Contracts");
@@ -94,7 +94,7 @@ public sealed class LayerTests
             .That()
             .DoNotResideInAssembly(_infrastructure)
             .Should()
-            .NotDependOnAny(Types().That().ResideInNamespace(DeezerNamespace))
+            .NotDependOnAny(Types().That().ResideInNamespace(DEEZER_NAMESPACE))
             .Check(_model);
 
     [Fact]

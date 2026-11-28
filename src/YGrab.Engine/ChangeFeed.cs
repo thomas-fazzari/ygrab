@@ -18,7 +18,7 @@ public closed record Change;
 /// </remarks>
 public sealed class ChangeFeed
 {
-    internal const int SubscriberCapacity = 1024;
+    internal const int SUBSCRIBER_CAPACITY = 1024;
 
     private readonly ConcurrentDictionary<Subscription, byte> _subscribers = new();
 
@@ -44,7 +44,7 @@ public sealed class ChangeFeed
         var subscription = new Subscription(
             this,
             Channel.CreateBounded<Change>(
-                new BoundedChannelOptions(SubscriberCapacity)
+                new BoundedChannelOptions(SUBSCRIBER_CAPACITY)
                 {
                     SingleReader = true,
                     FullMode = BoundedChannelFullMode.Wait,

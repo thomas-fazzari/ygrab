@@ -24,15 +24,15 @@ internal sealed partial class ToolVersions(
 {
     internal static readonly TimeSpan ProbeTimeout = TimeSpan.FromSeconds(10);
 
-    private const string FfmpegExecutable = "ffmpeg";
-    private const string FfmpegPrefix = "ffmpeg version ";
+    private const string FFMPEG_EXECUTABLE = "ffmpeg";
+    private const string FFMPEG_PREFIX = "ffmpeg version ";
 
     public async ValueTask<IReadOnlyList<ComponentVersion>> ReadAsync(
         CancellationToken cancellationToken
     )
     {
         var ytDlp = ProbeAsync(options.Current.Executable, "--version", cancellationToken);
-        var ffmpeg = ProbeAsync(FfmpegExecutable, "-version", cancellationToken);
+        var ffmpeg = ProbeAsync(FFMPEG_EXECUTABLE, "-version", cancellationToken);
         return
         [
             new ComponentVersion("yt-dlp", await ytDlp),
@@ -98,8 +98,8 @@ internal sealed partial class ToolVersions(
 
     // ffmpeg starts with "ffmpeg version 7.1.1 Copyright (c) 2000-2025 the FFmpeg developers"
     private static string? FfmpegVersion(string? line) =>
-        line?.StartsWith(FfmpegPrefix, StringComparison.Ordinal) == true
-            ? line[FfmpegPrefix.Length..].Split(' ', 2)[0]
+        line?.StartsWith(FFMPEG_PREFIX, StringComparison.Ordinal) == true
+            ? line[FFMPEG_PREFIX.Length..].Split(' ', 2)[0]
             : null;
 
     [LoggerMessage(

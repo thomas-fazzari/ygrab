@@ -5,7 +5,7 @@ namespace YGrab.Domain;
 
 internal static class Backoff
 {
-    internal const int MaxAttempts = 3;
+    internal const int MAX_ATTEMPTS = 3;
 
     internal static readonly TimeSpan Base = TimeSpan.FromMinutes(1);
     internal static readonly TimeSpan Cap = TimeSpan.FromMinutes(10);

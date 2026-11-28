@@ -33,7 +33,7 @@ namespace YGrab.Engine.Jobs;
 /// </remarks>
 public static partial class AdvanceJobs
 {
-    private const string RemovedState = "Removed";
+    private const string REMOVED_STATE = "Removed";
 
     public sealed record AdvanceJobsRequest : ICommand<Outcome>;
 
@@ -329,7 +329,7 @@ public static partial class AdvanceJobs
             );
             LogStepFailed(
                 job.Id.Value,
-                failed?.State.GetType().Name ?? RemovedState,
+                failed?.State.GetType().Name ?? REMOVED_STATE,
                 failure.Reason
             );
 
@@ -343,7 +343,7 @@ public static partial class AdvanceJobs
 
         private Outcome Pause(Job? job)
         {
-            var pause = timeProvider.GetUtcNow() + Pacing.Pause(random.Next(Pacing.PauseChoices));
+            var pause = timeProvider.GetUtcNow() + Pacing.Pause(random.Next(Pacing.PAUSE_CHOICES));
             return job?.RetryAt is { } retryAt
                 ? new WaitUntil(retryAt, pause)
                 : new WaitUntil(pause, pause);

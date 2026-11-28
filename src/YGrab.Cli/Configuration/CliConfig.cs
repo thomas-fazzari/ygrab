@@ -12,8 +12,8 @@ internal sealed record CliConfig(string? Url = null, string? Token = null);
 /// </summary>
 internal static class CliConfigStore
 {
-    internal const string UrlVariable = "YGRAB_URL";
-    internal const string TokenVariable = "YGRAB_TOKEN";
+    internal const string URL_VARIABLE = "YGRAB_URL";
+    internal const string TOKEN_VARIABLE = "YGRAB_TOKEN";
 
     public static string FilePath { get; } =
         Path.Combine(
@@ -27,8 +27,8 @@ internal static class CliConfigStore
     {
         var file = Load();
         return new CliConfig(
-            Variable(UrlVariable) ?? file.Url,
-            Variable(TokenVariable) ?? file.Token
+            Variable(URL_VARIABLE) ?? file.Url,
+            Variable(TOKEN_VARIABLE) ?? file.Token
         );
     }
 

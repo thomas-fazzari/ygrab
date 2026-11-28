@@ -52,12 +52,12 @@ internal sealed class WatchCommand : ApiCommand
                 cancellationToken
             );
             return followed.TryGetValue(out _, out var failure)
-                ? ExitCodes.Ok
+                ? ExitCodes.OK
                 : Reporter.Report(failure);
         }
         catch (OperationCanceledException)
         {
-            return ExitCodes.Ok;
+            return ExitCodes.OK;
         }
     }
 }

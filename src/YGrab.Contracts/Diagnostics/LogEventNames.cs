@@ -8,12 +8,12 @@ namespace YGrab.Contracts.Diagnostics;
 /// </summary>
 /// <remarks>
 /// <list type="bullet">
-/// <item><description><see cref="Snapshot"/>: the buffered lines as an array of <see cref="LogEntryDto"/>, oldest first, the first event of each stream.</description></item>
-/// <item><description><see cref="Entry"/>: a <see cref="LogEntryDto"/>.</description></item>
+/// <item><description><see cref="SNAPSHOT"/>: the buffered lines as an array of <see cref="LogEntryDto"/>, oldest first, the first event of each stream.</description></item>
+/// <item><description><see cref="ENTRY"/>: a <see cref="LogEntryDto"/>.</description></item>
 /// </list>
 /// </remarks>
 public static class LogEventNames
 {
-    public const string Snapshot = "logs";
-    public const string Entry = "log";
+    public const string SNAPSHOT = "logs";
+    public const string ENTRY = "log";
 }

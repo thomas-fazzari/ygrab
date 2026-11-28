@@ -11,7 +11,7 @@ namespace YGrab.Cli.Auth;
 
 internal sealed class LoginCommand : Command
 {
-    private const int CheckLimit = 1;
+    private const int CHECK_LIMIT = 1;
 
     private readonly CliSession _session;
 
@@ -37,7 +37,7 @@ internal sealed class LoginCommand : Command
             return _session.Reporter.Usage("The token is empty.");
 
         var checkedToken = await new ApiClient(_session.Http, url, token).ListJobsAsync(
-            CheckLimit,
+            CHECK_LIMIT,
             cancellationToken
         );
         if (!checkedToken.TryGetValue(out _, out var failure))
@@ -47,7 +47,7 @@ internal sealed class LoginCommand : Command
         _session.Reporter.Output.WriteLine(
             $"Logged in to {url}. Saved in {CliConfigStore.FilePath}"
         );
-        return ExitCodes.Ok;
+        return ExitCodes.OK;
     }
 
     private static Uri? ParseUrl(ArgumentResult result)

@@ -25,12 +25,12 @@ namespace YGrab.Host.Proxy;
 /// </remarks>
 public sealed class ProxyOptions
 {
-    public const string SectionName = "Proxy";
+    public const string SECTION_NAME = "Proxy";
 
-    internal const string PrivateNetworks =
+    internal const string PRIVATE_NETWORKS =
         "127.0.0.0/8, ::1/128, 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, fc00::/7";
 
-    public string TrustedNetworks { get; set; } = PrivateNetworks;
+    public string TrustedNetworks { get; set; } = PRIVATE_NETWORKS;
 
     internal IEnumerable<string> NetworkTexts =>
         TrustedNetworks.Split(

@@ -12,8 +12,8 @@ namespace YGrab.Host.Extensions;
 /// </summary>
 internal static class FailureExtensions
 {
-    internal const string PreviousIdMember = "previousId";
-    internal const string TypePrefix = "/problems/";
+    internal const string PREVIOUS_ID_MEMBER = "previousId";
+    internal const string TYPE_PREFIX = "/problems/";
 
     extension(Failure failure)
     {
@@ -44,7 +44,7 @@ internal static class FailureExtensions
             )
             {
                 Status = StatusCodes.Status400BadRequest,
-                Type = TypePrefix + "validation",
+                Type = TYPE_PREFIX + "validation",
                 Title = "Validation failed",
             }
         );
@@ -54,12 +54,12 @@ internal static class FailureExtensions
             new ProblemDetails
             {
                 Status = StatusCodes.Status409Conflict,
-                Type = TypePrefix + "already-grabbed",
+                Type = TYPE_PREFIX + "already-grabbed",
                 Title = "Already grabbed",
-                Extensions = { [PreviousIdMember] = grabbed.Previous.Id.Value },
+                Extensions = { [PREVIOUS_ID_MEMBER] = grabbed.Previous.Id.Value },
             }
         );
 
     private static ProblemHttpResult Problem(int statusCode, string type, string title) =>
-        TypedResults.Problem(statusCode: statusCode, title: title, type: TypePrefix + type);
+        TypedResults.Problem(statusCode: statusCode, title: title, type: TYPE_PREFIX + type);
 }

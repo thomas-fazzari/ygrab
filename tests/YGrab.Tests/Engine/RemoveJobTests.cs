@@ -9,16 +9,16 @@ namespace YGrab.Tests.Engine;
 
 public sealed class RemoveJobTests
 {
-    private const int TrackCount = 2;
+    private const int TRACK_COUNT = 2;
 
     private static CancellationToken Cancellation => TestContext.Current.CancellationToken;
 
     [Fact]
     public async Task A_job_removed_during_its_download_leaves_no_row_and_no_folder_and_the_next_step_waits_a_pause()
     {
-        var rig = new JobRig(Samples.Release(TrackCount));
+        var rig = new JobRig(Samples.Release(TRACK_COUNT));
         var started = await rig.Start.HandleAsync(
-            new StartJob.StartJobRequest(Samples.AlbumUrl),
+            new StartJob.StartJobRequest(Samples.ALBUM_URL),
             Cancellation
         );
         var id = started.Value.Should().BeOfType<StartJob.Started>().Subject.Id;
@@ -43,7 +43,7 @@ public sealed class RemoveJobTests
         var pause = outcome.Value.Should().BeOfType<AdvanceJobs.WaitUntil>().Subject;
         pause
             .At.Should()
-            .BeOnOrAfter(TestTime.Start + TimeSpan.FromSeconds(Pacing.MinPauseSeconds))
-            .And.BeOnOrBefore(TestTime.Start + TimeSpan.FromSeconds(Pacing.MaxPauseSeconds));
+            .BeOnOrAfter(TestTime.Start + TimeSpan.FromSeconds(Pacing.MIN_PAUSE_SECONDS))
+            .And.BeOnOrBefore(TestTime.Start + TimeSpan.FromSeconds(Pacing.MAX_PAUSE_SECONDS));
     }
 }

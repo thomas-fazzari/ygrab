@@ -7,9 +7,9 @@ namespace YGrab.Engine.Jobs;
 
 public static class ListJobs
 {
-    public const int MaxLimit = 1000;
+    public const int MAX_LIMIT = 1000;
 
-    private const string LimitMessage = "The limit is not between 1 and the maximum.";
+    private const string LIMIT_MESSAGE = "The limit is not between 1 and the maximum.";
 
     public sealed record ListJobsRequest(int Limit) : IQuery<Outcome>;
 
@@ -27,8 +27,8 @@ public static class ListJobs
             ArgumentNullException.ThrowIfNull(request);
 
             return ValueTask.FromResult<Outcome>(
-                request.Limit is < 1 or > MaxLimit
-                    ? new Invalid(nameof(ListJobsRequest.Limit), LimitMessage)
+                request.Limit is < 1 or > MAX_LIMIT
+                    ? new Invalid(nameof(ListJobsRequest.Limit), LIMIT_MESSAGE)
                     : new Listed(jobs.List(request.Limit))
             );
         }

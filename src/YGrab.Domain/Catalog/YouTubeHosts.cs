@@ -8,14 +8,14 @@ namespace YGrab.Domain;
 /// </summary>
 internal static class YouTubeHosts
 {
-    internal const string ShortHost = "youtu.be";
+    internal const string SHORT_HOST = "youtu.be";
 
     internal static bool IsHttp(Uri uri) => uri.IsAbsoluteUri && uri.Scheme is "https" or "http";
 
     /// <summary>
-    /// Whether the host is <see cref="ShortHost"/>, which has the video id as its path.
+    /// Whether the host is <see cref="SHORT_HOST"/>, which has the video id as its path.
     /// </summary>
-    internal static bool IsShort(Uri uri) => uri.Host is ShortHost;
+    internal static bool IsShort(Uri uri) => uri.Host is SHORT_HOST;
 
     internal static bool IsWeb(Uri uri) =>
         uri.Host is "music.youtube.com" or "www.youtube.com" or "youtube.com" or "m.youtube.com";

@@ -24,7 +24,7 @@ public sealed class EventsTests
             IRequestHandler<StartJob.StartJobRequest, StartJob.Outcome>
         >();
         var started = await start.HandleAsync(
-            new StartJob.StartJobRequest(Samples.AlbumUrl),
+            new StartJob.StartJobRequest(Samples.ALBUM_URL),
             Cancellation
         );
         var id = started.Value.Should().BeOfType<StartJob.Started>().Subject.Id;
@@ -41,7 +41,7 @@ public sealed class EventsTests
             .EnumerateAsync(Cancellation)
             .FirstAsync(Cancellation);
 
-        first.EventType.Should().Be(EventNames.Snapshot);
+        first.EventType.Should().Be(EventNames.SNAPSHOT);
         var snapshot = JsonSerializer.Deserialize(first.Data, ApiJsonContext.Default.SnapshotDto)!;
         snapshot.Jobs.Should().ContainSingle().Which.Id.Should().Be(id.Value);
     }

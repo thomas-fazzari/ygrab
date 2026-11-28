@@ -15,18 +15,18 @@ namespace YGrab.Infrastructure.Jobs;
 /// </remarks>
 internal sealed class SqliteJobStore(SqliteDatabase database, SqliteWriter writer) : IJobStore
 {
-    private const string SelectJobsSql = $"""
-        SELECT {JobRow.SelectColumns}
+    private const string SELECT_JOBS_SQL = $"""
+        SELECT {JobRow.SELECT_COLUMNS}
         FROM jobs
         """;
 
-    private const string SelectCooldownSql = """
+    private const string SELECT_COOLDOWN_SQL = """
         SELECT strikes AS Strikes, until AS Until, reason AS Reason
         FROM cooldown
         WHERE id = 1
         """;
 
-    private const string InsertJobSql = """
+    private const string INSERT_JOB_SQL = """
         INSERT INTO jobs (
             id, url, link_kind, link_id, quality, force, status, created_at, queue_rank, release,
             tracks, video_title, video_channel, attempt, retry_at, error, file_name, file_size,
@@ -37,7 +37,7 @@ internal sealed class SqliteJobStore(SqliteDatabase database, SqliteWriter write
             @DuplicateOf, @FinishedAt, @EnrichmentFailure)
         """;
 
-    private const string UpdateJobSql = """
+    private const string UPDATE_JOB_SQL = """
         UPDATE jobs SET
             url = @Url, link_kind = @LinkKind, link_id = @LinkId, quality = @Quality,
             force = @Force, status = @Status, created_at = @CreatedAt, queue_rank = @QueueRank,
@@ -49,12 +49,12 @@ internal sealed class SqliteJobStore(SqliteDatabase database, SqliteWriter write
         WHERE id = @Id
         """;
 
-    private const string DeleteJobSql = """
+    private const string DELETE_JOB_SQL = """
         DELETE FROM jobs
         WHERE id = @Id
         """;
 
-    private const string UpsertCooldownSql = """
+    private const string UPSERT_COOLDOWN_SQL = """
         INSERT INTO cooldown (id, strikes, until, reason)
         VALUES (1, @Strikes, @Until, @Reason)
         ON CONFLICT (id) DO UPDATE SET
@@ -65,10 +65,10 @@ internal sealed class SqliteJobStore(SqliteDatabase database, SqliteWriter write
     {
         await using var connection = database.OpenReadConnection();
         var rows = await connection.QueryAsync<JobRow>(
-            new CommandDefinition(SelectJobsSql, cancellationToken: cancellationToken)
+            new CommandDefinition(SELECT_JOBS_SQL, cancellationToken: cancellationToken)
         );
         var cooldown = await connection.QuerySingleOrDefaultAsync<CooldownRow>(
-            new CommandDefinition(SelectCooldownSql, cancellationToken: cancellationToken)
+            new CommandDefinition(SELECT_COOLDOWN_SQL, cancellationToken: cancellationToken)
         );
         return new JobSnapshot([.. rows.Select(JobRowMapper.ToJob)], ToCooldown(cooldown));
     }
@@ -79,7 +79,7 @@ internal sealed class SqliteJobStore(SqliteDatabase database, SqliteWriter write
 
         var row = JobRowMapper.ToRow(job);
         await writer.WriteAsync(
-            connection => connection.Execute(InsertJobSql, row),
+            connection => connection.Execute(INSERT_JOB_SQL, row),
             cancellationToken
         );
     }
@@ -92,7 +92,7 @@ internal sealed class SqliteJobStore(SqliteDatabase database, SqliteWriter write
             connection =>
             {
                 if (current() is { } job)
-                    connection.Execute(UpdateJobSql, JobRowMapper.ToRow(job));
+                    connection.Execute(UPDATE_JOB_SQL, JobRowMapper.ToRow(job));
             },
             cancellationToken
         );
@@ -102,7 +102,7 @@ internal sealed class SqliteJobStore(SqliteDatabase database, SqliteWriter write
     {
         var blob = GuidBlob.ToBlob(id.Value);
         await writer.WriteAsync(
-            connection => connection.Execute(DeleteJobSql, new { Id = blob }),
+            connection => connection.Execute(DELETE_JOB_SQL, new { Id = blob }),
             cancellationToken
         );
     }
@@ -117,7 +117,7 @@ internal sealed class SqliteJobStore(SqliteDatabase database, SqliteWriter write
             cooldown.Reason
         );
         await writer.WriteAsync(
-            connection => connection.Execute(UpsertCooldownSql, row),
+            connection => connection.Execute(UPSERT_COOLDOWN_SQL, row),
             cancellationToken
         );
     }

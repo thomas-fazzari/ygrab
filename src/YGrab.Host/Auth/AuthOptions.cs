@@ -10,11 +10,11 @@ namespace YGrab.Host.Auth;
 /// </summary>
 public sealed class AuthOptions
 {
-    public const string SectionName = "Auth";
+    public const string SECTION_NAME = "Auth";
 
-    internal const int MinTokenLength = 16;
+    internal const int MIN_TOKEN_LENGTH = 16;
 
-    [MinLength(MinTokenLength)]
+    [MinLength(MIN_TOKEN_LENGTH)]
     public string? Token
     {
         get;

@@ -5,9 +5,9 @@ namespace YGrab.Cli;
 
 internal static class ExitCodes
 {
-    public const int Ok = 0;
-    public const int ApiError = 1;
-    public const int Usage = 2;
-    public const int Unreachable = 3;
-    public const int Interrupted = 130;
+    public const int OK = 0;
+    public const int API_ERROR = 1;
+    public const int USAGE = 2;
+    public const int UNREACHABLE = 3;
+    public const int INTERRUPTED = 130;
 }

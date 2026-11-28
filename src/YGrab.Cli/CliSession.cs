@@ -34,7 +34,7 @@ internal sealed class CliSession(HttpClient http, Reporter reporter)
         if (string.IsNullOrWhiteSpace(config.Token) || !TryParseUrl(config.Url, out var url))
         {
             reporter.Usage(
-                $"Run ygrab login <url>, or set {CliConfigStore.UrlVariable} and {CliConfigStore.TokenVariable}."
+                $"Run ygrab login <url>, or set {CliConfigStore.URL_VARIABLE} and {CliConfigStore.TOKEN_VARIABLE}."
             );
             return null;
         }

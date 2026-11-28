@@ -16,7 +16,7 @@ internal sealed class BearerHandler(
     WrongTokenLimiter limiter
 ) : AuthenticationHandler<AuthenticationSchemeOptions>(options, loggers, encoder)
 {
-    internal const string SchemeName = "Bearer";
+    internal const string SCHEME_NAME = "Bearer";
 
     protected override Task<AuthenticateResult> HandleAuthenticateAsync()
     {
@@ -32,22 +32,22 @@ internal sealed class BearerHandler(
             return Task.FromResult(AuthenticateResult.Fail("The token is wrong."));
         }
 
-        var principal = new ClaimsPrincipal(new ClaimsIdentity(SchemeName));
+        var principal = new ClaimsPrincipal(new ClaimsIdentity(SCHEME_NAME));
         return Task.FromResult(
-            AuthenticateResult.Success(new AuthenticationTicket(principal, SchemeName))
+            AuthenticateResult.Success(new AuthenticationTicket(principal, SCHEME_NAME))
         );
     }
 
     protected override Task HandleChallengeAsync(AuthenticationProperties properties)
     {
         Response.StatusCode = StatusCodes.Status401Unauthorized;
-        Response.Headers.WWWAuthenticate = SchemeName;
+        Response.Headers.WWWAuthenticate = SCHEME_NAME;
         return Task.CompletedTask;
     }
 
     internal static AuthenticationHeaderValue? HeaderOf(HttpRequest request) =>
         AuthenticationHeaderValue.TryParse(request.Headers.Authorization, out var header)
-        && string.Equals(header.Scheme, SchemeName, StringComparison.OrdinalIgnoreCase)
+        && string.Equals(header.Scheme, SCHEME_NAME, StringComparison.OrdinalIgnoreCase)
             ? header
             : null;
 }

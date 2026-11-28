@@ -22,7 +22,7 @@ namespace YGrab.Infrastructure.Configuration;
 /// </remarks>
 public sealed class YtDlpOptions
 {
-    public const string SectionName = "YtDlp";
+    public const string SECTION_NAME = "YtDlp";
 
     [Required]
     public string Executable { get; set; } = "yt-dlp";

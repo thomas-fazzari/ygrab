@@ -18,7 +18,7 @@ namespace YGrab.Infrastructure.YtDlp;
 /// </para>
 /// <para>
 /// yt-dlp names the file after the video id in the work folder, and prints its path after the
-/// line tag <see cref="FileTag"/>. The caller moves it out, then calls
+/// line tag <see cref="FILE_TAG"/>. The caller moves it out, then calls
 /// <see cref="DeleteWork"/>.
 /// </para>
 /// <para>
@@ -45,23 +45,23 @@ internal sealed partial class YtDlpRunner(
     ILogger<YtDlpRunner> logger
 )
 {
-    internal const string FileTag = "file";
-    internal const string NoFileMessage = "YouTube sent no file.";
+    internal const string FILE_TAG = "file";
+    internal const string NO_FILE_MESSAGE = "YouTube sent no file.";
 
-    private const string CookiesCopyName = "cookies.txt";
-    private const string DiskFullMessage = "No space left on device";
+    private const string COOKIES_COPY_NAME = "cookies.txt";
+    private const string DISK_FULL_MESSAGE = "No space left on device";
 
     // The rate-limit arguments of yt-dlp: change them only for a reason that comes from YouTube
-    private const string SleepRequestsSeconds = "1";
-    private const string Retries = "10";
-    private const string FragmentRetries = "10";
-    private const string ExtractorRetries = "3";
-    private const string RetrySleep = "exp=1:30";
+    private const string SLEEP_REQUESTS_SECONDS = "1";
+    private const string RETRIES = "10";
+    private const string FRAGMENT_RETRIES = "10";
+    private const string EXTRACTOR_RETRIES = "3";
+    private const string RETRY_SLEEP = "exp=1:30";
 
-    private const string VideoIdTag = "ygrab.video.id";
+    private const string VIDEO_ID_TAG = "ygrab.video.id";
 
     private readonly Counter<long> _warnings = meterFactory
-        .Create(YGrabTelemetry.Name)
+        .Create(YGrabTelemetry.NAME)
         .CreateCounter<long>(
             "ygrab.ytdlp.warnings",
             unit: "{warning}",
@@ -91,7 +91,7 @@ internal sealed partial class YtDlpRunner(
         Directory.CreateDirectory(work);
 
         using var activity = YGrabTelemetry.Source.StartActivity("yt-dlp");
-        activity?.SetTag(VideoIdTag, videoId.Value);
+        activity?.SetTag(VIDEO_ID_TAG, videoId.Value);
         try
         {
             var failure = await RunProcessAsync(
@@ -109,7 +109,7 @@ internal sealed partial class YtDlpRunner(
         }
         finally
         {
-            File.Delete(Path.Combine(work, CookiesCopyName));
+            File.Delete(Path.Combine(work, COOKIES_COPY_NAME));
         }
     }
 
@@ -186,7 +186,7 @@ internal sealed partial class YtDlpRunner(
             return null;
 
         var lastError = await error;
-        if (lastError?.Contains(DiskFullMessage, StringComparison.Ordinal) == true)
+        if (lastError?.Contains(DISK_FULL_MESSAGE, StringComparison.Ordinal) == true)
             throw new IOException(lastError);
 
         var failure = YtDlpErrors.Classify(lastError);
@@ -217,23 +217,23 @@ internal sealed partial class YtDlpRunner(
             "--progress",
             "--newline",
             "--sleep-requests",
-            SleepRequestsSeconds,
+            SLEEP_REQUESTS_SECONDS,
             "--retries",
-            Retries,
+            RETRIES,
             "--fragment-retries",
-            FragmentRetries,
+            FRAGMENT_RETRIES,
             "--extractor-retries",
-            ExtractorRetries,
+            EXTRACTOR_RETRIES,
             "--retry-sleep",
-            RetrySleep,
+            RETRY_SLEEP,
             "--retry-sleep",
-            $"extractor:{RetrySleep}",
+            $"extractor:{RETRY_SLEEP}",
             "--retry-sleep",
-            $"fragment:{RetrySleep}",
+            $"fragment:{RETRY_SLEEP}",
             "--output",
             Path.Combine(directory, $"{videoId.Value}.%(ext)s"),
             "--print",
-            $"after_move:{FileTag} %(filepath)s",
+            $"after_move:{FILE_TAG} %(filepath)s",
         ];
         foreach (var argument in common.Concat(arguments))
         {
@@ -242,7 +242,7 @@ internal sealed partial class YtDlpRunner(
 
         if (settings.CookiesFile is { } cookies)
         {
-            var copy = Path.Combine(directory, CookiesCopyName);
+            var copy = Path.Combine(directory, COOKIES_COPY_NAME);
             File.Copy(cookies, copy, overwrite: true);
             info.ArgumentList.Add("--cookies");
             info.ArgumentList.Add(copy);
@@ -257,7 +257,7 @@ internal sealed partial class YtDlpRunner(
         _warnings.Add(
             1,
             new KeyValuePair<string, object?>(
-                YGrabTelemetry.ErrorTypeTag,
+                YGrabTelemetry.ERROR_TYPE_TAG,
                 YGrabTelemetry.ErrorType(cause)
             )
         );
@@ -272,7 +272,7 @@ internal sealed partial class YtDlpRunner(
     /// <returns>The last error line of yt-dlp, without its prefix.</returns>
     private async Task<string?> ReadErrorAsync(StreamReader reader)
     {
-        const string errorPrefix = "ERROR: ";
+        const string ERROR_PREFIX = "ERROR: ";
 
         string? error = null;
         // The stream ends with the process, which the caller kills on any failure
@@ -282,8 +282,8 @@ internal sealed partial class YtDlpRunner(
             if (error is not null && string.IsNullOrWhiteSpace(error))
                 error = line;
 
-            if (line.StartsWith(errorPrefix, StringComparison.Ordinal))
-                error = line[errorPrefix.Length..];
+            if (line.StartsWith(ERROR_PREFIX, StringComparison.Ordinal))
+                error = line[ERROR_PREFIX.Length..];
             else if (YtDlpErrors.WarningCause(line) is { } cause)
                 CountWarning(cause);
         }

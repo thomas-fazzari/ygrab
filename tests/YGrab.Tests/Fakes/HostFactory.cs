@@ -18,7 +18,7 @@ namespace YGrab.Tests.Fakes;
 /// </summary>
 internal sealed class HostFactory : WebApplicationFactory<Program>
 {
-    public const string Token = "test-token-0123456789";
+    public const string TOKEN = "test-token-0123456789";
 
     public static readonly Uri JobsUrl = Relative("/api/jobs");
     public static readonly Uri EventsUrl = Relative("/api/events");
@@ -35,8 +35,8 @@ internal sealed class HostFactory : WebApplicationFactory<Program>
     {
         var client = CreateClient();
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
-            BearerHandler.SchemeName,
-            Token
+            BearerHandler.SCHEME_NAME,
+            TOKEN
         );
         return client;
     }
@@ -47,7 +47,7 @@ internal sealed class HostFactory : WebApplicationFactory<Program>
     protected override void ConfigureWebHost(IWebHostBuilder builder) =>
         builder
             .UseSetting("Storage:DataDirectory", _data.FullName)
-            .UseSetting("Auth:Token", Token)
+            .UseSetting("Auth:Token", TOKEN)
             .ConfigureTestServices(services =>
             {
                 services.RemoveAll<IHostedService>();

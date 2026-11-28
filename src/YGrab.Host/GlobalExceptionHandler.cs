@@ -13,7 +13,7 @@ internal sealed class GlobalExceptionHandler(
     IHostEnvironment environment
 ) : IExceptionHandler
 {
-    internal const string BadRequestType = FailureExtensions.TypePrefix + "bad-request";
+    internal const string BAD_REQUEST_TYPE = FailureExtensions.TYPE_PREFIX + "bad-request";
 
     public ValueTask<bool> TryHandleAsync(
         HttpContext httpContext,
@@ -27,7 +27,7 @@ internal sealed class GlobalExceptionHandler(
                 new ProblemDetails
                 {
                     Status = badRequest.StatusCode,
-                    Type = BadRequestType,
+                    Type = BAD_REQUEST_TYPE,
                     Title = "Bad request",
                 }
             )
@@ -37,7 +37,7 @@ internal sealed class GlobalExceptionHandler(
                 new ProblemDetails
                 {
                     Status = StatusCodes.Status500InternalServerError,
-                    Type = FailureExtensions.TypePrefix + "unexpected",
+                    Type = FailureExtensions.TYPE_PREFIX + "unexpected",
                     Title = "Unexpected error",
                     Detail = environment.IsDevelopment() ? exception.ToString() : null,
                 }

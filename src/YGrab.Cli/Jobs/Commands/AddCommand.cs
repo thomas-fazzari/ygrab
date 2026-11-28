@@ -11,11 +11,12 @@ namespace YGrab.Cli.Jobs;
 
 internal sealed class AddCommand : ApiCommand
 {
-    private const string StandardInput = "-";
+    private const string STANDARD_INPUT = "-";
 
     private readonly Argument<string[]> _links = new("links")
     {
-        Description = $"The links to grab, or {StandardInput} to read them from the standard input",
+        Description =
+            $"The links to grab, or {STANDARD_INPUT} to read them from the standard input",
         Arity = ArgumentArity.OneOrMore,
     };
 
@@ -61,7 +62,7 @@ internal sealed class AddCommand : ApiCommand
         var links = await ReadLinksAsync(parse.GetRequiredValue(_links), cancellationToken);
         var wait = parse.GetValue(_wait);
         var started = new List<Guid>();
-        var exit = ExitCodes.Ok;
+        var exit = ExitCodes.OK;
         foreach (var link in links)
         {
             var request = new StartJobRequest(
@@ -90,7 +91,7 @@ internal sealed class AddCommand : ApiCommand
             }
 
             exit = Math.Max(exit, Reporter.Report(failure));
-            if (exit == ExitCodes.Unreachable)
+            if (exit == ExitCodes.UNREACHABLE)
                 return exit;
         }
 
@@ -135,7 +136,7 @@ internal sealed class AddCommand : ApiCommand
         var links = new List<string>();
         foreach (var argument in arguments)
         {
-            if (!string.Equals(argument, StandardInput, StringComparison.Ordinal))
+            if (!string.Equals(argument, STANDARD_INPUT, StringComparison.Ordinal))
             {
                 links.Add(argument);
                 continue;

@@ -27,17 +27,17 @@ public static class YGrabInfrastructureServiceCollectionExtensions
         {
             services
                 .AddOptions<StorageOptions>()
-                .BindConfiguration(StorageOptions.SectionName, FailOnUnknownKeys)
+                .BindConfiguration(StorageOptions.SECTION_NAME, FailOnUnknownKeys)
                 .ValidateOnStart();
             services.AddSingleton<IValidateOptions<StorageOptions>, StorageOptionsValidator>();
             services
                 .AddOptions<JobsOptions>()
-                .BindConfiguration(JobsOptions.SectionName, FailOnUnknownKeys)
+                .BindConfiguration(JobsOptions.SECTION_NAME, FailOnUnknownKeys)
                 .ValidateOnStart();
             services.AddSingleton<IValidateOptions<JobsOptions>, JobsOptionsValidator>();
             services
                 .AddOptions<YtDlpOptions>()
-                .BindConfiguration(YtDlpOptions.SectionName, FailOnUnknownKeys)
+                .BindConfiguration(YtDlpOptions.SECTION_NAME, FailOnUnknownKeys)
                 .ValidateOnStart();
             services.AddSingleton<IValidateOptions<YtDlpOptions>, YtDlpOptionsValidator>();
             services.TryAddSingleton(TimeProvider.System);
@@ -55,19 +55,19 @@ public static class YGrabInfrastructureServiceCollectionExtensions
             services.AddSingleton<IJobOutput, JobOutput>();
             services.AddSingleton<ICoverSource, HttpCoverSource>();
             services
-                .AddHttpClient(HttpCoverSource.ClientName, client =>
-                    client.MaxResponseContentBufferSize = HttpCoverSource.MaxResponseBytes
+                .AddHttpClient(HttpCoverSource.CLIENT_NAME, client =>
+                    client.MaxResponseContentBufferSize = HttpCoverSource.MAX_RESPONSE_BYTES
                 )
                 .AddStandardResilienceHandler(RetryExceptTooManyRequests);
             services.AddSingleton<IReleaseEnricher, DeezerEnricher>();
             services
-                .AddHttpClient(DeezerEnricher.ClientName, client =>
+                .AddHttpClient(DeezerEnricher.CLIENT_NAME, client =>
                 {
-                    client.BaseAddress = new Uri(DeezerEnricher.BaseAddress);
+                    client.BaseAddress = new Uri(DeezerEnricher.BASE_ADDRESS);
                     client.DefaultRequestHeaders.UserAgent.Add(
-                        new ProductInfoHeaderValue(DeezerEnricher.UserAgent, productVersion: null)
+                        new ProductInfoHeaderValue(DeezerEnricher.USER_AGENT, productVersion: null)
                     );
-                    client.MaxResponseContentBufferSize = DeezerEnricher.MaxResponseBytes;
+                    client.MaxResponseContentBufferSize = DeezerEnricher.MAX_RESPONSE_BYTES;
                 })
                 .AddStandardResilienceHandler(RetryExceptTooManyRequests);
             services.AddSingleton(typeof(LastValidOptions<>));

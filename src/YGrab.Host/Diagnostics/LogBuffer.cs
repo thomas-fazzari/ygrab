@@ -11,7 +11,7 @@ namespace YGrab.Host.Diagnostics;
 /// </summary>
 /// <remarks>
 /// <para>
-/// It keeps <see cref="Capacity"/> lines and cuts a message after <see cref="MaxMessageLength"/>
+/// It keeps <see cref="CAPACITY"/> lines and cuts a message after <see cref="MAX_MESSAGE_LENGTH"/>
 /// characters.
 /// </para>
 /// <para>
@@ -19,18 +19,18 @@ namespace YGrab.Host.Diagnostics;
 /// subscriber queue ends the subscription once the reader drains it.
 /// </para>
 /// </remarks>
-[ProviderAlias(Alias)]
+[ProviderAlias(ALIAS)]
 internal sealed class LogBuffer(TimeProvider timeProvider) : ILoggerProvider
 {
-    public const string Alias = "Diagnostics";
-    internal const int Capacity = 1000;
-    internal const int MaxMessageLength = 16 * 1024;
-    internal const int SubscriberCapacity = 1024;
+    public const string ALIAS = "Diagnostics";
+    internal const int CAPACITY = 1000;
+    internal const int MAX_MESSAGE_LENGTH = 16 * 1024;
+    internal const int SUBSCRIBER_CAPACITY = 1024;
 
     // Logger of each use case is its nested Handler type, a name that tells nothing
-    private const string HandlerTypeName = "Handler";
+    private const string HANDLER_TYPE_NAME = "Handler";
 
-    private static readonly BoundedChannelOptions _subscriberOptions = new(SubscriberCapacity)
+    private static readonly BoundedChannelOptions _subscriberOptions = new(SUBSCRIBER_CAPACITY)
     {
         SingleReader = true,
         FullMode = BoundedChannelFullMode.Wait,
@@ -38,7 +38,7 @@ internal sealed class LogBuffer(TimeProvider timeProvider) : ILoggerProvider
 
     // Guards the lines and the subscribers together, so a new subscriber misses no line
     private readonly Lock _lock = new();
-    private readonly Queue<LogEntryDto> _entries = new(Capacity);
+    private readonly Queue<LogEntryDto> _entries = new(CAPACITY);
     private ImmutableArray<Subscription> _subscribers = [];
 
     public ILogger CreateLogger(string categoryName) => new Logger(this, SourceOf(categoryName));
@@ -66,7 +66,7 @@ internal sealed class LogBuffer(TimeProvider timeProvider) : ILoggerProvider
         var entry = new LogEntryDto(timeProvider.GetUtcNow(), CodeOf(level), source, message);
         lock (_lock)
         {
-            if (_entries.Count == Capacity)
+            if (_entries.Count == CAPACITY)
                 _entries.Dequeue();
 
             _entries.Enqueue(entry);
@@ -88,7 +88,7 @@ internal sealed class LogBuffer(TimeProvider timeProvider) : ILoggerProvider
     private static string SourceOf(string category)
     {
         var segments = category.Split('.');
-        return segments is [.., var owner, HandlerTypeName] ? owner : segments[^1];
+        return segments is [.., var owner, HANDLER_TYPE_NAME] ? owner : segments[^1];
     }
 
     private static LogLevelCode CodeOf(LogLevel level) =>
@@ -159,6 +159,6 @@ internal sealed class LogBuffer(TimeProvider timeProvider) : ILoggerProvider
         }
 
         private static string Truncate(string message) =>
-            message.Length > MaxMessageLength ? message[..MaxMessageLength] : message;
+            message.Length > MAX_MESSAGE_LENGTH ? message[..MAX_MESSAGE_LENGTH] : message;
     }
 }

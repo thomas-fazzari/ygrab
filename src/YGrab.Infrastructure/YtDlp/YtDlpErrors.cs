@@ -10,10 +10,10 @@ namespace YGrab.Infrastructure.YtDlp;
 /// </summary>
 internal static class YtDlpErrors
 {
-    private const string NoErrorLine = "The download stopped without a reason.";
-    private const string IdEnd = ": ";
-    private const string WarningPrefix = "WARNING: ";
-    private const string RetryMark = ". Retrying";
+    private const string NO_ERROR_LINE = "The download stopped without a reason.";
+    private const string ID_END = ": ";
+    private const string WARNING_PREFIX = "WARNING: ";
+    private const string RETRY_MARK = ". Retrying";
 
     private static readonly SearchValues<string> _rateLimited = SearchValues.Create(
         [
@@ -53,7 +53,7 @@ internal static class YtDlpErrors
     internal static RemoteFailure Classify(string? lastErrorLine)
     {
         if (string.IsNullOrWhiteSpace(lastErrorLine))
-            return new RemoteFailure.Transient(NoErrorLine);
+            return new RemoteFailure.Transient(NO_ERROR_LINE);
 
         var line = lastErrorLine.AsSpan();
         var reason = ReasonOf(lastErrorLine);
@@ -79,14 +79,14 @@ internal static class YtDlpErrors
     /// <returns>The failure that the line reports, or null for any other line.</returns>
     internal static RemoteFailure? WarningCause(string line)
     {
-        if (!line.StartsWith(WarningPrefix, StringComparison.Ordinal))
+        if (!line.StartsWith(WARNING_PREFIX, StringComparison.Ordinal))
             return null;
 
-        var failure = Classify(line[WarningPrefix.Length..]);
+        var failure = Classify(line[WARNING_PREFIX.Length..]);
         if (failure is RemoteFailure.RateLimited)
             return failure;
 
-        return line.Contains(RetryMark, StringComparison.Ordinal) ? failure : null;
+        return line.Contains(RETRY_MARK, StringComparison.Ordinal) ? failure : null;
     }
 
     // yt-dlp starts the line with the extractor and the video id, such as "[youtube] abc: "
@@ -98,7 +98,7 @@ internal static class YtDlpErrors
         if (extractorEnd < 0)
             return line;
 
-        var idEnd = line.IndexOf(IdEnd, extractorEnd, StringComparison.Ordinal);
-        return idEnd < 0 ? line : line[(idEnd + IdEnd.Length)..];
+        var idEnd = line.IndexOf(ID_END, extractorEnd, StringComparison.Ordinal);
+        return idEnd < 0 ? line : line[(idEnd + ID_END.Length)..];
     }
 }

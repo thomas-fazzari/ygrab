@@ -11,7 +11,7 @@ namespace YGrab.Engine;
 /// </summary>
 internal static class HandlerSpans
 {
-    private const string OutcomeTag = "ygrab.outcome";
+    private const string OUTCOME_TAG = "ygrab.outcome";
 
     public static string NameOf(Type message) => message.DeclaringType?.Name ?? message.Name;
 
@@ -38,7 +38,7 @@ internal static class HandlerSpans
             return;
 
         var value = outcome is IUnion union ? union.Value : outcome;
-        activity.SetTag(OutcomeTag, value?.GetType().Name);
+        activity.SetTag(OUTCOME_TAG, value?.GetType().Name);
         if (value is Failure)
             YGrabTelemetry.MarkFailed(activity, value.GetType().Name);
     }

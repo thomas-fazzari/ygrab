@@ -12,29 +12,29 @@ namespace YGrab.Tests.Infrastructure;
 
 public sealed class DeezerEnricherTests : IDisposable
 {
-    private const string SearchBody = """
+    private const string SEARCH_BODY = """
         {"data":[
           {"id":1,"title":"Album","artist":{"name":"Artist"},"nb_tracks":3},
           {"id":2,"title":"Album (Deluxe Edition)","artist":{"name":"The Artist"},"nb_tracks":2}
         ]}
         """;
 
-    private const string TracksBody = """
+    private const string TRACKS_BODY = """
         {"data":[
           {"title":"Title 1","duration":203,"explicit_lyrics":false,"disk_number":1,"track_position":1,"isrc":"USAAA1111111"},
           {"title":"Title 2","duration":202,"explicit_lyrics":true,"disk_number":1,"track_position":2,"isrc":""}
         ]}
         """;
 
-    private const string AlbumBody = """
+    private const string ALBUM_BODY = """
         {"label":"Lab","upc":"012345678901","release_date":"2019-03-04","record_type":"compile"}
         """;
 
-    private const string QuotaBody = """
+    private const string QUOTA_BODY = """
         {"error":{"type":"Exception","message":"Quota limit exceeded","code":4}}
         """;
 
-    private readonly FakeHttpClientFactory _http = new(new Uri(DeezerEnricher.BaseAddress));
+    private readonly FakeHttpClientFactory _http = new(new Uri(DeezerEnricher.BASE_ADDRESS));
     private readonly FakeTimeProvider _time = new(TestTime.Start);
 
     private static CancellationToken Cancellation => TestContext.Current.CancellationToken;
@@ -44,9 +44,9 @@ public sealed class DeezerEnricherTests : IDisposable
     [Fact]
     public async Task The_first_album_that_is_the_same_product_gives_its_details()
     {
-        _http.Bodies["/search/album"] = SearchBody;
-        _http.Bodies["/album/2/tracks"] = TracksBody;
-        _http.Bodies["/album/2"] = AlbumBody;
+        _http.Bodies["/search/album"] = SEARCH_BODY;
+        _http.Bodies["/album/2/tracks"] = TRACKS_BODY;
+        _http.Bodies["/album/2"] = ALBUM_BODY;
 
         var result = await Enricher().EnrichAsync(Samples.Release(2), Cancellation);
 
@@ -74,13 +74,13 @@ public sealed class DeezerEnricherTests : IDisposable
     [Fact]
     public async Task A_barcode_or_isrc_that_is_not_valid_is_dropped_from_the_details()
     {
-        _http.Bodies["/search/album"] = SearchBody;
-        _http.Bodies["/album/2/tracks"] = TracksBody.Replace(
+        _http.Bodies["/search/album"] = SEARCH_BODY;
+        _http.Bodies["/album/2/tracks"] = TRACKS_BODY.Replace(
             "USAAA1111111",
             "short",
             StringComparison.Ordinal
         );
-        _http.Bodies["/album/2"] = AlbumBody.Replace(
+        _http.Bodies["/album/2"] = ALBUM_BODY.Replace(
             "012345678901",
             "0123",
             StringComparison.Ordinal
@@ -106,7 +106,7 @@ public sealed class DeezerEnricherTests : IDisposable
     [Fact]
     public async Task An_error_body_ends_the_lookup_with_a_provider_error()
     {
-        _http.Bodies["/search/album"] = QuotaBody;
+        _http.Bodies["/search/album"] = QUOTA_BODY;
 
         var result = await Enricher().EnrichAsync(Samples.Release(2), Cancellation);
 

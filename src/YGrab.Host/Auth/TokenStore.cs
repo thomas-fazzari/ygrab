@@ -55,7 +55,7 @@ internal sealed class TokenStore(IOptionsMonitor<AuthOptions> options, TokenFile
 
 internal sealed partial class TokenFile(HostStorage storage, ILogger<TokenFile> logger)
 {
-    internal const int GeneratedTokenBytes = 32;
+    internal const int GENERATED_TOKEN_BYTES = 32;
 
     // A generated token belongs only in the token file and the console
     internal static readonly string LogCategory = typeof(TokenFile).FullName!;
@@ -68,7 +68,7 @@ internal sealed partial class TokenFile(HostStorage storage, ILogger<TokenFile> 
         if (!string.IsNullOrWhiteSpace(existing))
             return existing;
 
-        var token = Base64Url.EncodeToString(RandomNumberGenerator.GetBytes(GeneratedTokenBytes));
+        var token = Base64Url.EncodeToString(RandomNumberGenerator.GetBytes(GENERATED_TOKEN_BYTES));
         Directory.CreateDirectory(storage.DataDirectory);
         var fileOptions = new FileStreamOptions
         {

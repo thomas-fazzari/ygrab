@@ -55,7 +55,7 @@ internal sealed class YtDlpAudioSource(YtDlpRunner runner, IOptions<StorageOptio
         [
             .. FormatArguments,
             "--progress-template",
-            YtDlpProgress.AudioTemplate,
+            YtDlpProgress.AUDIO_TEMPLATE,
         ];
         string? path = null;
         try
@@ -69,7 +69,7 @@ internal sealed class YtDlpAudioSource(YtDlpRunner runner, IOptions<StorageOptio
                 {
                     switch (YtDlpRunner.Split(line))
                     {
-                        case (YtDlpRunner.FileTag, var file):
+                        case (YtDlpRunner.FILE_TAG, var file):
                             path = file;
                             break;
                         case var _ when YtDlpProgress.TryParseAudio(line, out var fraction):
@@ -83,7 +83,7 @@ internal sealed class YtDlpAudioSource(YtDlpRunner runner, IOptions<StorageOptio
                 return failure;
 
             if (path is null)
-                return new RemoteFailure.Transient(YtDlpRunner.NoFileMessage);
+                return new RemoteFailure.Transient(YtDlpRunner.NO_FILE_MESSAGE);
 
             storage.Value.KeepTrackFile(jobId, videoId, path);
             return new Downloaded();

@@ -8,9 +8,9 @@ namespace YGrab.Infrastructure.Python.Extensions;
 
 internal static class PythonInvocationExceptionExtensions
 {
-    private const string RateLimitedErrorName = "RateLimitedError";
-    private const string TransientErrorName = "TransientError";
-    private const string UnavailableErrorName = "UnavailableError";
+    private const string RATE_LIMITED_ERROR_NAME = "RateLimitedError";
+    private const string TRANSIENT_ERROR_NAME = "TransientError";
+    private const string UNAVAILABLE_ERROR_NAME = "UnavailableError";
 
     extension(PythonInvocationException exception)
     {
@@ -27,9 +27,9 @@ internal static class PythonInvocationExceptionExtensions
         internal RemoteFailure? ToRemoteFailure() =>
             exception.PythonExceptionType switch
             {
-                RateLimitedErrorName => new RemoteFailure.RateLimited(exception.Reason),
-                TransientErrorName => new RemoteFailure.Transient(exception.Reason),
-                UnavailableErrorName => new RemoteFailure.Unavailable(exception.Reason),
+                RATE_LIMITED_ERROR_NAME => new RemoteFailure.RateLimited(exception.Reason),
+                TRANSIENT_ERROR_NAME => new RemoteFailure.Transient(exception.Reason),
+                UNAVAILABLE_ERROR_NAME => new RemoteFailure.Unavailable(exception.Reason),
                 _ => null,
             };
     }

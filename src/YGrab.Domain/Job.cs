@@ -18,8 +18,8 @@ namespace YGrab.Domain;
 /// </remarks>
 public sealed record Job
 {
-    internal const string RefusedMessage = "YouTube refuses the downloads: check yt-dlp";
-    internal const string NothingDownloadedMessage = "No track could be downloaded";
+    internal const string REFUSED_MESSAGE = "YouTube refuses the downloads: check yt-dlp";
+    internal const string NOTHING_DOWNLOADED_MESSAGE = "No track could be downloaded";
 
     private Job() { }
 
@@ -146,7 +146,7 @@ public sealed record Job
             Attempt = attempt,
             EnrichmentFailure = enrichmentFailure,
             Percent = resolved?.PercentAt(0)
-                ?? (keptVideo is null ? 0 : JobRelease.FinishedPercent),
+                ?? (keptVideo is null ? 0 : JobRelease.FINISHED_PERCENT),
         };
         var problem = job switch
         {
@@ -323,7 +323,7 @@ public sealed record Job
         var at = Math.Clamp(fraction, 0, 1);
         var percent = Math.Max(
             Percent,
-            Resolved?.PercentAt(at) ?? (int)(at * JobRelease.FinishedPercent)
+            Resolved?.PercentAt(at) ?? (int)(at * JobRelease.FINISHED_PERCENT)
         );
         return percent == Percent ? this : this with { Percent = percent };
     }
@@ -339,7 +339,7 @@ public sealed record Job
             {
                 KeptVideo = info,
                 Attempt = 0,
-                Percent = JobRelease.FinishedPercent,
+                Percent = JobRelease.FINISHED_PERCENT,
             };
     }
 
@@ -372,7 +372,7 @@ public sealed record Job
             : failure switch
             {
                 RemoteFailure.RateLimited => this with { State = new JobState.Queued() },
-                RemoteFailure.Transient when Attempt + 1 < Backoff.MaxAttempts => this with
+                RemoteFailure.Transient when Attempt + 1 < Backoff.MAX_ATTEMPTS => this with
                 {
                     State = new JobState.Waiting(now + Backoff.Delay(Attempt), failure.Reason),
                     Attempt = Attempt + 1,
@@ -394,7 +394,7 @@ public sealed record Job
         }
 
         return Resolved is { } resolved && resolved.Tracks.All(track => track.IsMissing)
-            ? Failed(NothingDownloadedMessage, now)
+            ? Failed(NOTHING_DOWNLOADED_MESSAGE, now)
             : this with
             {
                 State = new JobState.Packaging(),
@@ -423,7 +423,7 @@ public sealed record Job
                         ? new JobState.Incomplete(fileName, fileSize, now)
                         : new JobState.Ready(fileName, fileSize, now),
                     EnrichmentFailure = enrichmentFailure,
-                    Percent = JobRelease.FinishedPercent,
+                    Percent = JobRelease.FINISHED_PERCENT,
                 }
             );
     }
@@ -489,7 +489,7 @@ public sealed record Job
             KeptVideo = kept,
             Attempt = 0,
             EnrichmentFailure = null,
-            Percent = resolved?.PercentAt(0) ?? (kept is null ? 0 : JobRelease.FinishedPercent),
+            Percent = resolved?.PercentAt(0) ?? (kept is null ? 0 : JobRelease.FINISHED_PERCENT),
         };
     }
 
@@ -541,7 +541,7 @@ public sealed record Job
             Percent = Math.Max(Percent, tracked.PercentAt(0)),
         };
         return refused && RefusedTwice(tracked, index)
-            ? missing.Failed(RefusedMessage, now)
+            ? missing.Failed(REFUSED_MESSAGE, now)
             : missing;
     }
 

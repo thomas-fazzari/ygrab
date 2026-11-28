@@ -31,21 +31,21 @@ internal sealed partial class DeezerEnricher(
     ILogger<DeezerEnricher> logger
 ) : IReleaseEnricher
 {
-    internal const string ClientName = "deezer";
-    internal const string BaseAddress = "https://api.deezer.com/";
-    internal const string UserAgent = "YGrab";
-    internal const int MaxResponseBytes = 1024 * 1024;
+    internal const string CLIENT_NAME = "deezer";
+    internal const string BASE_ADDRESS = "https://api.deezer.com/";
+    internal const string USER_AGENT = "YGrab";
+    internal const int MAX_RESPONSE_BYTES = 1024 * 1024;
 
     internal static readonly TimeSpan EnrichTimeout = TimeSpan.FromSeconds(30);
 
-    private const string SearchLimit = "10";
-    private const int TrackLimit = 200;
-    private const string ReleaseDateFormat = "yyyy-MM-dd";
+    private const string SEARCH_LIMIT = "10";
+    private const int TRACK_LIMIT = 200;
+    private const string RELEASE_DATE_FORMAT = "yyyy-MM-dd";
 
-    private const string AlbumRecord = "album";
-    private const string EpRecord = "ep";
-    private const string SingleRecord = "single";
-    private const string CompilationRecord = "compile";
+    private const string ALBUM_RECORD = "album";
+    private const string EP_RECORD = "ep";
+    private const string SINGLE_RECORD = "single";
+    private const string COMPILATION_RECORD = "compile";
 
     public async ValueTask<Enrichment> EnrichAsync(
         Release release,
@@ -78,7 +78,7 @@ internal sealed partial class DeezerEnricher(
         if (release.Artists.IsDefaultOrEmpty)
             return new NotEnriched(EnrichmentFailure.NoMatch);
 
-        var client = clients.CreateClient(ClientName);
+        var client = clients.CreateClient(CLIENT_NAME);
         var artist = release.Artists[0];
         var title = TitleText.StripEdition(release.Title);
         string[] queries = [$"artist:\"{artist}\" album:\"{title}\"", $"{artist} {title}"];
@@ -126,7 +126,7 @@ internal sealed partial class DeezerEnricher(
             client,
             string.Create(
                 CultureInfo.InvariantCulture,
-                $"album/{hit.Id}/tracks?limit={TrackLimit}"
+                $"album/{hit.Id}/tracks?limit={TRACK_LIMIT}"
             ),
             DeezerJson.Default.DeezerTracksBody,
             cancellationToken
@@ -190,7 +190,7 @@ internal sealed partial class DeezerEnricher(
     }
 
     private static string SearchPath(string query) =>
-        $"search/album?q={Uri.EscapeDataString(query)}&limit={SearchLimit}";
+        $"search/album?q={Uri.EscapeDataString(query)}&limit={SEARCH_LIMIT}";
 
     private static ImmutableArray<T> Items<T>(ImmutableArray<T> items) =>
         items.IsDefault ? [] : items;
@@ -234,7 +234,7 @@ internal sealed partial class DeezerEnricher(
     private static DateOnly? ToDate(string? text) =>
         DateOnly.TryParseExact(
             text,
-            ReleaseDateFormat,
+            RELEASE_DATE_FORMAT,
             CultureInfo.InvariantCulture,
             DateTimeStyles.None,
             out var date
@@ -245,10 +245,10 @@ internal sealed partial class DeezerEnricher(
     private static ReleaseType? ToType(string? recordType) =>
         recordType switch
         {
-            AlbumRecord => ReleaseType.Album,
-            EpRecord => ReleaseType.Ep,
-            SingleRecord => ReleaseType.SingleRelease,
-            CompilationRecord => ReleaseType.Compilation,
+            ALBUM_RECORD => ReleaseType.Album,
+            EP_RECORD => ReleaseType.Ep,
+            SINGLE_RECORD => ReleaseType.SingleRelease,
+            COMPILATION_RECORD => ReleaseType.Compilation,
             _ => null,
         };
 

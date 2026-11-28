@@ -30,7 +30,7 @@ public sealed class ReleaseNamingTests
     [Fact]
     public void A_video_name_keeps_its_id_and_extension_after_the_cut()
     {
-        var video = new VideoInfo(new string('a', ReleaseNaming.MaxBytes * 2), Channel: null);
+        var video = new VideoInfo(new string('a', ReleaseNaming.MAX_BYTES * 2), Channel: null);
 
         var name = ReleaseNaming.VideoName(Samples.Video("vid"), video, ".mkv");
 
@@ -43,11 +43,11 @@ public sealed class ReleaseNamingTests
     [InlineData("a😀")]
     public void Clean_cuts_a_long_name_by_its_bytes_on_a_character_boundary(string unit)
     {
-        var name = string.Concat(Enumerable.Repeat(unit, ReleaseNaming.MaxBytes));
+        var name = string.Concat(Enumerable.Repeat(unit, ReleaseNaming.MAX_BYTES));
 
         var cleaned = ReleaseNaming.Clean(name);
 
-        Encoding.UTF8.GetByteCount(cleaned).Should().BeLessThanOrEqualTo(ReleaseNaming.MaxBytes);
+        Encoding.UTF8.GetByteCount(cleaned).Should().BeLessThanOrEqualTo(ReleaseNaming.MAX_BYTES);
         Encoding.UTF8.GetString(Encoding.UTF8.GetBytes(cleaned)).Should().Be(cleaned);
         cleaned.Should().StartWith(unit);
     }

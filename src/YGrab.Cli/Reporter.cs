@@ -18,15 +18,15 @@ internal sealed class Reporter(IAnsiConsole output, IAnsiConsole error)
     {
         var (message, code) = failure switch
         {
-            ApiFailure.Rejected rejected => (Describe(rejected), ExitCodes.ApiError),
-            ApiFailure.Unresolved unresolved => (unresolved.Message, ExitCodes.ApiError),
+            ApiFailure.Rejected rejected => (Describe(rejected), ExitCodes.API_ERROR),
+            ApiFailure.Unresolved unresolved => (unresolved.Message, ExitCodes.API_ERROR),
             ApiFailure.Unreachable unreachable => (
                 $"Cannot reach the server: {unreachable.Message}",
-                ExitCodes.Unreachable
+                ExitCodes.UNREACHABLE
             ),
             ApiFailure.BadToken => (
                 "The server refuses the token. Run ygrab login again, or wait a minute after too many wrong tokens.",
-                ExitCodes.Unreachable
+                ExitCodes.UNREACHABLE
             ),
         };
         error.MarkupLine($"[red]{Markup.Escape(message)}[/]");
@@ -36,13 +36,13 @@ internal sealed class Reporter(IAnsiConsole output, IAnsiConsole error)
     public int Usage(string message)
     {
         error.MarkupLine($"[red]{Markup.Escape(message)}[/]");
-        return ExitCodes.Usage;
+        return ExitCodes.USAGE;
     }
 
     public int Fail(string message)
     {
         error.MarkupLine($"[red]{Markup.Escape(message)}[/]");
-        return ExitCodes.ApiError;
+        return ExitCodes.API_ERROR;
     }
 
     public void Warn(string message) => error.MarkupLine($"[yellow]{Markup.Escape(message)}[/]");

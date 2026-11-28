@@ -12,10 +12,10 @@ public sealed partial class SqliteWriter(
     ILogger<SqliteWriter> logger
 ) : BackgroundService
 {
-    private const int QueueCapacity = 1024;
+    private const int QUEUE_CAPACITY = 1024;
 
     private readonly Channel<WorkItem> _queue = Channel.CreateBounded<WorkItem>(
-        new BoundedChannelOptions(QueueCapacity)
+        new BoundedChannelOptions(QUEUE_CAPACITY)
         {
             FullMode = BoundedChannelFullMode.Wait,
             SingleReader = true,

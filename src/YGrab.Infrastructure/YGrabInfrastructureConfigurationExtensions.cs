@@ -16,7 +16,9 @@ public static class YGrabInfrastructureConfigurationExtensions
         {
             ArgumentNullException.ThrowIfNull(configuration);
 
-            var storage = configuration.GetSection(StorageOptions.SectionName).Get<StorageOptions>()
+            var storage = configuration
+                .GetSection(StorageOptions.SECTION_NAME)
+                .Get<StorageOptions>()
                 ?? new StorageOptions();
             return storage.DataDirectory;
         }

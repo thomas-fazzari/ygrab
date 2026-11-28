@@ -17,7 +17,7 @@ namespace YGrab.Infrastructure.Python.Catalog;
 /// <para>
 /// An exception that the module raises on purpose maps to its <see cref="RemoteFailure"/>.
 /// Any other exception, or a result that does not have the shape that the bindings expect,
-/// is unavailable. Its reason is <see cref="UnreadableReason"/> and the log keeps the details.
+/// is unavailable. Its reason is <see cref="UNREADABLE_REASON"/> and the log keeps the details.
 /// </para>
 /// </remarks>
 internal sealed partial class YtMusicCatalog(
@@ -25,7 +25,8 @@ internal sealed partial class YtMusicCatalog(
     ILogger<YtMusicCatalog> logger
 ) : ICatalog
 {
-    private const string UnreadableReason = "YouTube Music returned a page that YGrab cannot read.";
+    private const string UNREADABLE_REASON =
+        "YouTube Music returned a page that YGrab cannot read.";
 
     // A call holds the GIL and blocks on the network, so it runs off the caller's thread
     // A cancelled caller stops waiting, and the call ends by itself
@@ -170,7 +171,7 @@ internal sealed partial class YtMusicCatalog(
     private RemoteFailure.Unavailable Unreadable(MusicLink link, string details)
     {
         LogUnreadable(link, details);
-        return new RemoteFailure.Unavailable(UnreadableReason);
+        return new RemoteFailure.Unavailable(UNREADABLE_REASON);
     }
 
     [LoggerMessage(

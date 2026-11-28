@@ -66,7 +66,7 @@ internal static class EventsEndpoints
 
         var jobs = (
             await listJobs.HandleAsync(
-                new ListJobs.ListJobsRequest(ListJobs.MaxLimit),
+                new ListJobs.ListJobsRequest(ListJobs.MAX_LIMIT),
                 cancellationToken
             )
         ).Value switch
@@ -89,7 +89,7 @@ internal static class EventsEndpoints
                 ),
                 ApiJsonContext.Default.SnapshotDto
             ),
-            EventNames.Snapshot
+            EventNames.SNAPSHOT
         );
 
         await foreach (
@@ -114,21 +114,21 @@ internal static class EventsEndpoints
                     changed.Job.ToDto(retention),
                     ApiJsonContext.Default.JobDto
                 ),
-                EventNames.Job
+                EventNames.JOB
             ),
             JobRemoved removed => new(
                 JsonSerializer.Serialize(
                     new JobRemovedDto(removed.Id.Value),
                     ApiJsonContext.Default.JobRemovedDto
                 ),
-                EventNames.JobRemoved
+                EventNames.JOB_REMOVED
             ),
             CooldownChanged changed => new(
                 JsonSerializer.Serialize(
                     changed.Cooldown.ToDto(),
                     ApiJsonContext.Default.CooldownDto
                 ),
-                EventNames.Cooldown
+                EventNames.COOLDOWN
             ),
         };
 }

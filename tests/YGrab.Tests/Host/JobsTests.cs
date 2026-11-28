@@ -20,7 +20,7 @@ public sealed class JobsTests
     {
         await using var factory = new HostFactory();
         using var client = factory.CreateBearerClient();
-        var request = new StartJobRequest(Samples.AlbumUrl);
+        var request = new StartJobRequest(Samples.ALBUM_URL);
 
         var first = await client.PostAsJsonAsync(
             HostFactory.JobsUrl,
@@ -64,6 +64,6 @@ public sealed class JobsTests
             ApiJsonContext.Default.ProblemBody,
             Cancellation
         );
-        problem!.Type.Should().Be(GlobalExceptionHandler.BadRequestType);
+        problem!.Type.Should().Be(GlobalExceptionHandler.BAD_REQUEST_TYPE);
     }
 }

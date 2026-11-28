@@ -34,7 +34,7 @@ internal sealed class ShowCommand(CliSession session)
         if (job.Tracks.Length > 0)
             output.Write(TracksTable(job));
 
-        return Task.FromResult(ExitCodes.Ok);
+        return Task.FromResult(ExitCodes.OK);
     }
 
     private static Table TracksTable(JobDto job)

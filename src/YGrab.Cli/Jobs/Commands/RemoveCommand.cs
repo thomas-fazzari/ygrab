@@ -23,6 +23,6 @@ internal sealed class RemoveCommand(CliSession session)
             return Reporter.Report(failure);
 
         Reporter.Output.WriteLine($"{JobIds.Short(job.Id)} removed");
-        return ExitCodes.Ok;
+        return ExitCodes.OK;
     }
 }

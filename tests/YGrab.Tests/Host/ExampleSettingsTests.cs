@@ -11,55 +11,55 @@ namespace YGrab.Tests.Host;
 
 public sealed class ExampleSettingsTests
 {
-    private const string FileName = "ygrab.example.yaml";
+    private const string FILE_NAME = "ygrab.example.yaml";
 
     [Fact]
     public void The_example_settings_name_every_option_with_its_default()
     {
-        var text = File.ReadAllText(FileName);
+        var text = File.ReadAllText(FILE_NAME);
         var configuration = new ConfigurationBuilder()
-            .AddYamlFile(Path.GetFullPath(FileName), optional: false)
+            .AddYamlFile(Path.GetFullPath(FILE_NAME), optional: false)
             .Build();
 
         configuration
-            .GetSection(StorageOptions.SectionName)
+            .GetSection(StorageOptions.SECTION_NAME)
             .Get<StorageOptions>()
             .Should()
             .BeNull("its options vary with the platform, so they stay in comments");
         configuration
-            .GetSection(PythonOptions.SectionName)
+            .GetSection(PythonOptions.SECTION_NAME)
             .Get<PythonOptions>()
             .Should()
             .BeNull("its options vary with the platform, so they stay in comments");
         configuration
-            .GetSection(YtDlpOptions.SectionName)
+            .GetSection(YtDlpOptions.SECTION_NAME)
             .Get<YtDlpOptions>()
             .Should()
             .BeEquivalentTo(new YtDlpOptions());
         configuration
-            .GetSection(JobsOptions.SectionName)
+            .GetSection(JobsOptions.SECTION_NAME)
             .Get<JobsOptions>()
             .Should()
             .BeEquivalentTo(new JobsOptions());
         configuration
-            .GetSection(AuthOptions.SectionName)
+            .GetSection(AuthOptions.SECTION_NAME)
             .Get<AuthOptions>()
             .Should()
             .BeEquivalentTo(new AuthOptions());
         configuration
-            .GetSection(ProxyOptions.SectionName)
+            .GetSection(ProxyOptions.SECTION_NAME)
             .Get<ProxyOptions>()
             .Should()
             .BeEquivalentTo(new ProxyOptions());
         foreach (
             var (section, type) in new[]
             {
-                (StorageOptions.SectionName, typeof(StorageOptions)),
-                (PythonOptions.SectionName, typeof(PythonOptions)),
-                (YtDlpOptions.SectionName, typeof(YtDlpOptions)),
-                (JobsOptions.SectionName, typeof(JobsOptions)),
-                (AuthOptions.SectionName, typeof(AuthOptions)),
-                (ProxyOptions.SectionName, typeof(ProxyOptions)),
+                (StorageOptions.SECTION_NAME, typeof(StorageOptions)),
+                (PythonOptions.SECTION_NAME, typeof(PythonOptions)),
+                (YtDlpOptions.SECTION_NAME, typeof(YtDlpOptions)),
+                (JobsOptions.SECTION_NAME, typeof(JobsOptions)),
+                (AuthOptions.SECTION_NAME, typeof(AuthOptions)),
+                (ProxyOptions.SECTION_NAME, typeof(ProxyOptions)),
             }
         )
         {

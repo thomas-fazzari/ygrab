@@ -10,11 +10,11 @@ namespace YGrab.Infrastructure.Output;
 /// </summary>
 internal static class ReleaseNaming
 {
-    internal const int MaxBytes = 200;
+    internal const int MAX_BYTES = 200;
 
-    internal const char InvalidReplacement = '_';
+    internal const char INVALID_REPLACEMENT = '_';
 
-    private const string ArtistSeparator = ", ";
+    private const string ARTIST_SEPARATOR = ", ";
 
     // Characters that Windows, macOS or Linux reject in a file name
     private static readonly SearchValues<char> _invalid = SearchValues.Create(
@@ -57,7 +57,7 @@ internal static class ReleaseNaming
     /// The name of a video file: the channel and the title, then the video id.
     /// </summary>
     /// <remarks>
-    /// The id comes after <see cref="Clean"/>, so the cut to <see cref="MaxBytes"/> never removes it.
+    /// The id comes after <see cref="Clean"/>, so the cut to <see cref="MAX_BYTES"/> never removes it.
     /// </remarks>
     /// <param name="extension">The extension of the video file, with its dot.</param>
     public static string VideoName(VideoId videoId, VideoInfo video, string extension)
@@ -75,14 +75,14 @@ internal static class ReleaseNaming
     /// The artists on one line, as the names and the tags show them.
     /// </summary>
     public static string Credit(ImmutableArray<string> artists) =>
-        string.Join(ArtistSeparator, artists);
+        string.Join(ARTIST_SEPARATOR, artists);
 
     /// <summary>
     /// Makes a name safe for a file system.
     /// </summary>
     /// <remarks>
     /// <para>
-    /// Each invalid character becomes <see cref="InvalidReplacement"/>, and the name is cut to <see cref="MaxBytes"/> in
+    /// Each invalid character becomes <see cref="INVALID_REPLACEMENT"/>, and the name is cut to <see cref="MAX_BYTES"/> in
     /// UTF-8, on a character boundary.
     /// </para>
     /// <para>
@@ -99,11 +99,11 @@ internal static class ReleaseNaming
             int index;
             while ((index = span.IndexOfAny(_invalid)) >= 0)
             {
-                span[index] = InvalidReplacement;
+                span[index] = INVALID_REPLACEMENT;
             }
         });
         cleaned = CutToBytes(cleaned).Trim().TrimEnd('.', ' ');
-        return cleaned.Length == 0 ? InvalidReplacement.ToString() : cleaned;
+        return cleaned.Length == 0 ? INVALID_REPLACEMENT.ToString() : cleaned;
     }
 
     private static string CutToBytes(string name)
@@ -113,7 +113,7 @@ internal static class ReleaseNaming
         foreach (var rune in name.EnumerateRunes())
         {
             bytes += rune.Utf8SequenceLength;
-            if (bytes > MaxBytes)
+            if (bytes > MAX_BYTES)
                 break;
 
             length += rune.Utf16SequenceLength;

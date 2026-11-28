@@ -28,7 +28,7 @@ namespace YGrab.Infrastructure.YtDlp;
 /// </para>
 /// <para>
 /// yt-dlp writes into the work folder of the job, which is deleted after each run. The tracks
-/// folder gets <see cref="InfoFileName"/> first and the video file after it, through
+/// folder gets <see cref="INFO_FILE_NAME"/> first and the video file after it, through
 /// <see cref="TrackFiles"/>, so a video file there always has its info.
 /// </para>
 /// <para>
@@ -39,35 +39,35 @@ namespace YGrab.Infrastructure.YtDlp;
 internal sealed class YtDlpVideoSource(YtDlpRunner runner, IOptions<StorageOptions> storage)
     : IVideoSource
 {
-    internal const string LiveMessage = "The video is live now. Grab it once the stream ends.";
-    internal const string InfoFileName = "video.json";
+    internal const string LIVE_MESSAGE = "The video is live now. Grab it once the stream ends.";
+    internal const string INFO_FILE_NAME = "video.json";
 
     internal static readonly TimeSpan VideoTimeout = TimeSpan.FromHours(3);
 
     // The drc formats have their dynamic range compressed
-    private const string Format = "bv*+ba[format_id!*=drc]/bv*+ba/b";
-    private const string MergeFormats = "mp4/mkv";
-    private const string RemuxFormats = "mp4>mp4/mkv";
-    private const string ThumbnailFormat = "jpg";
-    private const string ProgressDelta = "1";
-    private const string LiveFilter = "!is_live";
+    private const string FORMAT = "bv*+ba[format_id!*=drc]/bv*+ba/b";
+    private const string MERGE_FORMATS = "mp4/mkv";
+    private const string REMUX_FORMATS = "mp4>mp4/mkv";
+    private const string THUMBNAIL_FORMAT = "jpg";
+    private const string PROGRESS_DELTA = "1";
+    private const string LIVE_FILTER = "!is_live";
 
     // The resolution is the smaller dimension, so a vertical short has its resolution cap too
-    private const string SortP720 = "res:720,fps,ext";
-    private const string SortP1080 = "res:1080,fps,ext";
-    private const string SortP1440 = "res:1440,fps,ext";
-    private const string SortP2160 = "res:2160,fps,ext";
-    private const string SortBest = "res,fps,ext";
+    private const string SORT_P720 = "res:720,fps,ext";
+    private const string SORT_P1080 = "res:1080,fps,ext";
+    private const string SORT_P1440 = "res:1440,fps,ext";
+    private const string SORT_P2160 = "res:2160,fps,ext";
+    private const string SORT_BEST = "res,fps,ext";
 
-    private const string InfoTag = "info";
-    private const string LiveTag = "live";
-    private const string LiveTrue = "True";
+    private const string INFO_TAG = "info";
+    private const string LIVE_TAG = "live";
+    private const string LIVE_TRUE = "True";
 
     public VideoInfo? FindKept(JobId jobId, VideoId videoId)
     {
         ArgumentNullException.ThrowIfNull(videoId);
 
-        var infoPath = Path.Combine(storage.Value.TracksDirectory(jobId), InfoFileName);
+        var infoPath = Path.Combine(storage.Value.TracksDirectory(jobId), INFO_FILE_NAME);
         if (!File.Exists(infoPath))
             return null;
 
@@ -92,21 +92,21 @@ internal sealed class YtDlpVideoSource(YtDlpRunner runner, IOptions<StorageOptio
         string[] arguments =
         [
             "--match-filters",
-            LiveFilter,
+            LIVE_FILTER,
             .. audioOnly ? YtDlpAudioSource.FormatArguments : VideoFormatArguments(quality),
             "--embed-metadata",
             "--embed-chapters",
             "--embed-thumbnail",
             "--convert-thumbnails",
-            ThumbnailFormat,
+            THUMBNAIL_FORMAT,
             "--progress-delta",
-            ProgressDelta,
+            PROGRESS_DELTA,
             "--progress-template",
-            audioOnly ? YtDlpProgress.AudioTemplate : YtDlpProgress.VideoTemplate,
+            audioOnly ? YtDlpProgress.AUDIO_TEMPLATE : YtDlpProgress.VIDEO_TEMPLATE,
             "--print",
-            $"pre_process:{LiveTag} %(is_live)s",
+            $"pre_process:{LIVE_TAG} %(is_live)s",
             "--print",
-            $"after_move:{InfoTag} %(.{{title,channel}})j",
+            $"after_move:{INFO_TAG} %(.{{title,channel}})j",
         ];
         string? path = null;
         string? info = null;
@@ -122,14 +122,14 @@ internal sealed class YtDlpVideoSource(YtDlpRunner runner, IOptions<StorageOptio
                 {
                     switch (YtDlpRunner.Split(line))
                     {
-                        case (YtDlpRunner.FileTag, var file):
+                        case (YtDlpRunner.FILE_TAG, var file):
                             path = file;
                             break;
-                        case (InfoTag, var json):
+                        case (INFO_TAG, var json):
                             info = json;
                             break;
-                        case (LiveTag, var isLive):
-                            live = isLive is LiveTrue;
+                        case (LIVE_TAG, var isLive):
+                            live = isLive is LIVE_TRUE;
                             break;
                         case var _ when TryParseProgress(line, audioOnly, out var fraction):
                             progress(fraction);
@@ -144,8 +144,8 @@ internal sealed class YtDlpVideoSource(YtDlpRunner runner, IOptions<StorageOptio
             if (path is null)
             {
                 return live
-                    ? new RemoteFailure.Unavailable(LiveMessage)
-                    : new RemoteFailure.Transient(YtDlpRunner.NoFileMessage);
+                    ? new RemoteFailure.Unavailable(LIVE_MESSAGE)
+                    : new RemoteFailure.Transient(YtDlpRunner.NO_FILE_MESSAGE);
             }
 
             var video = info is null ? Untitled(videoId) : ParseInfo(info, videoId);
@@ -161,23 +161,23 @@ internal sealed class YtDlpVideoSource(YtDlpRunner runner, IOptions<StorageOptio
     private static string[] VideoFormatArguments(VideoQuality quality) =>
         [
             "--format",
-            Format,
+            FORMAT,
             "--format-sort",
             FormatSort(quality),
             "--merge-output-format",
-            MergeFormats,
+            MERGE_FORMATS,
             "--remux-video",
-            RemuxFormats,
+            REMUX_FORMATS,
         ];
 
     private static string FormatSort(VideoQuality quality) =>
         quality switch
         {
-            VideoQuality.P720 => SortP720,
-            VideoQuality.P1080 => SortP1080,
-            VideoQuality.P1440 => SortP1440,
-            VideoQuality.P2160 => SortP2160,
-            VideoQuality.Best => SortBest,
+            VideoQuality.P720 => SORT_P720,
+            VideoQuality.P1080 => SORT_P1080,
+            VideoQuality.P1440 => SORT_P1440,
+            VideoQuality.P2160 => SORT_P2160,
+            VideoQuality.Best => SORT_BEST,
             _ => throw new ArgumentOutOfRangeException(nameof(quality), quality, message: null),
         };
 
@@ -196,7 +196,7 @@ internal sealed class YtDlpVideoSource(YtDlpRunner runner, IOptions<StorageOptio
     {
         var tracks = Directory.CreateDirectory(storage.Value.TracksDirectory(jobId));
         await File.WriteAllTextAsync(
-            Path.Combine(tracks.FullName, InfoFileName),
+            Path.Combine(tracks.FullName, INFO_FILE_NAME),
             JsonSerializer.Serialize(
                 new VideoDocument(video.Title, video.Channel),
                 VideoJson.Default.VideoDocument
@@ -227,7 +227,7 @@ internal sealed class YtDlpVideoSource(YtDlpRunner runner, IOptions<StorageOptio
 internal sealed record VideoDocument(string Title, string? Channel);
 
 /// <summary>
-/// The JSON of <see cref="YtDlpVideoSource.InfoFileName"/> and of the info line of yt-dlp.
+/// The JSON of <see cref="YtDlpVideoSource.INFO_FILE_NAME"/> and of the info line of yt-dlp.
 /// </summary>
 [JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase)]
 [JsonSerializable(typeof(VideoDocument))]
