@@ -168,7 +168,7 @@ internal sealed partial class YtDlpRunner(
                 && !cancellationToken.IsCancellationRequested
             )
         {
-            Stop(process);
+            await StopAsync(process);
             return new RemoteFailure.Transient(
                 string.Create(
                     CultureInfo.InvariantCulture,
@@ -178,7 +178,7 @@ internal sealed partial class YtDlpRunner(
         }
         catch
         {
-            Stop(process);
+            await StopAsync(process);
             throw;
         }
 
@@ -263,10 +263,10 @@ internal sealed partial class YtDlpRunner(
         );
 
     // Waits so that no killed yt-dlp or ffmpeg still writes into the work folder
-    private static void Stop(Process process)
+    private static async ValueTask StopAsync(Process process)
     {
         process.Kill(entireProcessTree: true);
-        process.WaitForExit();
+        await process.WaitForExitAsync(CancellationToken.None);
     }
 
     /// <returns>The last error line of yt-dlp, without its prefix.</returns>
