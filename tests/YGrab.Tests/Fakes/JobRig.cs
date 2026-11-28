@@ -15,7 +15,7 @@ namespace YGrab.Tests.Fakes;
 /// </summary>
 internal sealed class JobRig
 {
-    private const int Seed = 1;
+    private const int SEED = 1;
 
     public JobRig(Release release)
     {
@@ -48,7 +48,7 @@ internal sealed class JobRig
             new FakeCoverSource(),
             Enricher,
             Output,
-            new Random(Seed),
+            new Random(SEED),
             Time,
             new JobMetrics(FakeMeterFactory.Instance, Jobs, Cooldown, Time),
             NullLogger<AdvanceJobs.Handler>.Instance

@@ -27,7 +27,7 @@ public sealed class AuthTests
         using var anonymous = factory.CreateClient();
         using var wrong = factory.CreateClient();
         wrong.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
-            BearerHandler.SchemeName,
+            BearerHandler.SCHEME_NAME,
             "wrong"
         );
         using var bearer = factory.CreateBearerClient();
@@ -69,7 +69,7 @@ public sealed class AuthTests
         using var client = factory.CreateCookieClient();
 
         var wrong = await LoginAsync(client, "wrong");
-        var login = await LoginAsync(client, HostFactory.Token);
+        var login = await LoginAsync(client, HostFactory.TOKEN);
         var signedIn = await client.GetAsync(HostFactory.JobsUrl, Cancellation);
         var configuration = (IConfigurationRoot)
             factory.Services.GetRequiredService<IConfiguration>();
@@ -90,9 +90,9 @@ public sealed class AuthTests
         using var cookie = factory.CreateCookieClient();
         using var bearer = factory.CreateBearerClient();
         using var anonymous = factory.CreateClient();
-        await LoginAsync(cookie, HostFactory.Token);
+        await LoginAsync(cookie, HostFactory.TOKEN);
         using var sameOrigin = new HttpRequestMessage(HttpMethod.Post, HostFactory.UnknownRetryUrl);
-        sameOrigin.Headers.Add(OriginFilter.SecFetchSiteHeader, "same-origin");
+        sameOrigin.Headers.Add(OriginFilter.SEC_FETCH_SITE_HEADER, "same-origin");
 
         var crossSite = await cookie.PostAsync(
             HostFactory.UnknownRetryUrl,
@@ -107,7 +107,7 @@ public sealed class AuthTests
         );
         var crossSiteLogin = await anonymous.PostAsJsonAsync(
             HostFactory.LoginUrl,
-            new LoginRequest(HostFactory.Token),
+            new LoginRequest(HostFactory.TOKEN),
             ApiJsonContext.Default.LoginRequest,
             Cancellation
         );
@@ -141,7 +141,7 @@ public sealed class AuthTests
         using var anonymous = open.CreateClient();
         using var bearer = open.CreateClient();
         bearer.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
-            BearerHandler.SchemeName,
+            BearerHandler.SCHEME_NAME,
             "any"
         );
 
@@ -166,13 +166,13 @@ public sealed class AuthTests
         await using var factory = new HostFactory();
         using var client = factory.CreateCookieClient();
 
-        for (var attempt = 0; attempt < WrongTokenLimiter.Tries; attempt++)
+        for (var attempt = 0; attempt < WrongTokenLimiter.TRIES; attempt++)
         {
             var wrong = await LoginAsync(client, "wrong-token-0123456789");
             wrong.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
         }
 
-        var right = await LoginAsync(client, HostFactory.Token);
+        var right = await LoginAsync(client, HostFactory.TOKEN);
 
         right.StatusCode.Should().Be(HttpStatusCode.TooManyRequests);
     }
@@ -181,28 +181,28 @@ public sealed class AuthTests
     public async Task Wrong_bearer_tokens_count_by_the_forwarded_address_only_from_a_private_network()
     {
         await using var factory = new HostFactory();
-        const string publicClient = "203.0.113.5";
+        const string PUBLIC_CLIENT = "203.0.113.5";
         // A container sees the proxy through the Docker bridge, as an IPv4 address mapped to IPv6
-        const string proxy = "::ffff:172.18.0.1";
+        const string PROXY = "::ffff:172.18.0.1";
 
-        for (var attempt = 0; attempt < WrongTokenLimiter.Tries; attempt++)
+        for (var attempt = 0; attempt < WrongTokenLimiter.TRIES; attempt++)
         {
             var forwardedFor = $"198.51.100.{attempt}";
-            (await SendBearerAsync(factory, publicClient, forwardedFor, "wrong"))
+            (await SendBearerAsync(factory, PUBLIC_CLIENT, forwardedFor, "wrong"))
                 .Should()
                 .Be(StatusCodes.Status401Unauthorized);
-            (await SendBearerAsync(factory, proxy, forwardedFor, "wrong"))
+            (await SendBearerAsync(factory, PROXY, forwardedFor, "wrong"))
                 .Should()
                 .Be(StatusCodes.Status401Unauthorized);
         }
 
         var spoofed = await SendBearerAsync(
             factory,
-            publicClient,
+            PUBLIC_CLIENT,
             "198.51.100.99",
-            HostFactory.Token
+            HostFactory.TOKEN
         );
-        var proxied = await SendBearerAsync(factory, proxy, "198.51.100.99", HostFactory.Token);
+        var proxied = await SendBearerAsync(factory, PROXY, "198.51.100.99", HostFactory.TOKEN);
 
         spoofed.Should().Be(StatusCodes.Status401Unauthorized);
         proxied.Should().Be(StatusCodes.Status200OK);
@@ -222,7 +222,7 @@ public sealed class AuthTests
                 http.Request.Method = HttpMethods.Get;
                 http.Request.Path = HostFactory.JobsUrl.OriginalString;
                 http.Request.Headers["X-Forwarded-For"] = forwardedFor;
-                http.Request.Headers.Authorization = $"{BearerHandler.SchemeName} {token}";
+                http.Request.Headers.Authorization = $"{BearerHandler.SCHEME_NAME} {token}";
             },
             Cancellation
         );
@@ -238,7 +238,7 @@ public sealed class AuthTests
                 ApiJsonContext.Default.LoginRequest
             ),
         };
-        request.Headers.Add(OriginFilter.SecFetchSiteHeader, "same-origin");
+        request.Headers.Add(OriginFilter.SEC_FETCH_SITE_HEADER, "same-origin");
         return await client.SendAsync(request, Cancellation);
     }
 }

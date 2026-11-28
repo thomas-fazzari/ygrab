@@ -8,8 +8,8 @@ namespace Microsoft.Extensions.Configuration;
 
 internal static class HostConfigurationExtensions
 {
-    internal const string ConfigFileName = "ygrab.yaml";
-    internal const string TokenVariable = "YGRAB_TOKEN";
+    internal const string CONFIG_FILE_NAME = "ygrab.yaml";
+    internal const string TOKEN_VARIABLE = "YGRAB_TOKEN";
 
     extension(IConfigurationBuilder configuration)
     {
@@ -22,13 +22,13 @@ internal static class HostConfigurationExtensions
         /// </remarks>
         public IConfigurationBuilder AddYGrabConfiguration()
         {
-            configuration.AddYamlFile(ConfigFileName, optional: true, reloadOnChange: true);
+            configuration.AddYamlFile(CONFIG_FILE_NAME, optional: true, reloadOnChange: true);
             MoveBeforeEnvironment(configuration.Sources);
-            if (Environment.GetEnvironmentVariable(TokenVariable) is { } token)
+            if (Environment.GetEnvironmentVariable(TOKEN_VARIABLE) is { } token)
             {
                 configuration.AddInMemoryCollection([
                     KeyValuePair.Create<string, string?>(
-                        $"{AuthOptions.SectionName}:{nameof(AuthOptions.Token)}",
+                        $"{AuthOptions.SECTION_NAME}:{nameof(AuthOptions.Token)}",
                         token
                     ),
                 ]);

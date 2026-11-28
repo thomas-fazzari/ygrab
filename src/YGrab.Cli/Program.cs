@@ -46,7 +46,7 @@ internal static class Program
                 reporter.Usage(parseError.Message);
             }
 
-            return ExitCodes.Usage;
+            return ExitCodes.USAGE;
         }
 
         try
@@ -58,7 +58,7 @@ internal static class Program
         }
         catch (OperationCanceledException)
         {
-            return ExitCodes.Interrupted;
+            return ExitCodes.INTERRUPTED;
         }
         catch (JsonException exception)
         {

@@ -23,15 +23,15 @@ namespace YGrab.Domain;
 /// </remarks>
 public static class TitleText
 {
-    private const string AlbumVersionNote = "album version";
-    private const string ExplicitNote = "explicit";
-    private const string LeadingThe = "the ";
-    private const char TypographicApostrophe = '\u2019';
-    private const char TypographicHyphen = '\u2010';
-    private const char Apostrophe = '\'';
-    private const char Hyphen = '-';
-    private const char Underscore = '_';
-    private const char ClosingParenthesis = ')';
+    private const string ALBUM_VERSION_NOTE = "album version";
+    private const string EXPLICIT_NOTE = "explicit";
+    private const string LEADING_THE = "the ";
+    private const char TYPOGRAPHIC_APOSTROPHE = '\u2019';
+    private const char TYPOGRAPHIC_HYPHEN = '\u2010';
+    private const char APOSTROPHE = '\'';
+    private const char HYPHEN = '-';
+    private const char UNDERSCORE = '_';
+    private const char CLOSING_PARENTHESIS = ')';
 
     private static readonly string[] _creditPrefixes = ["feat. ", "feat ", "ft. ", "ft ", "with "];
     private static readonly SearchValues<char> _openers = SearchValues.Create("([");
@@ -52,8 +52,8 @@ public static class TitleText
 
         var folded = text.Normalize(NormalizationForm.FormKC)
             .ToLowerInvariant()
-            .Replace(TypographicApostrophe, Apostrophe)
-            .Replace(TypographicHyphen, Hyphen);
+            .Replace(TYPOGRAPHIC_APOSTROPHE, APOSTROPHE)
+            .Replace(TYPOGRAPHIC_HYPHEN, HYPHEN);
 
         var withoutCredits = Remove(folded, CreditLength);
         var withoutEdition = Remove(withoutCredits, EditionLength);
@@ -70,8 +70,8 @@ public static class TitleText
         ArgumentNullException.ThrowIfNull(text);
 
         var normalized = Normalize(Remove(text, VersionNoteLength));
-        return normalized.StartsWith(LeadingThe, StringComparison.Ordinal)
-            ? normalized[LeadingThe.Length..]
+        return normalized.StartsWith(LEADING_THE, StringComparison.Ordinal)
+            ? normalized[LEADING_THE.Length..]
             : normalized;
     }
 
@@ -129,22 +129,22 @@ public static class TitleText
     private static int VersionNoteLength(ReadOnlySpan<char> fromOpener)
     {
         var note = fromOpener[1..];
-        if (note.StartsWith(AlbumVersionNote, StringComparison.OrdinalIgnoreCase))
+        if (note.StartsWith(ALBUM_VERSION_NOTE, StringComparison.OrdinalIgnoreCase))
         {
-            var length = 1 + AlbumVersionNote.Length;
+            var length = 1 + ALBUM_VERSION_NOTE.Length;
             var end = fromOpener[length..].IndexOfAny(_closers);
             if (end < 0)
                 return fromOpener.Length;
 
             length += end + 1;
-            return length < fromOpener.Length && fromOpener[length] == ClosingParenthesis
+            return length < fromOpener.Length && fromOpener[length] == CLOSING_PARENTHESIS
                 ? length + 1
                 : length;
         }
 
-        var closing = 1 + ExplicitNote.Length;
+        var closing = 1 + EXPLICIT_NOTE.Length;
         return
-            note.StartsWith(ExplicitNote, StringComparison.OrdinalIgnoreCase)
+            note.StartsWith(EXPLICIT_NOTE, StringComparison.OrdinalIgnoreCase)
             && closing < fromOpener.Length
             && _closers.Contains(fromOpener[closing])
             ? closing + 1
@@ -166,7 +166,7 @@ public static class TitleText
     private static string CutEditionSuffix(string text)
     {
         var from = 0;
-        while (text.AsSpan(from).IndexOf(Hyphen) is >= 0 and var offset)
+        while (text.AsSpan(from).IndexOf(HYPHEN) is >= 0 and var offset)
         {
             var dash = from + offset;
             from = dash + 1;
@@ -181,7 +181,7 @@ public static class TitleText
             }
 
             var segment = text.AsSpan(from);
-            var next = segment.IndexOf(Hyphen);
+            var next = segment.IndexOf(HYPHEN);
             if ((next < 0 ? segment : segment[..next]).ContainsAny(_editionWords))
                 return text[..dash].TrimEnd();
         }
@@ -212,5 +212,5 @@ public static class TitleText
     }
 
     private static bool IsWordRune(Rune rune) =>
-        Rune.IsLetter(rune) || Rune.IsNumber(rune) || rune.Value is Underscore or Apostrophe;
+        Rune.IsLetter(rune) || Rune.IsNumber(rune) || rune.Value is UNDERSCORE or APOSTROPHE;
 }

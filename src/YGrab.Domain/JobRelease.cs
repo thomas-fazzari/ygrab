@@ -11,7 +11,7 @@ namespace YGrab.Domain;
 /// </remarks>
 public sealed record JobRelease
 {
-    internal const int FinishedPercent = 100;
+    internal const int FINISHED_PERCENT = 100;
 
     private JobRelease(Release release, ImmutableArray<JobTrack> tracks)
     {
@@ -106,6 +106,6 @@ public sealed record JobRelease
 
         var finished = Tracks.Count(track => track.State is not TrackState.Pending);
         return (int)
-            Math.Min(FinishedPercent, (finished + fraction) * FinishedPercent / Tracks.Length);
+            Math.Min(FINISHED_PERCENT, (finished + fraction) * FINISHED_PERCENT / Tracks.Length);
     }
 }

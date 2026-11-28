@@ -33,6 +33,6 @@ internal sealed class ListCommand(CliSession session)
         }
 
         Reporter.Output.Write(table);
-        return ExitCodes.Ok;
+        return ExitCodes.OK;
     }
 }

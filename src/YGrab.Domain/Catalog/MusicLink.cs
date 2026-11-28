@@ -10,9 +10,9 @@ namespace YGrab.Domain;
 /// </summary>
 public closed record MusicLink
 {
-    public const string InvalidMessage = "Paste a YouTube Music album or track link.";
+    public const string INVALID_MESSAGE = "Paste a YouTube Music album or track link.";
 
-    private const string BrowsePath = "/browse/";
+    private const string BROWSE_PATH = "/browse/";
 
     public static Result<MusicLink> Parse(Uri uri)
     {
@@ -20,7 +20,7 @@ public closed record MusicLink
 
         return Find(uri) is { } link
             ? new Result<MusicLink>(link)
-            : new ValidationError(InvalidMessage);
+            : new ValidationError(INVALID_MESSAGE);
     }
 
     private static MusicLink? Find(Uri uri)
@@ -39,8 +39,8 @@ public closed record MusicLink
         {
             "/watch" => Track(query["v"]),
             "/playlist" => AlbumPlaylist(query["list"]),
-            var path when path.StartsWith(BrowsePath, StringComparison.Ordinal) => Album(
-                path[BrowsePath.Length..].TrimEnd('/')
+            var path when path.StartsWith(BROWSE_PATH, StringComparison.Ordinal) => Album(
+                path[BROWSE_PATH.Length..].TrimEnd('/')
             ),
             _ => null,
         };

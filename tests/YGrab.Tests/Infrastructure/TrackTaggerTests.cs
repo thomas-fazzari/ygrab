@@ -12,10 +12,10 @@ namespace YGrab.Tests.Infrastructure;
 
 public sealed class TrackTaggerTests : IDisposable
 {
-    private const string IsrcText = "USABC1234567";
-    private const string BarcodeText = "0123456789012";
-    private const int ReleaseYear = 2020;
-    private const int ExplicitValue = 1;
+    private const string ISRC_TEXT = "USABC1234567";
+    private const string BARCODE_TEXT = "0123456789012";
+    private const int RELEASE_YEAR = 2020;
+    private const int EXPLICIT_VALUE = 1;
 
     private readonly TempDirectory _temp = new();
 
@@ -35,10 +35,10 @@ public sealed class TrackTaggerTests : IDisposable
         enriched.DiscTotal.Should().Be(2);
         enriched.TrackNumber.Should().Be(1);
         enriched.TrackTotal.Should().Be(4);
-        enriched.ISRC.Should().Be(IsrcText);
+        enriched.ISRC.Should().Be(ISRC_TEXT);
         Day(enriched).Should().Be("2019-03-04");
         enriched.AdditionalFields["LABEL"].Should().Be("Lab");
-        enriched.AdditionalFields["BARCODE"].Should().Be(BarcodeText);
+        enriched.AdditionalFields["BARCODE"].Should().Be(BARCODE_TEXT);
         enriched.AdditionalFields["RELEASETYPE"].Should().Be("album;compilation");
         enriched.AdditionalFields["ORIGINALYEAR"].Should().Be("2020");
         enriched.AdditionalFields["ITUNESADVISORY"].Should().Be("1");
@@ -54,7 +54,7 @@ public sealed class TrackTaggerTests : IDisposable
         plain.TrackNumber.Should().Be(source.Number);
         plain.TrackTotal.Should().Be(release.TrackCount);
         plain.ISRC.Should().BeEmpty();
-        plain.Year.Should().Be(ReleaseYear);
+        plain.Year.Should().Be(RELEASE_YEAR);
         plain
             .AdditionalFields.Keys.Should()
             .BeEquivalentTo(["VORBIS-VENDOR", "ITUNESADVISORY", "ARTISTS", "ALBUMARTISTS"]);
@@ -80,7 +80,7 @@ public sealed class TrackTaggerTests : IDisposable
         var raw = Raw(path);
 
         enriched.ISRC.Should().BeEmpty();
-        enriched.AdditionalFields["ISRC"].Should().Be(IsrcText);
+        enriched.AdditionalFields["ISRC"].Should().Be(ISRC_TEXT);
         enriched.AdditionalFields["ORIGINALDATE"].Should().Be("2020");
         enriched.AdditionalFields["MusicBrainz Album Type"].Should().Be("compilation");
         enriched.AlbumArtist.Should().Be("Artist, Guest");
@@ -88,24 +88,24 @@ public sealed class TrackTaggerTests : IDisposable
         enriched.DiscNumber.Should().Be(2);
         Day(enriched).Should().Be("2019-03-04");
         raw.Should().NotContain("\u00a9isr");
-        RatingOf(path).Should().Be(ExplicitValue);
+        RatingOf(path).Should().Be(EXPLICIT_VALUE);
 
         TrackTagger.Write(path, release, source, cover: null, details: null);
         var plain = new Track(path);
         raw = Raw(path);
 
         plain.DiscNumber.Should().Be(0);
-        plain.Year.Should().Be(ReleaseYear);
+        plain.Year.Should().Be(RELEASE_YEAR);
         plain.AdditionalFields.Keys.Should().BeEmpty();
         raw.Should().NotContain("LABEL").And.NotContain("ISRC").And.NotContain("ORIGINALDATE");
-        RatingOf(path).Should().Be(ExplicitValue);
+        RatingOf(path).Should().Be(EXPLICIT_VALUE);
 
         TrackTagger.Write(path, release, source, cover: null, details);
         raw = Raw(path);
 
         raw.AsSpan().Count("LABEL").Should().Be(1);
         raw.AsSpan().Count("ISRC").Should().Be(1);
-        RatingOf(path).Should().Be(ExplicitValue);
+        RatingOf(path).Should().Be(EXPLICIT_VALUE);
     }
 
     private static (Release Release, ReleaseTrack Source, ReleaseDetails Details) Sample()
@@ -114,13 +114,13 @@ public sealed class TrackTaggerTests : IDisposable
         var source = release.Tracks[1];
         var details = new ReleaseDetails(
             "Lab",
-            Barcode.Create(BarcodeText).ShouldSucceed(),
+            Barcode.Create(BARCODE_TEXT).ShouldSucceed(),
             new DateOnly(2019, 3, 4),
             ReleaseType.Compilation,
             2,
             ImmutableDictionary<int, TrackDetails>.Empty.Add(
                 source.Number,
-                new TrackDetails(Isrc.Create(IsrcText).ShouldSucceed(), 2, 1, 4)
+                new TrackDetails(Isrc.Create(ISRC_TEXT).ShouldSucceed(), 2, 1, 4)
             )
         );
         return (release, source, details);

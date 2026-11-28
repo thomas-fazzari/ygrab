@@ -9,7 +9,7 @@ namespace YGrab.Host.Health;
 
 internal static class HealthEndpoints
 {
-    private const string Banner = """
+    private const string BANNER = """
         _____.___. ________            ___.
         \__  |   |/  _____/___________ \_ |__
          /   |   /   \  __\_  __ \__  \ | __ \
@@ -35,7 +35,7 @@ internal static class HealthEndpoints
     private static Task WriteAsync(HttpContext context, HealthReport report)
     {
         context.Response.ContentType = MediaTypeNames.Text.Plain;
-        var body = report.Status == HealthStatus.Healthy ? Banner : report.Status.ToString();
+        var body = report.Status == HealthStatus.Healthy ? BANNER : report.Status.ToString();
         return context.Response.WriteAsync(body, context.RequestAborted);
     }
 }

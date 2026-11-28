@@ -15,7 +15,7 @@ namespace YGrab.Infrastructure.Configuration;
 /// </remarks>
 public sealed class StorageOptions
 {
-    public const string SectionName = "Storage";
+    public const string SECTION_NAME = "Storage";
 
     /// <summary>
     /// Holds the database and the job folders.

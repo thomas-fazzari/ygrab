@@ -7,14 +7,14 @@ namespace YGrab.Infrastructure.Database;
 
 public sealed class SqliteDatabase(IOptions<StorageOptions> options)
 {
-    internal const string DatabaseFileName = "ygrab.db";
+    internal const string DATABASE_FILE_NAME = "ygrab.db";
 
     // The database and the job files are private to the user
-    private const UnixFileMode DirectoryMode =
+    private const UnixFileMode DIRECTORY_MODE =
         UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute;
 
     private readonly string _directory = options.Value.DataDirectory;
-    private readonly string _path = Path.Combine(options.Value.DataDirectory, DatabaseFileName);
+    private readonly string _path = Path.Combine(options.Value.DataDirectory, DATABASE_FILE_NAME);
 
     /// <summary>
     /// Creates the data directory and the database file when they are missing.
@@ -35,7 +35,7 @@ public sealed class SqliteDatabase(IOptions<StorageOptions> options)
             return;
         }
 
-        Directory.CreateDirectory(_directory, DirectoryMode);
+        Directory.CreateDirectory(_directory, DIRECTORY_MODE);
     }
 
     private SqliteConnection Open(SqliteOpenMode mode)

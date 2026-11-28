@@ -25,6 +25,6 @@ internal sealed class ResumeCommand(CliSession session)
             return Reporter.Report(failure);
 
         Reporter.Output.WriteLine("Jobs resumed");
-        return ExitCodes.Ok;
+        return ExitCodes.OK;
     }
 }

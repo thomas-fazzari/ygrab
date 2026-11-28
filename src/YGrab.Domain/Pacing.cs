@@ -8,16 +8,16 @@ namespace YGrab.Domain;
 /// </summary>
 public static class Pacing
 {
-    internal const int MinPauseSeconds = 5;
-    internal const int MaxPauseSeconds = 15;
+    internal const int MIN_PAUSE_SECONDS = 5;
+    internal const int MAX_PAUSE_SECONDS = 15;
 
-    public const int PauseChoices = MaxPauseSeconds - MinPauseSeconds + 1;
+    public const int PAUSE_CHOICES = MAX_PAUSE_SECONDS - MIN_PAUSE_SECONDS + 1;
 
     public static TimeSpan Pause(int roll)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(roll);
-        ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(roll, PauseChoices);
+        ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(roll, PAUSE_CHOICES);
 
-        return TimeSpan.FromSeconds(MinPauseSeconds + roll);
+        return TimeSpan.FromSeconds(MIN_PAUSE_SECONDS + roll);
     }
 }

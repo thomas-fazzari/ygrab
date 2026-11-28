@@ -19,7 +19,7 @@ internal abstract class ApiCommand : Command
             async (parse, cancellationToken) =>
                 session.Api() is { } api
                     ? await RunAsync(api, parse, cancellationToken)
-                    : ExitCodes.Usage
+                    : ExitCodes.USAGE
         );
     }
 

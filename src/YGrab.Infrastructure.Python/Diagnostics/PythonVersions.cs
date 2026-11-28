@@ -11,7 +11,7 @@ namespace YGrab.Infrastructure.Python.Diagnostics;
 /// </summary>
 internal sealed class PythonVersions(IPythonEnvironment python) : IComponentVersions
 {
-    private const string YtMusicApiPackage = "ytmusicapi";
+    private const string YT_MUSIC_API_PACKAGE = "ytmusicapi";
 
     // A call holds the GIL, so it runs off the caller's thread
     public async ValueTask<IReadOnlyList<ComponentVersion>> ReadAsync(
@@ -24,7 +24,7 @@ internal sealed class PythonVersions(IPythonEnvironment python) : IComponentVers
         return
         [
             new ComponentVersion("Python", module.PythonVersion()),
-            new ComponentVersion(YtMusicApiPackage, module.PackageVersion(YtMusicApiPackage)),
+            new ComponentVersion(YT_MUSIC_API_PACKAGE, module.PackageVersion(YT_MUSIC_API_PACKAGE)),
         ];
     }
 }

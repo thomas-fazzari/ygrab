@@ -5,17 +5,17 @@ namespace YGrab.Host;
 
 internal static class SecurityHeaders
 {
-    private const string ContentSecurityPolicy =
+    private const string CONTENT_SECURITY_POLICY =
         "default-src 'none'; script-src 'self'; style-src 'self'; font-src 'self'; "
         + "connect-src 'self'; manifest-src 'self'; "
         + "img-src 'self' https://*.googleusercontent.com https://*.ggpht.com https://*.ytimg.com; "
         + "base-uri 'none'; form-action 'self'; frame-ancestors 'none'";
 
-    private const string PermissionsPolicy =
+    private const string PERMISSIONS_POLICY =
         "accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), "
         + "microphone=(), payment=(), usb=()";
 
-    private const string NoStore = "no-store";
+    private const string NO_STORE = "no-store";
 
     extension(IApplicationBuilder app)
     {
@@ -33,21 +33,21 @@ internal static class SecurityHeaders
     {
         var context = (HttpContext)state;
         var headers = context.Response.Headers;
-        headers.ContentSecurityPolicy = ContentSecurityPolicy;
+        headers.ContentSecurityPolicy = CONTENT_SECURITY_POLICY;
         headers.XContentTypeOptions = "nosniff";
         headers.XFrameOptions = "DENY";
         headers["Referrer-Policy"] = "no-referrer";
-        headers["Permissions-Policy"] = PermissionsPolicy;
+        headers["Permissions-Policy"] = PERMISSIONS_POLICY;
         headers["Cross-Origin-Opener-Policy"] = "same-origin";
         headers["Cross-Origin-Resource-Policy"] = "same-origin";
         if (
             context.Request.Path.StartsWithSegments(
-                EndpointExtensions.ApiPrefix,
+                EndpointExtensions.API_PREFIX,
                 StringComparison.Ordinal
             ) && string.IsNullOrWhiteSpace(headers.CacheControl)
         )
         {
-            headers.CacheControl = NoStore;
+            headers.CacheControl = NO_STORE;
         }
 
         return Task.CompletedTask;

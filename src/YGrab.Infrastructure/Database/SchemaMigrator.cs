@@ -8,10 +8,10 @@ public sealed partial class SchemaMigrator(
     ILogger<SchemaMigrator> logger
 )
 {
-    private const string ResourcePrefix = "migrations/";
-    private const string ResourceSuffix = ".sql";
+    private const string RESOURCE_PREFIX = "migrations/";
+    private const string RESOURCE_SUFFIX = ".sql";
 
-    private const string CreateVersionTableSql = """
+    private const string CREATE_VERSION_TABLE_SQL = """
         CREATE TABLE IF NOT EXISTS schema_version (
             version    INTEGER PRIMARY KEY,
             name       TEXT    NOT NULL,
@@ -19,7 +19,7 @@ public sealed partial class SchemaMigrator(
         ) STRICT
         """;
 
-    private const string InsertVersionSql = """
+    private const string INSERT_VERSION_SQL = """
         INSERT INTO schema_version (version, name, applied_at)
         VALUES (@Version, @Name, @AppliedAt)
         """;
@@ -30,7 +30,7 @@ public sealed partial class SchemaMigrator(
 
         // WAL persists in the file, and SQLite refuses to change the mode inside a transaction
         connection.ExecuteScalar<string>("PRAGMA journal_mode = WAL");
-        connection.Execute(CreateVersionTableSql);
+        connection.Execute(CREATE_VERSION_TABLE_SQL);
 
         var migrations = LoadMigrations();
         var applied = connection.Query<long>("SELECT version FROM schema_version").ToHashSet();
@@ -60,7 +60,7 @@ public sealed partial class SchemaMigrator(
         using var transaction = connection.BeginTransaction(deferred: false);
         connection.Execute(migration.Sql, transaction: transaction);
         connection.Execute(
-            InsertVersionSql,
+            INSERT_VERSION_SQL,
             new
             {
                 migration.Version,
@@ -81,14 +81,14 @@ public sealed partial class SchemaMigrator(
         foreach (var resource in assembly.GetManifestResourceNames())
         {
             if (
-                !resource.StartsWith(ResourcePrefix, StringComparison.Ordinal)
-                || !resource.EndsWith(ResourceSuffix, StringComparison.Ordinal)
+                !resource.StartsWith(RESOURCE_PREFIX, StringComparison.Ordinal)
+                || !resource.EndsWith(RESOURCE_SUFFIX, StringComparison.Ordinal)
             )
             {
                 continue;
             }
 
-            var name = resource[ResourcePrefix.Length..];
+            var name = resource[RESOURCE_PREFIX.Length..];
             var prefix = name.Split('_', 2)[0];
             if (
                 !long.TryParse(

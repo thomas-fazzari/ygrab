@@ -65,7 +65,7 @@ internal static class JobsEndpoints
     )
     {
         var outcome = await handler.HandleAsync(
-            new ListJobs.ListJobsRequest(limit ?? ListJobs.MaxLimit),
+            new ListJobs.ListJobsRequest(limit ?? ListJobs.MAX_LIMIT),
             cancellationToken
         );
         return outcome.Value switch

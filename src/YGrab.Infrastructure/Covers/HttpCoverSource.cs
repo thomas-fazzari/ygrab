@@ -23,7 +23,7 @@ internal sealed partial class HttpCoverSource(
     ILogger<HttpCoverSource> logger
 ) : ICoverSource
 {
-    internal const string ClientName = "covers";
+    internal const string CLIENT_NAME = "covers";
 
     /// <summary>
     /// The side of the square cover in pixels.
@@ -31,14 +31,14 @@ internal sealed partial class HttpCoverSource(
     /// <remarks>
     /// The original can reach 4000 pixels.
     /// </remarks>
-    internal const int Size = 1200;
+    internal const int SIZE = 1200;
 
     // A cover of Size pixels weighs a few hundred kb
-    internal const int MaxResponseBytes = 10 * 1024 * 1024;
+    internal const int MAX_RESPONSE_BYTES = 10 * 1024 * 1024;
 
-    private const string GoogleUserContent = ".googleusercontent.com";
+    private const string GOOGLE_USER_CONTENT = ".googleusercontent.com";
 
-    private static readonly string[] _hosts = [GoogleUserContent, ".ggpht.com", ".ytimg.com"];
+    private static readonly string[] _hosts = [GOOGLE_USER_CONTENT, ".ggpht.com", ".ytimg.com"];
 
     public async ValueTask<Cover?> FetchAsync(Uri url, CancellationToken cancellationToken)
     {
@@ -50,7 +50,7 @@ internal sealed partial class HttpCoverSource(
 
         try
         {
-            var client = clients.CreateClient(ClientName);
+            var client = clients.CreateClient(CLIENT_NAME);
             return new Cover(await client.GetByteArrayAsync(Sized(url), cancellationToken));
         }
         catch (Exception exception) when (!cancellationToken.IsCancellationRequested)
@@ -67,8 +67,8 @@ internal sealed partial class HttpCoverSource(
 
         var text = url.AbsoluteUri;
         var options = text.LastIndexOf('=', StringComparison.Ordinal);
-        return url.Host.EndsWith(GoogleUserContent, StringComparison.Ordinal) && options > 0
-            ? new Uri($"{text[..options]}=w{Size}-h{Size}-l90-rj")
+        return url.Host.EndsWith(GOOGLE_USER_CONTENT, StringComparison.Ordinal) && options > 0
+            ? new Uri($"{text[..options]}=w{SIZE}-h{SIZE}-l90-rj")
             : url;
     }
 

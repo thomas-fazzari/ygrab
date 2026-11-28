@@ -9,11 +9,11 @@ namespace YGrab.Host.Auth;
 
 internal sealed partial class WrongTokenLimiter(ILogger<WrongTokenLimiter> logger) : IDisposable
 {
-    internal const int Tries = 5;
+    internal const int TRIES = 5;
     internal static readonly TimeSpan Window = TimeSpan.FromMinutes(1);
 
     // One machine can use every address of its IPv6 /64 network
-    private const int Ipv6NetworkBytes = 8;
+    private const int IPV6_NETWORK_BYTES = 8;
 
     private readonly PartitionedRateLimiter<string> _limiter = PartitionedRateLimiter.Create<
         string,
@@ -21,7 +21,7 @@ internal sealed partial class WrongTokenLimiter(ILogger<WrongTokenLimiter> logge
     >(client =>
         RateLimitPartition.GetFixedWindowLimiter(client, _ => new FixedWindowRateLimiterOptions
         {
-            PermitLimit = Tries,
+            PermitLimit = TRIES,
             Window = Window,
             QueueLimit = 0,
         })
@@ -56,7 +56,7 @@ internal sealed partial class WrongTokenLimiter(ILogger<WrongTokenLimiter> logge
             return address.ToString();
 
         var bytes = address.GetAddressBytes();
-        bytes.AsSpan(Ipv6NetworkBytes).Clear();
+        bytes.AsSpan(IPV6_NETWORK_BYTES).Clear();
         return new IPAddress(bytes).ToString();
     }
 

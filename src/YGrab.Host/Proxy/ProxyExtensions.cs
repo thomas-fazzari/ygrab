@@ -14,7 +14,7 @@ internal static class ProxyExtensions
             services
                 .AddOptions<ProxyOptions>()
                 .BindConfiguration(
-                    ProxyOptions.SectionName,
+                    ProxyOptions.SECTION_NAME,
                     HostConfigurationExtensions.FailOnUnknownKeys
                 )
                 .ValidateOnStart();

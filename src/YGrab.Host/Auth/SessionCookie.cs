@@ -9,14 +9,14 @@ namespace YGrab.Host.Auth;
 
 internal static class SessionCookie
 {
-    internal const string Name = "ygrab";
-    internal const string TokenHashClaim = "token-hash";
+    internal const string NAME = "ygrab";
+    internal const string TOKEN_HASH_CLAIM = "token-hash";
     internal static readonly TimeSpan Lifetime = TimeSpan.FromDays(30);
 
     public static ClaimsPrincipal CreatePrincipal(byte[] tokenHash) =>
         new(
             new ClaimsIdentity(
-                [new Claim(TokenHashClaim, Convert.ToBase64String(tokenHash))],
+                [new Claim(TOKEN_HASH_CLAIM, Convert.ToBase64String(tokenHash))],
                 CookieAuthenticationDefaults.AuthenticationScheme
             )
         );
@@ -36,7 +36,7 @@ internal static class SessionCookie
     {
         var tokens = context.HttpContext.RequestServices.GetRequiredService<TokenStore>();
         if (
-            context.Principal?.FindFirstValue(TokenHashClaim) is { } hash
+            context.Principal?.FindFirstValue(TOKEN_HASH_CLAIM) is { } hash
             && tokens.MatchesHash(hash)
         )
         {

@@ -10,18 +10,18 @@ namespace YGrab.Engine.Diagnostics;
 /// </summary>
 public static class YGrabTelemetry
 {
-    public const string Name = "YGrab";
+    public const string NAME = "YGrab";
 
     /// <summary>
     /// The <c>error.type</c> tag of the OpenTelemetry semantic conventions.
     /// </summary>
-    public const string ErrorTypeTag = "error.type";
+    public const string ERROR_TYPE_TAG = "error.type";
 
-    public static ActivitySource Source { get; } = new(Name);
+    public static ActivitySource Source { get; } = new(NAME);
 
     public static void MarkFailed(Activity? activity, string errorType)
     {
-        activity?.SetTag(ErrorTypeTag, errorType);
+        activity?.SetTag(ERROR_TYPE_TAG, errorType);
         activity?.SetStatus(ActivityStatusCode.Error);
     }
 

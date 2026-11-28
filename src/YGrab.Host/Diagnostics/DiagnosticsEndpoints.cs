@@ -96,7 +96,7 @@ internal static class DiagnosticsEndpoints
                 subscription.Backlog,
                 ApiJsonContext.Default.ImmutableArrayLogEntryDto
             ),
-            LogEventNames.Snapshot
+            LogEventNames.SNAPSHOT
         );
 
         await foreach (
@@ -104,7 +104,7 @@ internal static class DiagnosticsEndpoints
                 subscription.Reader,
                 entry => new SseItem<string>(
                     JsonSerializer.Serialize(entry, ApiJsonContext.Default.LogEntryDto),
-                    LogEventNames.Entry
+                    LogEventNames.ENTRY
                 ),
                 response,
                 timeProvider,

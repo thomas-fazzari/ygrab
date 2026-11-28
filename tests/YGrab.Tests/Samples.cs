@@ -9,14 +9,14 @@ namespace YGrab.Tests;
 
 internal static class Samples
 {
-    public const string AlbumBrowseId = "MPREb_album";
-    public const string AlbumUrl = "https://music.youtube.com/browse/" + AlbumBrowseId;
+    public const string ALBUM_BROWSE_ID = "MPREb_album";
+    public const string ALBUM_URL = "https://music.youtube.com/browse/" + ALBUM_BROWSE_ID;
 
-    public const string VideoUrl = "https://www.youtube.com/watch?v=vid";
+    public const string VIDEO_URL = "https://www.youtube.com/watch?v=vid";
 
     public static readonly VideoInfo VideoDetails = new("Title", "Channel");
 
-    public static readonly BrowseId Album = BrowseId.Create(AlbumBrowseId).ShouldSucceed();
+    public static readonly BrowseId Album = BrowseId.Create(ALBUM_BROWSE_ID).ShouldSucceed();
 
     public static readonly RemoteFailure Transient = new RemoteFailure.Transient("timeout");
 
@@ -31,7 +31,7 @@ internal static class Samples
     public static TrackLink TrackLink(string id) => new(Video(id));
 
     /// <summary>An album whose tracks have the video ids <c>v1</c>, <c>v2</c> and so on.</summary>
-    public static Release Release(int tracks, string browseId = AlbumBrowseId) =>
+    public static Release Release(int tracks, string browseId = ALBUM_BROWSE_ID) =>
         new(
             BrowseId.Create(browseId).ShouldSucceed(),
             "Album",
@@ -58,7 +58,7 @@ internal static class Samples
     public static Job Queued(MusicLink link, bool force = false, DateTimeOffset? now = null) =>
         Job.Create(
             NewJobId(),
-            new Uri(AlbumUrl),
+            new Uri(ALBUM_URL),
             Audio(link),
             force,
             NextRank(),
@@ -73,7 +73,7 @@ internal static class Samples
     public static Job QueuedVideo(JobRequest.Video? request = null, DateTimeOffset? now = null) =>
         Job.Create(
             NewJobId(),
-            new Uri(VideoUrl),
+            new Uri(VIDEO_URL),
             request ?? VideoRequest(),
             force: false,
             NextRank(),
@@ -103,7 +103,7 @@ internal static class Samples
     public static Job Exhaust(Job job, DateTimeOffset now)
     {
         var current = job;
-        for (var failure = 0; failure < Backoff.MaxAttempts; failure++)
+        for (var failure = 0; failure < Backoff.MAX_ATTEMPTS; failure++)
         {
             current = current.Fail(Transient, now);
             if (current.State is JobState.Waiting waiting)
@@ -121,7 +121,7 @@ internal static class Samples
     ) =>
         new(
             id,
-            new Uri(AlbumUrl),
+            new Uri(ALBUM_URL),
             JobModeCode.Audio,
             Quality: null,
             JobStateCode.Downloading,

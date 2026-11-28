@@ -76,7 +76,7 @@ public sealed class JobTests
 
         var second = Samples.Exhaust(first, _now);
 
-        second.State.Should().Be(new JobState.Failed(Job.RefusedMessage, _now));
+        second.State.Should().Be(new JobState.Failed(Job.REFUSED_MESSAGE, _now));
     }
 
     [Fact]
@@ -131,7 +131,7 @@ public sealed class JobTests
             .Be(new JobState.Incomplete("a.zip", 2048, _now));
         none.StartPackaging(_now)
             .State.Should()
-            .Be(new JobState.Failed(Job.NothingDownloadedMessage, _now));
+            .Be(new JobState.Failed(Job.NOTHING_DOWNLOADED_MESSAGE, _now));
     }
 
     [Fact]

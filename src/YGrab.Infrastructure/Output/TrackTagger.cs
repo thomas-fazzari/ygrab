@@ -31,49 +31,49 @@ namespace YGrab.Infrastructure.Output;
 /// </remarks>
 internal static class TrackTagger
 {
-    private const string OpusExtension = ".opus";
-    private const string M4aExtension = ".m4a";
+    private const string OPUS_EXTENSION = ".opus";
+    private const string M4A_EXTENSION = ".m4a";
 
-    private const string OriginalDateKey = "ORIGINALDATE";
-    private const string OriginalYearKey = "ORIGINALYEAR";
-    private const string LabelKey = "LABEL";
-    private const string BarcodeKey = "BARCODE";
-    private const string ReleaseTypeKey = "RELEASETYPE";
-    private const string AdvisoryKey = "ITUNESADVISORY";
-    private const string ArtistsKey = "ARTISTS";
-    private const string AlbumArtistsKey = "ALBUMARTISTS";
-    private const string Mp4ReleaseTypeKey = "MusicBrainz Album Type";
-    private const string Mp4IsrcKey = "ISRC";
-    private const string Mp4IsrcAtomKey = "----:com.apple.iTunes:ISRC";
-    private const string Mp4AdvisoryKey = "rtng";
-    private const string ExplicitValue = "1";
+    private const string ORIGINAL_DATE_KEY = "ORIGINALDATE";
+    private const string ORIGINAL_YEAR_KEY = "ORIGINALYEAR";
+    private const string LABEL_KEY = "LABEL";
+    private const string BARCODE_KEY = "BARCODE";
+    private const string RELEASE_TYPE_KEY = "RELEASETYPE";
+    private const string ADVISORY_KEY = "ITUNESADVISORY";
+    private const string ARTISTS_KEY = "ARTISTS";
+    private const string ALBUM_ARTISTS_KEY = "ALBUMARTISTS";
+    private const string MP4_RELEASE_TYPE_KEY = "MusicBrainz Album Type";
+    private const string MP4_ISRC_KEY = "ISRC";
+    private const string MP4_ISRC_ATOM_KEY = "----:com.apple.iTunes:ISRC";
+    private const string MP4_ADVISORY_KEY = "rtng";
+    private const string EXPLICIT_VALUE = "1";
 
-    private const string AlbumType = "album";
-    private const string EpType = "ep";
-    private const string SingleType = "single";
-    private const string CompilationType = "compilation";
+    private const string ALBUM_TYPE = "album";
+    private const string EP_TYPE = "ep";
+    private const string SINGLE_TYPE = "single";
+    private const string COMPILATION_TYPE = "compilation";
 
     private static readonly string[] _opusKeys =
     [
-        OriginalDateKey,
-        OriginalYearKey,
-        LabelKey,
-        BarcodeKey,
-        ReleaseTypeKey,
-        AdvisoryKey,
-        ArtistsKey,
-        AlbumArtistsKey,
+        ORIGINAL_DATE_KEY,
+        ORIGINAL_YEAR_KEY,
+        LABEL_KEY,
+        BARCODE_KEY,
+        RELEASE_TYPE_KEY,
+        ADVISORY_KEY,
+        ARTISTS_KEY,
+        ALBUM_ARTISTS_KEY,
     ];
 
     private static readonly string[] _m4aKeys =
     [
-        OriginalDateKey,
-        LabelKey,
-        BarcodeKey,
-        Mp4ReleaseTypeKey,
-        Mp4IsrcKey,
-        Mp4IsrcAtomKey,
-        Mp4AdvisoryKey,
+        ORIGINAL_DATE_KEY,
+        LABEL_KEY,
+        BARCODE_KEY,
+        MP4_RELEASE_TYPE_KEY,
+        MP4_ISRC_KEY,
+        MP4_ISRC_ATOM_KEY,
+        MP4_ADVISORY_KEY,
     ];
 
     /// <param name="details">What the provider knows about the release, or null for the tags of YouTube Music only.</param>
@@ -106,10 +106,10 @@ internal static class TrackTagger
         var extras = found is null ? null : details;
         switch (Path.GetExtension(path).ToLowerInvariant())
         {
-            case OpusExtension:
+            case OPUS_EXTENSION:
                 WriteVorbis(track, release, source, extras, found);
                 break;
-            case M4aExtension:
+            case M4A_EXTENSION:
                 WriteMp4(track, release, source, extras, found);
                 break;
         }
@@ -169,28 +169,28 @@ internal static class TrackTagger
         // ATL keeps the old ISRC when it is set to null, and an empty text clears it
         track.ISRC = found?.Isrc?.Value ?? string.Empty;
 
-        Put(fields, ArtistsKey, Values(source.Artists));
-        Put(fields, AlbumArtistsKey, Values(release.Artists));
+        Put(fields, ARTISTS_KEY, Values(source.Artists));
+        Put(fields, ALBUM_ARTISTS_KEY, Values(release.Artists));
         if (details is not null)
         {
             if (release.Year is { } year)
             {
                 var text = YearText(year);
-                fields[OriginalDateKey] = text;
-                fields[OriginalYearKey] = text;
+                fields[ORIGINAL_DATE_KEY] = text;
+                fields[ORIGINAL_YEAR_KEY] = text;
             }
 
-            Put(fields, LabelKey, details.Label);
-            Put(fields, BarcodeKey, details.Barcode?.Value);
+            Put(fields, LABEL_KEY, details.Label);
+            Put(fields, BARCODE_KEY, details.Barcode?.Value);
             Put(
                 fields,
-                ReleaseTypeKey,
-                ReleaseTypeText(details.ReleaseType, Values([AlbumType, CompilationType]))
+                RELEASE_TYPE_KEY,
+                ReleaseTypeText(details.ReleaseType, Values([ALBUM_TYPE, COMPILATION_TYPE]))
             );
         }
 
         if (source.Explicit)
-            fields[AdvisoryKey] = ExplicitValue;
+            fields[ADVISORY_KEY] = EXPLICIT_VALUE;
     }
 
     private static void WriteMp4(
@@ -204,19 +204,23 @@ internal static class TrackTagger
         var fields = track.AdditionalFields;
         Clear(fields, _m4aKeys);
         track.Popularity = null;
-        Put(fields, Mp4IsrcAtomKey, found?.Isrc?.Value);
+        Put(fields, MP4_ISRC_ATOM_KEY, found?.Isrc?.Value);
         if (details is not null)
         {
             if (release.Year is { } year)
-                fields[OriginalDateKey] = YearText(year);
+                fields[ORIGINAL_DATE_KEY] = YearText(year);
 
-            Put(fields, LabelKey, details.Label);
-            Put(fields, BarcodeKey, details.Barcode?.Value);
-            Put(fields, Mp4ReleaseTypeKey, ReleaseTypeText(details.ReleaseType, CompilationType));
+            Put(fields, LABEL_KEY, details.Label);
+            Put(fields, BARCODE_KEY, details.Barcode?.Value);
+            Put(
+                fields,
+                MP4_RELEASE_TYPE_KEY,
+                ReleaseTypeText(details.ReleaseType, COMPILATION_TYPE)
+            );
         }
 
         if (source.Explicit)
-            fields[Mp4AdvisoryKey] = ExplicitValue;
+            fields[MP4_ADVISORY_KEY] = EXPLICIT_VALUE;
     }
 
     private static void Clear(IDictionary<string, string> fields, string[] keys)
@@ -239,9 +243,9 @@ internal static class TrackTagger
         type switch
         {
             null => null,
-            ReleaseType.Album => AlbumType,
-            ReleaseType.Ep => EpType,
-            ReleaseType.SingleRelease => SingleType,
+            ReleaseType.Album => ALBUM_TYPE,
+            ReleaseType.Ep => EP_TYPE,
+            ReleaseType.SingleRelease => SINGLE_TYPE,
             ReleaseType.Compilation => compilation,
             _ => throw new InvalidOperationException("A release has an unknown type."),
         };

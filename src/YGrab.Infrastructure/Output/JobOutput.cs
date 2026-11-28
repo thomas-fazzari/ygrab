@@ -31,12 +31,12 @@ namespace YGrab.Infrastructure.Output;
 /// </remarks>
 internal sealed class JobOutput(IOptions<StorageOptions> storage) : IJobOutput
 {
-    internal const string CoverFileName = "cover.jpg";
+    internal const string COVER_FILE_NAME = "cover.jpg";
 
-    private const string TemporaryExtension = ".tmp";
-    private const string ZipExtension = ".zip";
-    private const string AlbumFileBaseName = "package";
-    private const string TrackFileBaseName = "track";
+    private const string TEMPORARY_EXTENSION = ".tmp";
+    private const string ZIP_EXTENSION = ".zip";
+    private const string ALBUM_FILE_BASE_NAME = "package";
+    private const string TRACK_FILE_BASE_NAME = "track";
 
     public async ValueTask<PackagedFile> PackageAsync(
         Job job,
@@ -62,9 +62,9 @@ internal sealed class JobOutput(IOptions<StorageOptions> storage) : IJobOutput
     public string PathOf(JobId jobId, string fileName)
     {
         var extension = Path.GetExtension(fileName);
-        var baseName = string.Equals(extension, ZipExtension, StringComparison.Ordinal)
-            ? AlbumFileBaseName
-            : TrackFileBaseName;
+        var baseName = string.Equals(extension, ZIP_EXTENSION, StringComparison.Ordinal)
+            ? ALBUM_FILE_BASE_NAME
+            : TRACK_FILE_BASE_NAME;
         return Path.Combine(storage.Value.OutputDirectory(jobId), baseName + extension);
     }
 
@@ -91,7 +91,7 @@ internal sealed class JobOutput(IOptions<StorageOptions> storage) : IJobOutput
             ? PackageSingle(job.Id, release, done[0].Track, cover, details)
             : PackageAlbum(job.Id, release, done, cover, details);
         var path = PathOf(job.Id, name);
-        var temporary = path + TemporaryExtension;
+        var temporary = path + TEMPORARY_EXTENSION;
 
         // A crash can leave a temporary file, which a zip cannot overwrite
         File.Delete(temporary);
@@ -112,14 +112,14 @@ internal sealed class JobOutput(IOptions<StorageOptions> storage) : IJobOutput
         {
             // An earlier run moved the file before it crashed
             var packaged = Directory
-                .EnumerateFiles(output, $"{TrackFileBaseName}.*")
+                .EnumerateFiles(output, $"{TRACK_FILE_BASE_NAME}.*")
                 .FirstOrDefault()
                 ?? throw new FileNotFoundException($"Job {job.Id} has no video file.");
             return ReleaseNaming.VideoName(request.VideoId, info, Path.GetExtension(packaged));
         }
 
         var extension = Path.GetExtension(source);
-        File.Move(source, Path.Combine(output, TrackFileBaseName + extension), overwrite: true);
+        File.Move(source, Path.Combine(output, TRACK_FILE_BASE_NAME + extension), overwrite: true);
         return ReleaseNaming.VideoName(request.VideoId, info, extension);
     }
 
@@ -149,7 +149,7 @@ internal sealed class JobOutput(IOptions<StorageOptions> storage) : IJobOutput
     )
     {
         var folder = ReleaseNaming.AlbumName(release);
-        return (folder + ZipExtension, async (temporary, cancellationToken) =>
+        return (folder + ZIP_EXTENSION, async (temporary, cancellationToken) =>
         {
             await using var zip = await ZipFile.OpenAsync(
                 temporary,
@@ -174,7 +174,7 @@ internal sealed class JobOutput(IOptions<StorageOptions> storage) : IJobOutput
             if (cover is not null)
             {
                 var entry = zip.CreateEntry(
-                    $"{folder}/{CoverFileName}",
+                    $"{folder}/{COVER_FILE_NAME}",
                     CompressionLevel.NoCompression
                 );
                 await using var stream = await entry.OpenAsync(cancellationToken);

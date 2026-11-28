@@ -11,8 +11,8 @@ namespace YGrab.Domain;
 /// </remarks>
 public closed record JobRequest
 {
-    private const string UnknownModeMessage = "The mode is not audio or video.";
-    private const string UnknownQualityMessage = "The quality is not one of the video qualities.";
+    private const string UNKNOWN_MODE_MESSAGE = "The mode is not audio or video.";
+    private const string UNKNOWN_QUALITY_MESSAGE = "The quality is not one of the video qualities.";
 
     public sealed record Audio(MusicLink Link) : JobRequest;
 
@@ -24,10 +24,10 @@ public closed record JobRequest
         ArgumentNullException.ThrowIfNull(url);
 
         if (!Enum.IsDefined(mode))
-            return new ValidationError(UnknownModeMessage, nameof(mode));
+            return new ValidationError(UNKNOWN_MODE_MESSAGE, nameof(mode));
 
         if (mode is JobMode.Video && !Enum.IsDefined(quality))
-            return new ValidationError(UnknownQualityMessage, nameof(quality));
+            return new ValidationError(UNKNOWN_QUALITY_MESSAGE, nameof(quality));
 
         return Find(url, mode, quality) is { } request
             ? new Result<JobRequest>(request)
@@ -35,7 +35,7 @@ public closed record JobRequest
     }
 
     public static string InvalidLinkMessage(JobMode mode) =>
-        mode is JobMode.Video ? VideoLink.InvalidMessage : MusicLink.InvalidMessage;
+        mode is JobMode.Video ? VideoLink.INVALID_MESSAGE : MusicLink.INVALID_MESSAGE;
 
     private static JobRequest? Find(Uri url, JobMode mode, VideoQuality quality) =>
         mode switch

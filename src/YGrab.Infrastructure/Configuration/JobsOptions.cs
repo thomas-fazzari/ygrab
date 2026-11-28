@@ -19,26 +19,26 @@ namespace YGrab.Infrastructure.Configuration;
 /// </remarks>
 public sealed class JobsOptions
 {
-    public const string SectionName = "Jobs";
+    public const string SECTION_NAME = "Jobs";
 
-    private const int MaxRetentionDays = 3650;
+    private const int MAX_RETENTION_DAYS = 3650;
 
     /// <summary>
     /// The days that a finished job keeps its file.
     /// </summary>
-    [Range(1, MaxRetentionDays)]
+    [Range(1, MAX_RETENTION_DAYS)]
     public int RetentionDays { get; set; } = 7;
 
     /// <summary>
     /// The days that a finished video job keeps its file.
     /// </summary>
-    [Range(1, MaxRetentionDays)]
+    [Range(1, MAX_RETENTION_DAYS)]
     public int VideoRetentionDays { get; set; } = 2;
 
     /// <summary>
     /// The days that a finished job stays in the history, after which the sweep removes it.
     /// </summary>
-    [Range(1, MaxRetentionDays)]
+    [Range(1, MAX_RETENTION_DAYS)]
     public int HistoryDays { get; set; } = 90;
 
     internal Retention Retention =>

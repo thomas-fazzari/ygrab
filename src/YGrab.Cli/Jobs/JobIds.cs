@@ -14,9 +14,9 @@ namespace YGrab.Cli.Jobs;
 /// </summary>
 internal static class JobIds
 {
-    internal const int ShortLength = 8;
+    internal const int SHORT_LENGTH = 8;
 
-    public static string Short(Guid id) => Hex(id)[^ShortLength..];
+    public static string Short(Guid id) => Hex(id)[^SHORT_LENGTH..];
 
     public static async Task<ApiResult<JobDto>> FindAsync(
         ApiClient api,

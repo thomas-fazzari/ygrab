@@ -27,14 +27,14 @@ public sealed class YtDlpProgressTests
         YtDlpProgress.TryParseAudio(line, out _).Should().BeFalse();
 
     [Theory]
-    [InlineData("progress avc1.640028 50 100", YtDlpProgress.VideoStreamEnd * 0.5)]
-    [InlineData("progress av01.0.08M.08 100 100", YtDlpProgress.VideoStreamEnd)]
+    [InlineData("progress avc1.640028 50 100", YtDlpProgress.VIDEO_STREAM_END * 0.5)]
+    [InlineData("progress av01.0.08M.08 100 100", YtDlpProgress.VIDEO_STREAM_END)]
     [InlineData(
         "progress none 50 100",
-        YtDlpProgress.VideoStreamEnd
-            + ((YtDlpProgress.AudioStreamEnd - YtDlpProgress.VideoStreamEnd) * 0.5)
+        YtDlpProgress.VIDEO_STREAM_END
+            + ((YtDlpProgress.AUDIO_STREAM_END - YtDlpProgress.VIDEO_STREAM_END) * 0.5)
     )]
-    [InlineData("progress none 100 100", YtDlpProgress.AudioStreamEnd)]
+    [InlineData("progress none 100 100", YtDlpProgress.AUDIO_STREAM_END)]
     public void A_video_line_places_its_stream_in_its_part_of_the_whole(
         string line,
         double expected

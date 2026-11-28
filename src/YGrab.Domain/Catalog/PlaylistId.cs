@@ -4,18 +4,18 @@
 namespace YGrab.Domain;
 
 /// <summary>
-/// The id of the audio playlist of an album, which starts with <see cref="Prefix"/>.
+/// The id of the audio playlist of an album, which starts with <see cref="PREFIX"/>.
 /// </summary>
 public sealed record PlaylistId
 {
-    internal const string Prefix = "OLAK5uy_";
+    internal const string PREFIX = "OLAK5uy_";
 
     private PlaylistId(string value) => Value = value;
 
     public string Value { get; }
 
     public static Result<PlaylistId> Create(string value) =>
-        IdCharacters.Validate(value, "playlist id", Prefix) is { } error
+        IdCharacters.Validate(value, "playlist id", PREFIX) is { } error
             ? error
             : new PlaylistId(value);
 }

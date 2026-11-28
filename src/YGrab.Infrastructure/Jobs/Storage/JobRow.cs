@@ -32,7 +32,7 @@ internal sealed record JobRow(
     string? EnrichmentFailure
 )
 {
-    public const string SelectColumns = """
+    public const string SELECT_COLUMNS = """
         id AS Id, url AS Url, link_kind AS LinkKind, link_id AS LinkId,
         quality AS Quality, force AS Force, status AS Status, created_at AS CreatedAt,
         queue_rank AS QueueRank, release AS Release, tracks AS Tracks,
@@ -45,37 +45,37 @@ internal sealed record JobRow(
 
 internal static class JobRowMapper
 {
-    private const string AlbumKind = "album";
-    private const string AlbumPlaylistKind = "album_playlist";
-    private const string TrackKind = "track";
-    private const string VideoKind = "video";
+    private const string ALBUM_KIND = "album";
+    private const string ALBUM_PLAYLIST_KIND = "album_playlist";
+    private const string TRACK_KIND = "track";
+    private const string VIDEO_KIND = "video";
 
-    private const string Quality720 = "720p";
-    private const string Quality1080 = "1080p";
-    private const string Quality1440 = "1440p";
-    private const string Quality2160 = "2160p";
-    private const string QualityBest = "best";
-    private const string QualityAudio = "audio";
+    private const string QUALITY720 = "720p";
+    private const string QUALITY1080 = "1080p";
+    private const string QUALITY1440 = "1440p";
+    private const string QUALITY2160 = "2160p";
+    private const string QUALITY_BEST = "best";
+    private const string QUALITY_AUDIO = "audio";
 
-    private const string QueuedStatus = "queued";
-    private const string ResolvingStatus = "resolving";
-    private const string DownloadingStatus = "downloading";
-    private const string WaitingStatus = "waiting";
-    private const string PackagingStatus = "packaging";
-    private const string ReadyStatus = "ready";
-    private const string IncompleteStatus = "incomplete";
-    private const string FailedStatus = "failed";
-    private const string SkippedStatus = "skipped";
-    private const string ExpiredStatus = "expired";
+    private const string QUEUED_STATUS = "queued";
+    private const string RESOLVING_STATUS = "resolving";
+    private const string DOWNLOADING_STATUS = "downloading";
+    private const string WAITING_STATUS = "waiting";
+    private const string PACKAGING_STATUS = "packaging";
+    private const string READY_STATUS = "ready";
+    private const string INCOMPLETE_STATUS = "incomplete";
+    private const string FAILED_STATUS = "failed";
+    private const string SKIPPED_STATUS = "skipped";
+    private const string EXPIRED_STATUS = "expired";
 
-    private const string NoMatchFailure = "no_match";
-    private const string UnreachableFailure = "unreachable";
-    private const string ProviderErrorFailure = "provider_error";
+    private const string NO_MATCH_FAILURE = "no_match";
+    private const string UNREACHABLE_FAILURE = "unreachable";
+    private const string PROVIDER_ERROR_FAILURE = "provider_error";
 
-    private const string PendingState = "pending";
-    private const string DoneState = "done";
-    private const string MissingState = "missing";
-    private const string RefusedState = "refused";
+    private const string PENDING_STATE = "pending";
+    private const string DONE_STATE = "done";
+    private const string MISSING_STATE = "missing";
+    private const string REFUSED_STATE = "refused";
 
     public static JobRow ToRow(Job job)
     {
@@ -143,24 +143,24 @@ internal static class JobRowMapper
     private static (string Kind, string LinkId, string? Quality) Describe(JobRequest request) =>
         request switch
         {
-            JobRequest.Audio { Link: AlbumLink album } => (AlbumKind, album.BrowseId.Value, null),
+            JobRequest.Audio { Link: AlbumLink album } => (ALBUM_KIND, album.BrowseId.Value, null),
             JobRequest.Audio { Link: AlbumPlaylistLink playlist } => (
-                AlbumPlaylistKind,
+                ALBUM_PLAYLIST_KIND,
                 playlist.PlaylistId.Value,
                 null
             ),
-            JobRequest.Audio { Link: TrackLink track } => (TrackKind, track.VideoId.Value, null),
+            JobRequest.Audio { Link: TrackLink track } => (TRACK_KIND, track.VideoId.Value, null),
             JobRequest.Video video => (
-                VideoKind,
+                VIDEO_KIND,
                 video.VideoId.Value,
                 video.Quality switch
                 {
-                    VideoQuality.P720 => Quality720,
-                    VideoQuality.P1080 => Quality1080,
-                    VideoQuality.P1440 => Quality1440,
-                    VideoQuality.P2160 => Quality2160,
-                    VideoQuality.Best => QualityBest,
-                    VideoQuality.Audio => QualityAudio,
+                    VideoQuality.P720 => QUALITY720,
+                    VideoQuality.P1080 => QUALITY1080,
+                    VideoQuality.P1440 => QUALITY1440,
+                    VideoQuality.P2160 => QUALITY2160,
+                    VideoQuality.Best => QUALITY_BEST,
+                    VideoQuality.Audio => QUALITY_AUDIO,
                     _ => throw new InvalidOperationException("A video has an unknown quality."),
                 }
             ),
@@ -169,20 +169,20 @@ internal static class JobRowMapper
     private static (string Status, StateColumns Columns) Describe(JobState state) =>
         state switch
         {
-            JobState.Queued => (QueuedStatus, StateColumns.None),
-            JobState.Resolving => (ResolvingStatus, StateColumns.None),
-            JobState.Downloading => (DownloadingStatus, StateColumns.None),
+            JobState.Queued => (QUEUED_STATUS, StateColumns.None),
+            JobState.Resolving => (RESOLVING_STATUS, StateColumns.None),
+            JobState.Downloading => (DOWNLOADING_STATUS, StateColumns.None),
             JobState.Waiting waiting => (
-                WaitingStatus,
+                WAITING_STATUS,
                 StateColumns.None with
                 {
                     RetryAt = waiting.RetryAt,
                     Error = waiting.Reason,
                 }
             ),
-            JobState.Packaging => (PackagingStatus, StateColumns.None),
+            JobState.Packaging => (PACKAGING_STATUS, StateColumns.None),
             JobState.Ready ready => (
-                ReadyStatus,
+                READY_STATUS,
                 StateColumns.None with
                 {
                     FileName = ready.FileName,
@@ -191,7 +191,7 @@ internal static class JobRowMapper
                 }
             ),
             JobState.Incomplete incomplete => (
-                IncompleteStatus,
+                INCOMPLETE_STATUS,
                 StateColumns.None with
                 {
                     FileName = incomplete.FileName,
@@ -200,7 +200,7 @@ internal static class JobRowMapper
                 }
             ),
             JobState.Failed failed => (
-                FailedStatus,
+                FAILED_STATUS,
                 StateColumns.None with
                 {
                     Error = failed.Reason,
@@ -208,7 +208,7 @@ internal static class JobRowMapper
                 }
             ),
             JobState.Skipped skipped => (
-                SkippedStatus,
+                SKIPPED_STATUS,
                 StateColumns.None with
                 {
                     DuplicateOf = skipped.DuplicateOf,
@@ -216,7 +216,7 @@ internal static class JobRowMapper
                 }
             ),
             JobState.Expired expired => (
-                ExpiredStatus,
+                EXPIRED_STATUS,
                 StateColumns.None with
                 {
                     FinishedAt = expired.FinishedAt,
@@ -227,54 +227,54 @@ internal static class JobRowMapper
     private static JobState ToState(string status, StateColumns columns) =>
         status switch
         {
-            QueuedStatus => new JobState.Queued(),
-            ResolvingStatus => new JobState.Resolving(),
-            DownloadingStatus => new JobState.Downloading(),
-            WaitingStatus => new JobState.Waiting(
+            QUEUED_STATUS => new JobState.Queued(),
+            RESOLVING_STATUS => new JobState.Resolving(),
+            DOWNLOADING_STATUS => new JobState.Downloading(),
+            WAITING_STATUS => new JobState.Waiting(
                 Required(columns.RetryAt, "retry_at"),
                 Required(columns.Error, "error")
             ),
-            PackagingStatus => new JobState.Packaging(),
-            ReadyStatus => new JobState.Ready(
+            PACKAGING_STATUS => new JobState.Packaging(),
+            READY_STATUS => new JobState.Ready(
                 Required(columns.FileName, "file_name"),
                 columns.FileSize,
                 Required(columns.FinishedAt, "finished_at")
             ),
-            IncompleteStatus => new JobState.Incomplete(
+            INCOMPLETE_STATUS => new JobState.Incomplete(
                 Required(columns.FileName, "file_name"),
                 columns.FileSize,
                 Required(columns.FinishedAt, "finished_at")
             ),
-            FailedStatus => new JobState.Failed(
+            FAILED_STATUS => new JobState.Failed(
                 Required(columns.Error, "error"),
                 Required(columns.FinishedAt, "finished_at")
             ),
-            SkippedStatus => new JobState.Skipped(
+            SKIPPED_STATUS => new JobState.Skipped(
                 Required(columns.DuplicateOf, "duplicate_of"),
                 Required(columns.FinishedAt, "finished_at")
             ),
-            ExpiredStatus => new JobState.Expired(Required(columns.FinishedAt, "finished_at")),
+            EXPIRED_STATUS => new JobState.Expired(Required(columns.FinishedAt, "finished_at")),
             _ => throw new InvalidOperationException($"A job row has the status {status}."),
         };
 
     private static JobRequest ToRequest(string kind, string id, string? quality)
     {
-        if (kind is not VideoKind && quality is not null)
+        if (kind is not VIDEO_KIND && quality is not null)
             throw new InvalidOperationException($"A {kind} job row has a quality.");
 
         return kind switch
         {
-            VideoKind => new JobRequest.Video(
+            VIDEO_KIND => new JobRequest.Video(
                 VideoId.Create(id).GetStoredValue(),
                 ToQuality(
                     quality ?? throw new InvalidOperationException("A video row has no quality.")
                 )
             ),
-            AlbumKind => new JobRequest.Audio(new AlbumLink(BrowseId.Create(id).GetStoredValue())),
-            AlbumPlaylistKind => new JobRequest.Audio(
+            ALBUM_KIND => new JobRequest.Audio(new AlbumLink(BrowseId.Create(id).GetStoredValue())),
+            ALBUM_PLAYLIST_KIND => new JobRequest.Audio(
                 new AlbumPlaylistLink(PlaylistId.Create(id).GetStoredValue())
             ),
-            TrackKind => new JobRequest.Audio(new TrackLink(VideoId.Create(id).GetStoredValue())),
+            TRACK_KIND => new JobRequest.Audio(new TrackLink(VideoId.Create(id).GetStoredValue())),
             _ => throw new InvalidOperationException($"A job row has the link kind {kind}."),
         };
     }
@@ -282,30 +282,30 @@ internal static class JobRowMapper
     private static VideoQuality ToQuality(string quality) =>
         quality switch
         {
-            Quality720 => VideoQuality.P720,
-            Quality1080 => VideoQuality.P1080,
-            Quality1440 => VideoQuality.P1440,
-            Quality2160 => VideoQuality.P2160,
-            QualityBest => VideoQuality.Best,
-            QualityAudio => VideoQuality.Audio,
+            QUALITY720 => VideoQuality.P720,
+            QUALITY1080 => VideoQuality.P1080,
+            QUALITY1440 => VideoQuality.P1440,
+            QUALITY2160 => VideoQuality.P2160,
+            QUALITY_BEST => VideoQuality.Best,
+            QUALITY_AUDIO => VideoQuality.Audio,
             _ => throw new InvalidOperationException($"A video row has the quality {quality}."),
         };
 
     private static string Describe(EnrichmentFailure failure) =>
         failure switch
         {
-            EnrichmentFailure.NoMatch => NoMatchFailure,
-            EnrichmentFailure.Unreachable => UnreachableFailure,
-            EnrichmentFailure.ProviderError => ProviderErrorFailure,
+            EnrichmentFailure.NoMatch => NO_MATCH_FAILURE,
+            EnrichmentFailure.Unreachable => UNREACHABLE_FAILURE,
+            EnrichmentFailure.ProviderError => PROVIDER_ERROR_FAILURE,
             _ => throw new InvalidOperationException("A job has an unknown enrichment failure."),
         };
 
     private static EnrichmentFailure ToEnrichmentFailure(string failure) =>
         failure switch
         {
-            NoMatchFailure => EnrichmentFailure.NoMatch,
-            UnreachableFailure => EnrichmentFailure.Unreachable,
-            ProviderErrorFailure => EnrichmentFailure.ProviderError,
+            NO_MATCH_FAILURE => EnrichmentFailure.NoMatch,
+            UNREACHABLE_FAILURE => EnrichmentFailure.Unreachable,
+            PROVIDER_ERROR_FAILURE => EnrichmentFailure.ProviderError,
             _ => throw new InvalidOperationException(
                 $"A job row has the enrichment failure {failure}."
             ),
@@ -346,10 +346,10 @@ internal static class JobRowMapper
                     track.Track.Explicit,
                     track.State switch
                     {
-                        TrackState.Pending => PendingState,
-                        TrackState.Done => DoneState,
-                        TrackState.Missing => MissingState,
-                        TrackState.Refused => RefusedState,
+                        TrackState.Pending => PENDING_STATE,
+                        TrackState.Done => DONE_STATE,
+                        TrackState.Missing => MISSING_STATE,
+                        TrackState.Refused => REFUSED_STATE,
                         _ => throw new InvalidOperationException("A track has an unknown state."),
                     },
                     track.Error
@@ -402,10 +402,10 @@ internal static class JobRowMapper
                     ),
                     document.State switch
                     {
-                        PendingState => TrackState.Pending,
-                        DoneState => TrackState.Done,
-                        MissingState => TrackState.Missing,
-                        RefusedState => TrackState.Refused,
+                        PENDING_STATE => TrackState.Pending,
+                        DONE_STATE => TrackState.Done,
+                        MISSING_STATE => TrackState.Missing,
+                        REFUSED_STATE => TrackState.Refused,
                         _ => throw new InvalidOperationException(
                             $"A stored track has the state {document.State}."
                         ),

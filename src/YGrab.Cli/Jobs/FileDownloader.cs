@@ -10,10 +10,10 @@ namespace YGrab.Cli.Jobs;
 
 internal static class FileDownloader
 {
-    private const int BufferSize = 81920;
-    private const string PartialExtension = ".part";
-    private const string FallbackName = "download";
-    private const char InvalidReplacement = '_';
+    private const int BUFFER_SIZE = 81920;
+    private const string PARTIAL_EXTENSION = ".part";
+    private const string FALLBACK_NAME = "download";
+    private const char INVALID_REPLACEMENT = '_';
 
     private static readonly SearchValues<char> _invalid = SearchValues.Create(
         Path.GetInvalidFileNameChars()
@@ -37,7 +37,7 @@ internal static class FileDownloader
         {
             var name = SafeName(NameOf(response) ?? job.FileName);
             var target = Target(output, name);
-            var partial = target + PartialExtension;
+            var partial = target + PARTIAL_EXTENSION;
             try
             {
                 await CopyAsync(reporter.Output, response, name, partial, cancellationToken);
@@ -57,7 +57,7 @@ internal static class FileDownloader
             }
 
             reporter.Output.WriteLine($"Saved {target}");
-            return ExitCodes.Ok;
+            return ExitCodes.OK;
         }
     }
 
@@ -94,10 +94,10 @@ internal static class FileDownloader
                     FileMode.Create,
                     FileAccess.Write,
                     FileShare.None,
-                    BufferSize,
+                    BUFFER_SIZE,
                     useAsync: true
                 );
-                var buffer = new byte[BufferSize];
+                var buffer = new byte[BUFFER_SIZE];
                 int read;
                 while ((read = await body.ReadAsync(buffer, cancellationToken)) > 0)
                 {
@@ -118,10 +118,10 @@ internal static class FileDownloader
             int index;
             while ((index = span.IndexOfAny(_invalid)) >= 0)
             {
-                span[index] = InvalidReplacement;
+                span[index] = INVALID_REPLACEMENT;
             }
         });
-        return string.IsNullOrWhiteSpace(clean) ? FallbackName : clean;
+        return string.IsNullOrWhiteSpace(clean) ? FALLBACK_NAME : clean;
     }
 
     private static string Target(string? output, string name)

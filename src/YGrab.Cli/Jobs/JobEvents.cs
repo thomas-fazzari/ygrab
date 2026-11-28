@@ -35,7 +35,7 @@ internal closed record JobUpdate
 /// </remarks>
 internal static class JobEvents
 {
-    internal const int MaxReconnects = 5;
+    internal const int MAX_RECONNECTS = 5;
 
     internal static readonly TimeSpan ReconnectDelay = TimeSpan.FromSeconds(2);
 
@@ -50,7 +50,7 @@ internal static class JobEvents
             var opened = await api.OpenEventsAsync(cancellationToken);
             if (!opened.TryGetValue(out var response, out var failure))
             {
-                if (failure is not ApiFailure.Unreachable || ++failures > MaxReconnects)
+                if (failure is not ApiFailure.Unreachable || ++failures > MAX_RECONNECTS)
                 {
                     yield return new JobUpdate.Lost(failure);
                     yield break;
@@ -94,13 +94,13 @@ internal static class JobEvents
     private static JobUpdate? ToUpdate(SseItem<string> item) =>
         item.EventType switch
         {
-            EventNames.Snapshot => new JobUpdate.Snapshot(
+            EventNames.SNAPSHOT => new JobUpdate.Snapshot(
                 JsonSerializer.Deserialize(item.Data, ApiJsonContext.Default.SnapshotDto)!.Jobs
             ),
-            EventNames.Job => new JobUpdate.Changed(
+            EventNames.JOB => new JobUpdate.Changed(
                 JsonSerializer.Deserialize(item.Data, ApiJsonContext.Default.JobDto)!
             ),
-            EventNames.JobRemoved => new JobUpdate.Removed(
+            EventNames.JOB_REMOVED => new JobUpdate.Removed(
                 JsonSerializer.Deserialize(item.Data, ApiJsonContext.Default.JobRemovedDto)!.Id
             ),
             _ => null,

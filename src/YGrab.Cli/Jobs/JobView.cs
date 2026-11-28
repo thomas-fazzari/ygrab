@@ -43,10 +43,10 @@ internal static class JobView
         switch (job.State)
         {
             case JobStateCode.Ready:
-                return ExitCodes.Ok;
+                return ExitCodes.OK;
             case JobStateCode.Incomplete:
                 reporter.Warn($"{id} is incomplete: some tracks are missing.");
-                return ExitCodes.Ok;
+                return ExitCodes.OK;
             default:
                 var reason = job.Reason is null ? string.Empty : $": {job.Reason}";
                 var code = reporter.Fail($"{id} {WireNames.Of(job.State)}{reason}");

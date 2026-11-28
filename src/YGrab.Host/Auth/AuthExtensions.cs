@@ -11,8 +11,8 @@ namespace YGrab.Host.Auth;
 
 internal static class AuthExtensions
 {
-    internal const string ApplicationName = "ygrab";
-    internal const string PolicyName = "signed-in";
+    internal const string APPLICATION_NAME = "ygrab";
+    internal const string POLICY_NAME = "signed-in";
 
     extension(IServiceCollection services)
     {
@@ -22,12 +22,12 @@ internal static class AuthExtensions
             services
                 .AddOptions<AuthOptions>()
                 .BindConfiguration(
-                    AuthOptions.SectionName,
+                    AuthOptions.SECTION_NAME,
                     HostConfigurationExtensions.FailOnUnknownKeys
                 )
                 .Validate<IHostEnvironment>(
                     (options, environment) => !options.Disabled || environment.IsDevelopment(),
-                    $"{AuthOptions.SectionName}:{nameof(AuthOptions.Disabled)} works in the Development environment only."
+                    $"{AuthOptions.SECTION_NAME}:{nameof(AuthOptions.Disabled)} works in the Development environment only."
                 )
                 .ValidateOnStart();
             services.AddSingleton<IValidateOptions<AuthOptions>, AuthOptionsValidator>();
@@ -44,22 +44,22 @@ internal static class AuthExtensions
             services
                 .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
                 .AddScheme<AuthenticationSchemeOptions, BearerHandler>(
-                    BearerHandler.SchemeName,
+                    BearerHandler.SCHEME_NAME,
                     configureOptions: null
                 )
                 .AddCookie(ConfigureCookie);
             services
                 .AddAuthorizationBuilder()
-                .AddPolicy(PolicyName, policy =>
+                .AddPolicy(POLICY_NAME, policy =>
                     policy
                         .AddAuthenticationSchemes(
-                            BearerHandler.SchemeName,
+                            BearerHandler.SCHEME_NAME,
                             CookieAuthenticationDefaults.AuthenticationScheme
                         )
                         .RequireAuthenticatedUser()
                 );
 
-            services.AddDataProtection().SetApplicationName(ApplicationName);
+            services.AddDataProtection().SetApplicationName(APPLICATION_NAME);
             services
                 .AddOptions<KeyManagementOptions>()
                 .Configure<HostStorage, ILoggerFactory>(
@@ -85,7 +85,7 @@ internal static class AuthExtensions
 
     private static void ConfigureCookie(CookieAuthenticationOptions options)
     {
-        options.Cookie.Name = SessionCookie.Name;
+        options.Cookie.Name = SessionCookie.NAME;
         options.Cookie.HttpOnly = true;
         options.Cookie.SameSite = SameSiteMode.Strict;
         options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;

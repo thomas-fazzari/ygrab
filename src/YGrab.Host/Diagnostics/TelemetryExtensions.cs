@@ -12,16 +12,16 @@ namespace YGrab.Host.Diagnostics;
 
 internal static class TelemetryExtensions
 {
-    private const string EndpointKey = "OTEL_EXPORTER_OTLP_ENDPOINT";
-    private const string ServiceNameKey = "OTEL_SERVICE_NAME";
-    private const string DefaultServiceName = "ygrab";
+    private const string ENDPOINT_KEY = "OTEL_EXPORTER_OTLP_ENDPOINT";
+    private const string SERVICE_NAME_KEY = "OTEL_SERVICE_NAME";
+    private const string DEFAULT_SERVICE_NAME = "ygrab";
 
-    private const string HttpClientSource = "System.Net.Http";
+    private const string HTTP_CLIENT_SOURCE = "System.Net.Http";
 
     private static readonly string[] _meters =
     [
-        YGrabTelemetry.Name,
-        HttpClientSource,
+        YGrabTelemetry.NAME,
+        HTTP_CLIENT_SOURCE,
         "System.Runtime",
         "Microsoft.AspNetCore.Hosting",
         "Polly",
@@ -47,7 +47,7 @@ internal static class TelemetryExtensions
         /// </remarks>
         public IServiceCollection AddYGrabTelemetry(IConfiguration configuration)
         {
-            if (string.IsNullOrWhiteSpace(configuration[EndpointKey]))
+            if (string.IsNullOrWhiteSpace(configuration[ENDPOINT_KEY]))
                 return services;
 
             DistributedContextPropagator.Current =
@@ -56,11 +56,11 @@ internal static class TelemetryExtensions
                 .AddOpenTelemetry()
                 .ConfigureResource(resource =>
                     resource.AddService(
-                        configuration[ServiceNameKey] ?? DefaultServiceName,
+                        configuration[SERVICE_NAME_KEY] ?? DEFAULT_SERVICE_NAME,
                         autoGenerateServiceInstanceId: false
                     )
                 )
-                .WithTracing(tracing => tracing.AddSource(YGrabTelemetry.Name, HttpClientSource))
+                .WithTracing(tracing => tracing.AddSource(YGrabTelemetry.NAME, HTTP_CLIENT_SOURCE))
                 .WithMetrics(metrics => metrics.AddMeter(_meters))
                 .WithLogging(configureBuilder: null, configureOptions: logging =>
                     logging.IncludeFormattedMessage = true

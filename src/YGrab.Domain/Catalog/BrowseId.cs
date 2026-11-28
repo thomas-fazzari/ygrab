@@ -4,18 +4,18 @@
 namespace YGrab.Domain;
 
 /// <summary>
-/// The id of a YouTube Music album page, which starts with <see cref="Prefix"/>.
+/// The id of a YouTube Music album page, which starts with <see cref="PREFIX"/>.
 /// </summary>
 public sealed record BrowseId
 {
-    internal const string Prefix = "MPREb_";
+    internal const string PREFIX = "MPREb_";
 
     private BrowseId(string value) => Value = value;
 
     public string Value { get; }
 
     public static Result<BrowseId> Create(string value) =>
-        IdCharacters.Validate(value, "browse id", Prefix) is { } error
+        IdCharacters.Validate(value, "browse id", PREFIX) is { } error
             ? error
             : new BrowseId(value);
 }

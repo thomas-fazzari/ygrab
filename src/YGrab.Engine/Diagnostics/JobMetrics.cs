@@ -9,21 +9,21 @@ namespace YGrab.Engine.Diagnostics;
 
 internal sealed class JobMetrics
 {
-    private const string StepTag = "ygrab.step";
-    private const string JobIdTag = "ygrab.job.id";
-    private const string JobStateTag = "ygrab.job.state";
-    private const string EnrichmentOutcomeTag = "ygrab.enrichment.outcome";
+    private const string STEP_TAG = "ygrab.step";
+    private const string JOB_ID_TAG = "ygrab.job.id";
+    private const string JOB_STATE_TAG = "ygrab.job.state";
+    private const string ENRICHMENT_OUTCOME_TAG = "ygrab.enrichment.outcome";
 
-    private const string QueuedState = "queued";
-    private const string ResolvingState = "resolving";
-    private const string DownloadingState = "downloading";
-    private const string WaitingState = "waiting";
-    private const string PackagingState = "packaging";
-    private const string ReadyState = "ready";
-    private const string IncompleteState = "incomplete";
-    private const string FailedState = "failed";
-    private const string SkippedState = "skipped";
-    private const string ExpiredState = "expired";
+    private const string QUEUED_STATE = "queued";
+    private const string RESOLVING_STATE = "resolving";
+    private const string DOWNLOADING_STATE = "downloading";
+    private const string WAITING_STATE = "waiting";
+    private const string PACKAGING_STATE = "packaging";
+    private const string READY_STATE = "ready";
+    private const string INCOMPLETE_STATE = "incomplete";
+    private const string FAILED_STATE = "failed";
+    private const string SKIPPED_STATE = "skipped";
+    private const string EXPIRED_STATE = "expired";
 
     private static readonly double[] _stepBoundaries =
     [
@@ -44,16 +44,16 @@ internal sealed class JobMetrics
     // Each state reports a count, 0 included, so a state that empties drops to 0 in a chart
     private static readonly ImmutableArray<string> _states =
     [
-        QueuedState,
-        ResolvingState,
-        DownloadingState,
-        WaitingState,
-        PackagingState,
-        ReadyState,
-        IncompleteState,
-        FailedState,
-        SkippedState,
-        ExpiredState,
+        QUEUED_STATE,
+        RESOLVING_STATE,
+        DOWNLOADING_STATE,
+        WAITING_STATE,
+        PACKAGING_STATE,
+        READY_STATE,
+        INCOMPLETE_STATE,
+        FAILED_STATE,
+        SKIPPED_STATE,
+        EXPIRED_STATE,
     ];
 
     // The factory owns the meter and disposes it
@@ -70,7 +70,7 @@ internal sealed class JobMetrics
     )
     {
         _timeProvider = timeProvider;
-        _meter = meterFactory.Create(YGrabTelemetry.Name);
+        _meter = meterFactory.Create(YGrabTelemetry.NAME);
         _stepDuration = _meter.CreateHistogram(
             "ygrab.job.step.duration",
             unit: "s",
@@ -101,8 +101,8 @@ internal sealed class JobMetrics
     {
         var kind = StepKind(step);
         var activity = YGrabTelemetry.Source.StartActivity(kind);
-        activity?.SetTag(StepTag, kind);
-        activity?.SetTag(JobIdTag, jobId.Value);
+        activity?.SetTag(STEP_TAG, kind);
+        activity?.SetTag(JOB_ID_TAG, jobId.Value);
         return new StepRun(this, kind, activity, _timeProvider.GetTimestamp());
     }
 
@@ -110,7 +110,7 @@ internal sealed class JobMetrics
     public void RecordEnrichment(EnrichmentFailure? failure) =>
         _enrichmentLookups.Add(
             1,
-            new KeyValuePair<string, object?>(EnrichmentOutcomeTag, EnrichmentOutcome(failure))
+            new KeyValuePair<string, object?>(ENRICHMENT_OUTCOME_TAG, EnrichmentOutcome(failure))
         );
 
     private static string StepKind(JobStep step) =>
@@ -139,23 +139,23 @@ internal sealed class JobMetrics
             .ToDictionary(StringComparer.Ordinal);
         return _states.Select(state => new Measurement<int>(
             counts.GetValueOrDefault(state),
-            new KeyValuePair<string, object?>(JobStateTag, state)
+            new KeyValuePair<string, object?>(JOB_STATE_TAG, state)
         ));
     }
 
     private static string StateCode(JobState state) =>
         state switch
         {
-            JobState.Queued => QueuedState,
-            JobState.Resolving => ResolvingState,
-            JobState.Downloading => DownloadingState,
-            JobState.Waiting => WaitingState,
-            JobState.Packaging => PackagingState,
-            JobState.Ready => ReadyState,
-            JobState.Incomplete => IncompleteState,
-            JobState.Failed => FailedState,
-            JobState.Skipped => SkippedState,
-            JobState.Expired => ExpiredState,
+            JobState.Queued => QUEUED_STATE,
+            JobState.Resolving => RESOLVING_STATE,
+            JobState.Downloading => DOWNLOADING_STATE,
+            JobState.Waiting => WAITING_STATE,
+            JobState.Packaging => PACKAGING_STATE,
+            JobState.Ready => READY_STATE,
+            JobState.Incomplete => INCOMPLETE_STATE,
+            JobState.Failed => FAILED_STATE,
+            JobState.Skipped => SKIPPED_STATE,
+            JobState.Expired => EXPIRED_STATE,
         };
 
     /// <summary>
@@ -174,9 +174,9 @@ internal sealed class JobMetrics
 
         public void Dispose()
         {
-            var tags = new TagList { { StepTag, kind } };
+            var tags = new TagList { { STEP_TAG, kind } };
             if (_errorType is not null)
-                tags.Add(YGrabTelemetry.ErrorTypeTag, _errorType);
+                tags.Add(YGrabTelemetry.ERROR_TYPE_TAG, _errorType);
 
             metrics._stepDuration.Record(
                 metrics._timeProvider.GetElapsedTime(started).TotalSeconds,

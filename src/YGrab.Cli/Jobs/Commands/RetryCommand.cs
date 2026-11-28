@@ -23,6 +23,6 @@ internal sealed class RetryCommand(CliSession session)
             return Reporter.Report(failure);
 
         Reporter.Output.WriteLine($"{JobIds.Short(job.Id)} queued again");
-        return ExitCodes.Ok;
+        return ExitCodes.OK;
     }
 }

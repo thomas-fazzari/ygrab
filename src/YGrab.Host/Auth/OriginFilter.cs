@@ -19,9 +19,9 @@ namespace YGrab.Host.Auth;
 /// </remarks>
 internal sealed class OriginFilter : IEndpointFilter
 {
-    internal const string SecFetchSiteHeader = "Sec-Fetch-Site";
+    internal const string SEC_FETCH_SITE_HEADER = "Sec-Fetch-Site";
 
-    private const string SameOrigin = "same-origin";
+    private const string SAME_ORIGIN = "same-origin";
 
     public ValueTask<object?> InvokeAsync(
         EndpointFilterInvocationContext context,
@@ -49,8 +49,8 @@ internal sealed class OriginFilter : IEndpointFilter
     {
         if (
             string.Equals(
-                request.Headers[SecFetchSiteHeader],
-                SameOrigin,
+                request.Headers[SEC_FETCH_SITE_HEADER],
+                SAME_ORIGIN,
                 StringComparison.OrdinalIgnoreCase
             )
         )

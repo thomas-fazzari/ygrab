@@ -13,7 +13,7 @@ namespace YGrab.Infrastructure.Python.Configuration;
 /// </remarks>
 public sealed class PythonOptions
 {
-    public const string SectionName = "Python";
+    public const string SECTION_NAME = "Python";
 
     /// <summary>
     /// The virtual environment that holds the packages of the Python modules.

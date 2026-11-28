@@ -8,7 +8,7 @@ namespace YGrab.Domain;
 /// </summary>
 public sealed record Isrc
 {
-    private const int Length = 12;
+    private const int LENGTH = 12;
 
     private static readonly SearchValues<char> _allowed = SearchValues.Create(
         "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
@@ -21,8 +21,8 @@ public sealed record Isrc
     public static Result<Isrc> Create(string value) =>
         IsValid(value)
             ? new Isrc(value)
-            : new ValidationError($"The ISRC is not {Length} characters from A-Z and 0-9.");
+            : new ValidationError($"The ISRC is not {LENGTH} characters from A-Z and 0-9.");
 
     private static bool IsValid(string? value) =>
-        value is { Length: Length } && !value.AsSpan().ContainsAnyExcept(_allowed);
+        value is { Length: LENGTH } && !value.AsSpan().ContainsAnyExcept(_allowed);
 }

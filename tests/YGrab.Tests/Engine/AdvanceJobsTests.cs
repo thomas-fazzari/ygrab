@@ -9,16 +9,16 @@ namespace YGrab.Tests.Engine;
 
 public sealed class AdvanceJobsTests
 {
-    private const int TrackCount = 4;
+    private const int TRACK_COUNT = 4;
 
     private static CancellationToken Cancellation => TestContext.Current.CancellationToken;
 
     [Fact]
     public async Task A_rate_limit_queues_the_job_and_starts_a_cooldown_that_stops_every_call()
     {
-        var rig = new JobRig(Samples.Release(TrackCount));
+        var rig = new JobRig(Samples.Release(TRACK_COUNT));
         rig.Audio.Script(null, null, new RemoteFailure.RateLimited("429"));
-        await rig.Start.HandleAsync(new StartJob.StartJobRequest(Samples.AlbumUrl), Cancellation);
+        await rig.Start.HandleAsync(new StartJob.StartJobRequest(Samples.ALBUM_URL), Cancellation);
 
         var limited = await rig.AdvanceAsync(steps: 4);
 
@@ -47,9 +47,9 @@ public sealed class AdvanceJobsTests
     [Fact]
     public async Task Ending_the_cooldown_resumes_the_jobs_and_keeps_its_strikes()
     {
-        var rig = new JobRig(Samples.Release(TrackCount));
+        var rig = new JobRig(Samples.Release(TRACK_COUNT));
         rig.Audio.Script(null, null, new RemoteFailure.RateLimited("429"));
-        await rig.Start.HandleAsync(new StartJob.StartJobRequest(Samples.AlbumUrl), Cancellation);
+        await rig.Start.HandleAsync(new StartJob.StartJobRequest(Samples.ALBUM_URL), Cancellation);
         await rig.AdvanceAsync(steps: 4);
 
         await rig.EndCooldown.HandleAsync(new EndCooldown.EndCooldownRequest(), Cancellation);
@@ -63,9 +63,9 @@ public sealed class AdvanceJobsTests
     [Fact]
     public async Task A_failed_download_waits_for_its_retry_and_no_ring_ends_the_pause()
     {
-        var rig = new JobRig(Samples.Release(TrackCount));
+        var rig = new JobRig(Samples.Release(TRACK_COUNT));
         rig.Audio.Script(Samples.Transient);
-        await rig.Start.HandleAsync(new StartJob.StartJobRequest(Samples.AlbumUrl), Cancellation);
+        await rig.Start.HandleAsync(new StartJob.StartJobRequest(Samples.ALBUM_URL), Cancellation);
 
         var failed = await rig.AdvanceAsync(steps: 2);
 
@@ -73,24 +73,26 @@ public sealed class AdvanceJobsTests
         var waiting = rig.Jobs.List(1)[0].State.Should().BeOfType<JobState.Waiting>().Subject;
         wait.At.Should().Be(waiting.RetryAt);
         wait.NotBefore.Should()
-            .BeOnOrAfter(TestTime.Start + TimeSpan.FromSeconds(Pacing.MinPauseSeconds))
-            .And.BeOnOrBefore(TestTime.Start + TimeSpan.FromSeconds(Pacing.MaxPauseSeconds));
+            .BeOnOrAfter(TestTime.Start + TimeSpan.FromSeconds(Pacing.MIN_PAUSE_SECONDS))
+            .And.BeOnOrBefore(TestTime.Start + TimeSpan.FromSeconds(Pacing.MAX_PAUSE_SECONDS));
     }
 
     [Fact]
     public async Task A_job_that_downloads_every_track_is_ready_and_clears_the_cooldown()
     {
-        var rig = new JobRig(Samples.Release(TrackCount));
+        var rig = new JobRig(Samples.Release(TRACK_COUNT));
         var past = Cooldown.None.Hit("429", TestTime.Start - TimeSpan.FromDays(1));
         rig.Cooldown.Load(past);
         rig.Store.Cooldown = past;
-        await rig.Start.HandleAsync(new StartJob.StartJobRequest(Samples.AlbumUrl), Cancellation);
+        await rig.Start.HandleAsync(new StartJob.StartJobRequest(Samples.ALBUM_URL), Cancellation);
 
-        var packaged = await rig.AdvanceAsync(steps: 1 + TrackCount + 1);
+        var packaged = await rig.AdvanceAsync(steps: 1 + TRACK_COUNT + 1);
 
         rig.Jobs.List(1)[0]
             .State.Should()
-            .Be(new JobState.Ready(FakeJobOutput.FileName, FakeJobOutput.FileSize, TestTime.Start));
+            .Be(
+                new JobState.Ready(FakeJobOutput.FILE_NAME, FakeJobOutput.FILE_SIZE, TestTime.Start)
+            );
         rig.Cooldown.Current.Should().Be(Cooldown.None);
         rig.Store.Cooldown.Should().Be(Cooldown.None);
         packaged.Value.Should().BeOfType<AdvanceJobs.WaitUntil>();
@@ -100,15 +102,17 @@ public sealed class AdvanceJobsTests
     [Fact]
     public async Task A_provider_without_the_release_still_gives_a_ready_job_that_keeps_the_failure()
     {
-        var rig = new JobRig(Samples.Release(TrackCount));
+        var rig = new JobRig(Samples.Release(TRACK_COUNT));
         rig.Enricher.Result = new NotEnriched(EnrichmentFailure.Unreachable);
-        await rig.Start.HandleAsync(new StartJob.StartJobRequest(Samples.AlbumUrl), Cancellation);
+        await rig.Start.HandleAsync(new StartJob.StartJobRequest(Samples.ALBUM_URL), Cancellation);
 
-        await rig.AdvanceAsync(steps: 1 + TrackCount + 1);
+        await rig.AdvanceAsync(steps: 1 + TRACK_COUNT + 1);
 
         var job = rig.Jobs.List(1)[0];
         job.State.Should()
-            .Be(new JobState.Ready(FakeJobOutput.FileName, FakeJobOutput.FileSize, TestTime.Start));
+            .Be(
+                new JobState.Ready(FakeJobOutput.FILE_NAME, FakeJobOutput.FILE_SIZE, TestTime.Start)
+            );
         job.EnrichmentFailure.Should().Be(EnrichmentFailure.Unreachable);
         rig.Output.Packaged.Should().Equal((ReleaseDetails?)null);
         rig.Cooldown.Current.Should().Be(Cooldown.None);
@@ -125,11 +129,11 @@ public sealed class AdvanceJobsTests
             1,
             []
         );
-        var rig = new JobRig(Samples.Release(TrackCount));
+        var rig = new JobRig(Samples.Release(TRACK_COUNT));
         rig.Enricher.Result = details;
-        await rig.Start.HandleAsync(new StartJob.StartJobRequest(Samples.AlbumUrl), Cancellation);
+        await rig.Start.HandleAsync(new StartJob.StartJobRequest(Samples.ALBUM_URL), Cancellation);
 
-        await rig.AdvanceAsync(steps: 1 + TrackCount + 1);
+        await rig.AdvanceAsync(steps: 1 + TRACK_COUNT + 1);
 
         rig.Jobs.List(1)[0].EnrichmentFailure.Should().BeNull();
         rig.Output.Packaged.Should().Equal(details);
@@ -139,8 +143,8 @@ public sealed class AdvanceJobsTests
     [Fact]
     public async Task A_restart_during_a_cooldown_requeues_the_job_and_calls_nothing_until_it_ends()
     {
-        var rig = new JobRig(Samples.Release(TrackCount));
-        var interrupted = Samples.Downloading(Samples.Release(TrackCount)).CompleteTrack();
+        var rig = new JobRig(Samples.Release(TRACK_COUNT));
+        var interrupted = Samples.Downloading(Samples.Release(TRACK_COUNT)).CompleteTrack();
         var cooldown = Cooldown.None.Hit("429", TestTime.Start);
         rig.Store.Jobs[interrupted.Id] = interrupted;
         rig.Store.Cooldown = cooldown;
@@ -161,7 +165,7 @@ public sealed class AdvanceJobsTests
     [Fact]
     public async Task A_video_job_is_ready_after_one_download_without_a_catalog_call()
     {
-        var rig = new JobRig(Samples.Release(TrackCount));
+        var rig = new JobRig(Samples.Release(TRACK_COUNT));
         var queued = Samples.QueuedVideo(Samples.VideoRequest(quality: VideoQuality.P2160));
         await rig.Jobs.AddAsync(queued, Cancellation);
 
@@ -175,7 +179,9 @@ public sealed class AdvanceJobsTests
 
         rig.Jobs.Get(queued.Id)!
             .State.Should()
-            .Be(new JobState.Ready(FakeJobOutput.FileName, FakeJobOutput.FileSize, TestTime.Start));
+            .Be(
+                new JobState.Ready(FakeJobOutput.FILE_NAME, FakeJobOutput.FILE_SIZE, TestTime.Start)
+            );
         rig.Videos.Downloads.Should().Equal((Samples.Video("vid"), VideoQuality.P2160));
         rig.Catalog.Lookups.Should().Be(0);
         rig.Enricher.Lookups.Should().BeEmpty();
@@ -185,7 +191,7 @@ public sealed class AdvanceJobsTests
     [Fact]
     public async Task A_restarted_video_job_whose_file_is_kept_is_not_downloaded_again()
     {
-        var rig = new JobRig(Samples.Release(TrackCount));
+        var rig = new JobRig(Samples.Release(TRACK_COUNT));
         var interrupted = Samples.DownloadingVideo();
         rig.Store.Jobs[interrupted.Id] = interrupted;
         rig.Videos.Kept[interrupted.Id] = Samples.VideoDetails;
@@ -200,16 +206,16 @@ public sealed class AdvanceJobsTests
     [Fact]
     public async Task A_playlist_link_whose_album_is_already_held_is_skipped_once_it_resolves()
     {
-        const string playlistUrl = "https://music.youtube.com/playlist?list=OLAK5uy_x";
-        var rig = new JobRig(Samples.Release(TrackCount));
+        const string PLAYLIST_URL = "https://music.youtube.com/playlist?list=OLAK5uy_x";
+        var rig = new JobRig(Samples.Release(TRACK_COUNT));
         var first = await rig.Start.HandleAsync(
-            new StartJob.StartJobRequest(Samples.AlbumUrl),
+            new StartJob.StartJobRequest(Samples.ALBUM_URL),
             Cancellation
         );
-        await rig.AdvanceAsync(steps: 1 + TrackCount + 1);
+        await rig.AdvanceAsync(steps: 1 + TRACK_COUNT + 1);
 
         var second = await rig.Start.HandleAsync(
-            new StartJob.StartJobRequest(playlistUrl),
+            new StartJob.StartJobRequest(PLAYLIST_URL),
             Cancellation
         );
         await rig.AdvanceAsync(steps: 1);
@@ -217,6 +223,6 @@ public sealed class AdvanceJobsTests
         var held = first.Value.Should().BeOfType<StartJob.Started>().Subject;
         var skipped = second.Value.Should().BeOfType<StartJob.Started>().Subject;
         rig.Jobs.Get(skipped.Id)!.State.Should().Be(new JobState.Skipped(held.Id, TestTime.Start));
-        rig.Audio.Downloads.Should().HaveCount(TrackCount);
+        rig.Audio.Downloads.Should().HaveCount(TRACK_COUNT);
     }
 }

@@ -17,16 +17,16 @@ namespace YGrab.Host;
 
 internal static class EndpointExtensions
 {
-    internal const string ApiPrefix = "/api";
+    internal const string API_PREFIX = "/api";
 
     // We take small JSON bodies only
-    internal const int MaxRequestBodyBytes = 64 * 1024;
-    private const string IndexFile = "index.html";
+    internal const int MAX_REQUEST_BODY_BYTES = 64 * 1024;
+    private const string INDEX_FILE = "index.html";
 
     // The web build names each file under it after a hash of its content
-    private const string HashedAssets = "/assets";
-    private const string CacheForever = "public, max-age=31536000, immutable";
-    private const string CheckEachTime = "no-cache";
+    private const string HASHED_ASSETS = "/assets";
+    private const string CACHE_FOREVER = "public, max-age=31536000, immutable";
+    private const string CHECK_EACH_TIME = "no-cache";
 
     private static readonly StaticFileOptions _webFiles = new() { OnPrepareResponse = SetCaching };
 
@@ -48,7 +48,7 @@ internal static class EndpointExtensions
             services.Configure<KestrelServerOptions>(options =>
             {
                 options.AddServerHeader = false;
-                options.Limits.MaxRequestBodySize = MaxRequestBodyBytes;
+                options.Limits.MaxRequestBodySize = MAX_REQUEST_BODY_BYTES;
             });
             return services;
         }
@@ -72,14 +72,14 @@ internal static class EndpointExtensions
     {
         public IEndpointRouteBuilder MapYGrabEndpoints()
         {
-            var api = endpoints.MapGroup(ApiPrefix);
+            var api = endpoints.MapGroup(API_PREFIX);
             if (
                 !endpoints
                     .ServiceProvider.GetRequiredService<IOptions<AuthOptions>>()
                     .Value.Disabled
             )
             {
-                api.RequireAuthorization(AuthExtensions.PolicyName);
+                api.RequireAuthorization(AuthExtensions.POLICY_NAME);
             }
 
             api.AddEndpointFilter<OriginFilter>();
@@ -91,7 +91,7 @@ internal static class EndpointExtensions
             api.MapFallback("{**rest}", () => TypedResults.NotFound());
 
             // The fallback of the web client matches after the API fallback, which is more specific
-            endpoints.MapFallbackToFile(IndexFile, _webFiles);
+            endpoints.MapFallbackToFile(INDEX_FILE, _webFiles);
             return endpoints;
         }
     }
@@ -100,9 +100,9 @@ internal static class EndpointExtensions
     // The browser revalidates any other file, so a new build applies at once
     private static void SetCaching(StaticFileResponseContext context) =>
         context.Context.Response.Headers.CacheControl =
-            context.Context.Request.Path.StartsWithSegments(HashedAssets, StringComparison.Ordinal)
-                ? CacheForever
-                : CheckEachTime;
+            context.Context.Request.Path.StartsWithSegments(HASHED_ASSETS, StringComparison.Ordinal)
+                ? CACHE_FOREVER
+                : CHECK_EACH_TIME;
 
     // Options of a source-generated context do not apply through the resolver chain
     private static void ConfigureJson(JsonSerializerOptions json)

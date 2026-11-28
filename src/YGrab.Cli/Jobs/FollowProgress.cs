@@ -17,7 +17,7 @@ namespace YGrab.Cli.Jobs;
 /// </remarks>
 internal static class FollowProgress
 {
-    private const int FullPercent = 100;
+    private const int FULL_PERCENT = 100;
 
     /// <summary>
     /// Follows the jobs until each one is finished or gone, then concludes each finished one.
@@ -35,7 +35,7 @@ internal static class FollowProgress
         if (!followed.TryGetValue(out var finished, out var failure))
             return reporter.Report(failure);
 
-        var exit = ExitCodes.Ok;
+        var exit = ExitCodes.OK;
         foreach (var id in ids.Distinct())
         {
             exit = Math.Max(
@@ -125,7 +125,7 @@ internal static class FollowProgress
             if (watched is null && job.FinishedAt is not null)
                 return;
 
-            bar = context.AddTask(JobView.Progress(job), maxValue: FullPercent);
+            bar = context.AddTask(JobView.Progress(job), maxValue: FULL_PERCENT);
             bars[job.Id] = bar;
         }
 
